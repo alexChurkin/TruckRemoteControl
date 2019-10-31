@@ -144,7 +144,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
 
     public int getSignalStrength() {
         try {
-            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (!wifiManager.isWifiEnabled()) {
                 showToast("No Wi-Fi connection detected!", Toast.LENGTH_SHORT);
             }

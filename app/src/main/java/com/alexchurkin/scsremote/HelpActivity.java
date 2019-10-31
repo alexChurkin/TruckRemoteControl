@@ -9,30 +9,30 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 
 public class HelpActivity extends Activity implements OnClickListener {
-		
-	@Override
-    public void onCreate(Bundle savedInstanceState) {    	
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.help);
-        Button button1 = (Button)findViewById(R.id.downloadServerButton);
+        Button button1 = findViewById(R.id.downloadServerButton);
         button1.setOnClickListener(this);
-        Button button2 = (Button)findViewById(R.id.doneButton);
+        Button button2 = findViewById(R.id.doneButton);
         button2.setOnClickListener(this);
-	}
+    }
 
-	public void onClick(View v) {
-		if(v == findViewById(R.id.doneButton)) {
-			finish();
-		}else{
-			String url = "http://sites.google.com/site/accelerometermouse/download-server";
-        	Intent i = new Intent(Intent.ACTION_VIEW);
-        	i.setData(Uri.parse(url));
-        	startActivity(i);
-		}
-	}
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-	}
+    public void onClick(View v) {
+        if (v == findViewById(R.id.doneButton)) {
+            finish();
+        } else {
+            String url = "http://sites.google.com/site/accelerometermouse/download-server";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
 }
