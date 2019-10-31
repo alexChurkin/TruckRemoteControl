@@ -1,10 +1,10 @@
 package com.alexchurkin.scsremote;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
@@ -39,15 +39,15 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
     private GraphicsView graphicsView;
     private AccelerometerMouseClient client;
     public static MouseButton leftButton = new MouseButton(), rightButton = new MouseButton(), middleButton = new MouseButton(), scrollWheel = new MouseButton();
-    private boolean vibrate = true;
     public static int dBm = -200;
     private final static double compression = 0.75;
     public static WifiManager wifi;
-    private boolean vibrateDown = false, vibrateUp = false, defaultServer = false, showHelp = false, invertX = false, invertY = false, deadzone = false, tablet = false, portrait = false, changingOr = false, justChangedOr = false, gammaUpdate = false;
-    private int vibrateDownDuration = 20, vibrateUpDuration = 20, defaultServerPort = 18250, number = 1280, zero = 22;
+    private boolean defaultServer = false, showHelp = false, invertX = false, invertY = false, deadzone = false, tablet = false, portrait = false, changingOr = false, justChangedOr = false, gammaUpdate = false;
+    private int defaultServerPort = 18250, number = 1280, zero = 22;
     private String defaultServerIp = "shit";
     protected PowerManager.WakeLock mWakeLock;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +55,14 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
         graphicsView = new GraphicsView(this);
         wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         setContentView(graphicsView);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         graphicsView.setOnTouchListener(this);
@@ -87,19 +94,6 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                 }
             }
         }
-        // Just changed orientation?
-        if (justChangedOr) {
-            try {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-                String socket = prefs.getString("lastServer", "");
-                String ip = socket.split(":")[0];
-                String port = socket.split(":")[1];
-                client.forceUpdate(ip, Integer.parseInt(port));
-                client.run(true);
-            } catch (Exception e) {
-                client.run(false);
-            }
-        }
         final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "AccelMouseLock");
         this.mWakeLock.acquire();
@@ -122,8 +116,6 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
         try {
             showHelp = prefs.getBoolean("showHelp", true);
-            vibrateDown = prefs.getBoolean("vibrateDown", true);
-            vibrateUp = prefs.getBoolean("vibrateUp", true);
             defaultServer = prefs.getBoolean("defaultServer", false);
             invertX = prefs.getBoolean("invertX", false);
             invertY = prefs.getBoolean("invertY", false);
@@ -134,8 +126,6 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             gammaUpdate = prefs.getBoolean("release", false);
             defaultServerIp = prefs.getString("serverIP", "shit");
             zero = Integer.parseInt(prefs.getString("zeroPosition", "22"));
-            vibrateDownDuration = Integer.parseInt(prefs.getString("vibrationDownIntensity", "30").replaceAll("ms", ""));
-            vibrateUpDuration = Integer.parseInt(prefs.getString("vibrationUpIntensity", "20").replaceAll("ms", ""));
             defaultServerPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
         } catch (Exception e) {
             showToast("Error occrued while reading preferences. Please check that they are correct!", Toast.LENGTH_SHORT);
@@ -168,15 +158,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
         scrollWheel.setState(false);
         updatePrefs();
         graphicsView.resume();
-        if (portrait) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            graphicsView.orientation = 1;
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-            graphicsView.orientation = 2;
-        }
         client.pause(false);
-        Log.d("Orientation", "" + this.getResources().getConfiguration().orientation);
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
         if (ManualConnectActivity.configured) {
             client.stop();
@@ -216,11 +198,6 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             // Screen flipping and whatnot
             {
                 if (tablet) {
-                    float dummyX = x;
-                    x = y;
-                    y = -dummyX;
-                }
-                if (graphicsView.orientation == 1) {
                     float dummyX = x;
                     x = y;
                     y = -dummyX;
@@ -269,36 +246,24 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
     }
 
     public boolean onTouch(View v, MotionEvent event) {
-        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        if (graphicsView.orientation == 2)
-            number = 1280;
-        else
-            number = 800;
+        number = 1280;
         if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == 261 || event.getAction() == 5) {
             if (!middleButton.getState()) {
                 if (isLeft(event.getX(getPID(event)), event.getY(getPID(event)))) {
                     leftButton.setState(true);
                     leftButton.setPID(getPID(event));
-                    if (vibrate && vibrateDown)
-                        vibrator.vibrate(vibrateDownDuration);
                 } else if (isRight(event.getX(getPID(event)), event.getY(getPID(event)))) {
                     rightButton.setState(true);
                     rightButton.setPID(getPID(event));
-                    if (vibrate && vibrateDown)
-                        vibrator.vibrate(vibrateDownDuration);
                 } else if (isMiddle(event)) {
-                    if (event.getPointerCount() > 1 || graphicsView.orientation == 1) {
+                    if (event.getPointerCount() > 1) {
                         scrollWheel.setState(true);
                     } else {
                         middleButton.setState(true);
                     }
-                    if (vibrate && vibrateDown)
-                        vibrator.vibrate(vibrateDownDuration);
                 }
             }
             if (event.getX(getPID(event)) > getWindowManager().getDefaultDisplay().getWidth() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5) && event.getY(getPID(event)) > getWindowManager().getDefaultDisplay().getHeight() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5)) {
-                if (vibrate && vibrateDown)
-                    vibrator.vibrate(vibrateDownDuration);
                 if (wifi.isWifiEnabled())
                     showToast("Wi-Fi signal strength: " + getSignalStrength() + "dBm", Toast.LENGTH_SHORT);
                 else
@@ -309,15 +274,9 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                 } else {
                     showToast("Not connected to a server. Please try searching for one by clicking \"Search for Server\" in the menu, or manually connect to the server by clicking \"Manually Connect\".", Toast.LENGTH_LONG);
                 }
-                if (vibrate && vibrateDown)
-                    vibrator.vibrate(vibrateDownDuration);
             } else if (event.getX(getPID(event)) > getWindowManager().getDefaultDisplay().getWidth() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5) && event.getY(getPID(event)) < (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5)) {
-
-                if (vibrate && vibrateDown)
-                    vibrator.vibrate(vibrateDownDuration);
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("portrait", graphicsView.orientation == 2);
                 try {
                     if (AccelerometerMouseClient.connected) {
                         editor.putString("lastServer", client.socket.getInetAddress().getHostAddress() + ":" + client.port);
@@ -328,17 +287,8 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                     // You never know...
                 }
                 editor.apply();
-                if (graphicsView.orientation == 2) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                    graphicsView.orientation = 1;
-                } else {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                    graphicsView.orientation = 2;
-                }
             } else if (event.getX(getPID(event)) < (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5) && event.getY(getPID(event)) > getWindowManager().getDefaultDisplay().getHeight() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5)) {
                 if (AccelerometerMouseClient.connected) {
-                    if (vibrate && vibrateDown)
-                        vibrator.vibrate(vibrateDownDuration);
                     client.pause(!AccelerometerMouseClient.paused);
                 }
             }
@@ -346,28 +296,16 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             if (event.getPointerCount() > 1) {
                 if (leftButton.getState() && event.getX(getPID(event)) < getWindowManager().getDefaultDisplay().getWidth() / 2) {
                     leftButton.setState(false);
-                    if (vibrate && vibrateUp)
-                        vibrator.vibrate(vibrateUpDuration);
                 } else if (rightButton.getState() && event.getX(getPID(event)) > getWindowManager().getDefaultDisplay().getWidth() / 2) {
                     rightButton.setState(false);
-                    if (vibrate && vibrateUp)
-                        vibrator.vibrate(vibrateUpDuration);
                 } else if (scrollWheel.getState() && isMiddle(event)) {
                     scrollWheel.setState(false);
-                    if (vibrate && vibrateUp)
-                        vibrator.vibrate(vibrateUpDuration);
                 }
             } else {
                 if (leftButton.getState() || rightButton.getState() || scrollWheel.getState())
-                    if (vibrate && vibrateUp)
-                        vibrator.vibrate(vibrateUpDuration);
                 leftButton.setState(false);
                 rightButton.setState(false);
                 scrollWheel.setState(false);
-                if (middleButton.getState()) {
-                    if (vibrate && vibrateUp)
-                        vibrator.vibrate(vibrateUpDuration);
-                }
                 middleButton.setState(false);
             }
         }
@@ -377,21 +315,15 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
     }
 
     private boolean isLeft(float x, float y) {
-        if (graphicsView.orientation == 2)
-            return (x < (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16) && x > getWindowManager().getDefaultDisplay().getWidth() * 0.2125) && (y > getWindowManager().getDefaultDisplay().getHeight() * 0.2);
-        else
-            return (x < (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16) && (y > getWindowManager().getDefaultDisplay().getHeight() * 0.475)) && !(x < (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5) && y > getWindowManager().getDefaultDisplay().getHeight() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5));
+        return (x < (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16) && x > getWindowManager().getDefaultDisplay().getWidth() * 0.2125) && (y > getWindowManager().getDefaultDisplay().getHeight() * 0.2);
     }
 
     private boolean isRight(float x, float y) {
-        if (graphicsView.orientation == 2)
-            return (x > (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && x < getWindowManager().getDefaultDisplay().getWidth() * 0.7875) && (y > getWindowManager().getDefaultDisplay().getHeight() * 0.2);
-        else
-            return (x > (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && (y > getWindowManager().getDefaultDisplay().getHeight() * 0.475)) && !(x > getWindowManager().getDefaultDisplay().getWidth() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5) && y > getWindowManager().getDefaultDisplay().getHeight() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5));
+        return (x > (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && x < getWindowManager().getDefaultDisplay().getWidth() * 0.7875) && (y > getWindowManager().getDefaultDisplay().getHeight() * 0.2);
     }
 
     private boolean isMiddle(MotionEvent event) {
-        if (event.getPointerCount() > 1 && graphicsView.orientation == 2) {
+        if (event.getPointerCount() > 1) {
             boolean sentinel = true;
             int falseCounts = 0;
             for (int i = 0; i < event.getPointerCount(); i++) {
@@ -409,11 +341,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             return !(leftButton.getState() || rightButton.getState()) && sentinel;
         } else {
             if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == 261 || event.getAction() == 5) {
-                if (graphicsView.orientation == 1)
-                    return !(leftButton.getState() || rightButton.getState()) && event.getX(getPID(event)) < (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getX(getPID(event)) > (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getY(getPID(event)) > getWindowManager().getDefaultDisplay().getHeight() * 0.6 && event.getY(getPID(event)) < getWindowManager().getDefaultDisplay().getHeight() * 0.8;
-                else
-                    return !(leftButton.getState() || rightButton.getState()) && event.getX(getPID(event)) < (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getX(getPID(event)) > (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getY(getPID(event)) > getWindowManager().getDefaultDisplay().getHeight() * 0.4 && event.getY(getPID(event)) < getWindowManager().getDefaultDisplay().getHeight() * 0.7;
-
+                return !(leftButton.getState() || rightButton.getState()) && event.getX(getPID(event)) < (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getX(getPID(event)) > (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getY(getPID(event)) > getWindowManager().getDefaultDisplay().getHeight() * 0.4 && event.getY(getPID(event)) < getWindowManager().getDefaultDisplay().getHeight() * 0.7;
             } else {
                 return true;
             }
@@ -427,7 +355,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
 
     private void showToast(String string, int duration) {
         Toast toast = Toast.makeText(this, string, duration);
-        toast.setGravity(Gravity.TOP | Gravity.RIGHT, 0, 0);
+        toast.setGravity(Gravity.TOP | Gravity.END, 0, 0);
         toast.show();
     }
 
@@ -485,8 +413,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
         Thread t;
         SurfaceHolder holder;
         boolean loop = false;
-        int orientation = 1;
-        Bitmap mouseNone, mouseAll, mouseLeft, mouseRight, mouseMiddle, mouseScroll, orientationSwitch, bar0, bar1, bar2, bar3, bar4, bar5, paused, playing, fluff;
+        Bitmap mouseNone, mouseAll, mouseLeft, mouseRight, mouseMiddle, mouseScroll, bar0, bar1, bar2, bar3, bar4, bar5, paused, playing, fluff;
 
         public GraphicsView(Context context) {
             super(context);
@@ -505,28 +432,19 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                         options.inScaled = false;
                         options.inDither = false;
                         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                        if (orientation == 2) {
-                            mouseNone = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.none, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseAll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.all, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseMiddle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.middle, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseScroll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.scroll, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseLeft = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.left, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseRight = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.right, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                        } else {
-                            mouseNone = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.noneportrait, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseAll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.allportrait, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseMiddle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.middleportrait, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseScroll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.scrollportrait, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseLeft = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftportrait, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                            mouseRight = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightportrait, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                        }
+                        mouseNone = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.none, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
+                        mouseAll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.all, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
+                        mouseMiddle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.middle, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
+                        mouseScroll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.scroll, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
+                        mouseLeft = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.left, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
+                        mouseRight = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.right, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
+
                         bar0 = BitmapFactory.decodeResource(getResources(), R.drawable.bar0);
                         bar1 = BitmapFactory.decodeResource(getResources(), R.drawable.bar1);
                         bar2 = BitmapFactory.decodeResource(getResources(), R.drawable.bar2);
                         bar3 = BitmapFactory.decodeResource(getResources(), R.drawable.bar3);
                         bar4 = BitmapFactory.decodeResource(getResources(), R.drawable.bar4);
                         bar5 = BitmapFactory.decodeResource(getResources(), R.drawable.bar5);
-                        orientationSwitch = BitmapFactory.decodeResource(getResources(), R.drawable.orientation);
                         paused = BitmapFactory.decodeResource(getResources(), R.drawable.pause);
                         playing = BitmapFactory.decodeResource(getResources(), R.drawable.play);
                         fluff = BitmapFactory.decodeResource(getResources(), R.drawable.fluff);
@@ -558,7 +476,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                     } else {
                         paint.setColor(Color.argb(200, 0, 255, 0));
                     }
-                    int diameter = (orientation == 2) ? canvas.getWidth() / 60 : canvas.getHeight() / 60;
+                    int diameter = canvas.getWidth() / 60;
                     canvas.drawOval(new RectF(10, 10, 10 + diameter, 10 + diameter), paint);
                     // Signal bars
                     if (dBm > -100) {
@@ -580,15 +498,13 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                         bitmap = bar0;
                     }
 
-                    int number = (orientation == 2) ? 1280 : 800;
+                    int number = 1280;
                     int radius = (int) (canvas.getWidth() * 160 / number + 0.5);
                     Paint paintFluff = new Paint();
                     // Draw some fluff on the bottom left/right corners
                     canvas.drawBitmap(fluff, null, new RectF(canvas.getWidth() - radius, canvas.getHeight() - radius, canvas.getWidth() + radius, canvas.getHeight() + radius), paintFluff);
                     // Draw bars
                     canvas.drawBitmap(bitmap, null, new RectF(canvas.getWidth() - (int) (canvas.getWidth() * 68 / number + 0.5), canvas.getHeight() - (int) (canvas.getWidth() * 68 / number + 0.5), canvas.getWidth() - 10, canvas.getHeight() - 10), paint);
-                    // Draw orientation switch
-                    canvas.drawBitmap(orientationSwitch, null, new RectF(canvas.getWidth() - (int) (canvas.getWidth() * 68 / number + 0.5), 10, canvas.getWidth() - 10, (int) (canvas.getWidth() * 68 / number + 0.5)), paint);
                     // Draw pause/play icon
                     if (AccelerometerMouseClient.connected) {
                         // Draw fluff
