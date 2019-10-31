@@ -17,26 +17,6 @@
 		android:key="serverPort" android:title="Default server port"
 		android:summary="The port of the default server" android:defaultValue="18250"
 		android:enabled="true" android:dependency="defaultServer" />
-	<CheckBoxPreference android:title="Vibrate on finger down"
-		android:key="vibrateDown" android:defaultValue="true"
-		android:summaryOff="The device will not vibrate when the user touches a clickable area"
-		android:summaryOn="The device will vibrate when the user touches a clickable area"
-		android:enabled="true" />
-	<CheckBoxPreference
-		android:summaryOn="The device will vibrate when the user lifts their finger off the screen"
-		android:summaryOff="The device will not vibrate when the user lifts their finger off the screen"
-		android:title="Vibrate on finger up" android:key="vibrateUp"
-		android:defaultValue="true" android:enabled="true" />
-	<ListPreference android:key="vibrationDownIntensity"
-		android:defaultValue="30ms" android:title="Vibration down intensity"
-		android:summary="Determines the intensity (duration) of the vibration on finger down"
-		android:dialogTitle="Vibration down intensity" android:entries="@array/listVibration"
-		android:entryValues="@array/listVibrationReturn" android:dependency="vibrateDown" />
-	<ListPreference android:key="vibrationUpIntensity"
-		android:defaultValue="20ms" android:title="VIbration up intensity"
-		android:summary="Determines the intensity (duration) of the vibration on finger up"
-		android:dialogTitle="Vibration up intensity" android:entries="@array/listVibration"
-		android:entryValues="@array/listVibrationReturn" android:dependency="vibrateUp" />
 	<CheckBoxPreference android:summary="Inverts the up/down movement of the cursor"
 		android:key="invertX" android:title="Enable inverted X-axis acceleration"
 		android:defaultValue="false" />

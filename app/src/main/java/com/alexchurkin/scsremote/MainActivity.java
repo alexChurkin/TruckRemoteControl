@@ -19,7 +19,6 @@ import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -42,7 +41,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
     public static int dBm = -200;
     private final static double compression = 0.75;
     public static WifiManager wifi;
-    private boolean defaultServer = false, showHelp = false, invertX = false, invertY = false, deadzone = false, tablet = false, portrait = false, changingOr = false, justChangedOr = false, gammaUpdate = false;
+    private boolean defaultServer = false, showHelp = false, invertX = false, invertY = false, deadzone = false, tablet = false, changingOr = false, justChangedOr = false, gammaUpdate = false;
     private int defaultServerPort = 18250, number = 1280, zero = 22;
     private String defaultServerIp = "shit";
     protected PowerManager.WakeLock mWakeLock;
@@ -95,8 +94,13 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             }
         }
         final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "AccelMouseLock");
-        this.mWakeLock.acquire();
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "SCSRemote:AccelMouseLock");
+        this.mWakeLock.acquire(60000*15);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -120,7 +124,6 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             invertX = prefs.getBoolean("invertX", false);
             invertY = prefs.getBoolean("invertY", false);
             deadzone = prefs.getBoolean("deadzone", false);
-            portrait = prefs.getBoolean("portrait", false);
             tablet = prefs.getBoolean("tablet", false);
             justChangedOr = prefs.getBoolean("justChangedOr", false);
             gammaUpdate = prefs.getBoolean("release", false);
@@ -167,6 +170,12 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             client.run(true);
             ManualConnectActivity.configured = false;
         }
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        openOptionsMenu();
     }
 
     @Override

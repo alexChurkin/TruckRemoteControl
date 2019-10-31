@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SCSRemote</string>
+    <string name="connectString">Подключиться</string>
+    <string name="serverIpString">IP-адрес сервера</string>
+    <string name="serverPortString">Порт сервера (1 – 65535)</string>
+    <string name="period">.</string>
+    <string name="manualConnectString">Ручное подключение</string>
+    <string name="sendString">Отправить</string>
+    <string name="preferencesString">Настройки</string>
+    <string name="serverHelp">Для правильной работы этого приложения необходимо приложение-сервер. Оно должно быть запущено на компьютере. Загрузите его ниже и запустите на своём компьютере. После загрузки используйте меню для поиска и автоматического подключения к серверу по IP-адресу и порту, на котором сервер работает.\n</string>
+    <string name="downloadServer">Скачать приложение-сервер</string>
+    <string name="okayString">Готово</string>
+    <string name="showHelp">Для отображения этого диалога при старте установите галочку в настройках через контекстное меню.</string>
+    <string name="setServerIP">Установить стандартный IP</string>
+    <string name="setServerPort">Установить стандартный порт</string>
+    <string name="defaultServerIP">Стандартный адрес сервера</string>
+    <string name="defaultServerPort">Стандартный порт сервера</string>
+</resources>
