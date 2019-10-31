@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Accelerometer Mouse</string>
+    <string name="connectString">Connect</string>
+    <string name="serverIpString">Server IP Address</string>
+    <string name="serverPortString">Server Port (1 – 65535)</string>
+    <string name="period">.</string>
+    <string name="manualConnectString">Manually Connect</string>
+    <string name="sendString">Send</string>
+    <string name="keyboardString">Virtual Keyboard</string>
+    <string name="preferencesString">Preferences</string>
+    <string name="serverHelp">A server application is required in order for this application to work. The server application must be running on the computer. Download it by clicking on the button above and run in on the computer that you want to control. Once downloaded, use the menu to search and automatically connect to a server, or manually connect to a server based on the ip address of the computer and the port the server is running on (by default 18250)\n</string>
+    <string name="downloadServer">Download Server Application</string>
+    <string name="okayString">Done</string>
+    <string name="showHelp">To enable this dialog on startup, check the preference by accessing the context menu.</string>
+    <string name="setServerIP">Set default server IP</string>
+    <string name="setServerPort">Set default server port</string>
+    <string name="defaultServerIP">Default server address</string>
+    <string name="defaultServerPort">Default server port</string>
+</resources>

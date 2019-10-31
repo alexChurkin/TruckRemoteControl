@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TableRow
+        android:id="@+id/tableRow1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" >
+
+
+        <EditText
+            android:id="@+id/dip1"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:inputType="number"
+            android:nextFocusDown="@+id/dip2" >
+
+            <requestFocus />
+
+            <requestFocus />
+
+        </EditText>
+
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/period" />
+
+        <EditText
+            android:id="@+id/dip2"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:nextFocusDown="@+id/dip3"
+            android:inputType="number" />
+
+        <TextView
+            android:id="@+id/TextView01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/period" />
+
+        <EditText
+            android:id="@+id/dip3"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:nextFocusDown="@+id/dip4"
+            android:inputType="number" />
+
+        <TextView
+            android:id="@+id/TextView02"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/period" />
+
+        <EditText
+            android:id="@+id/dip4"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:nextFocusDown="@+id/port1"
+            android:inputType="number" >
+
+        </EditText>
+
+    </TableRow>
+
+    <Button
+        android:id="@+id/setServerIPButton"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/setServerIP" />
+
+</LinearLayout>

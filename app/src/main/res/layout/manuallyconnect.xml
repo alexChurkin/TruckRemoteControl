@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TableRow
+        android:id="@+id/TableRow01"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" >
+
+        <TextView
+            android:id="@+id/TextView03"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:gravity="center|fill"
+            android:text="@string/serverIpString"
+            android:textSize="16dp" />
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" >
+
+        <EditText
+            android:id="@+id/ip1"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:inputType="number"
+            android:nextFocusDown="@+id/ip2" >
+
+            <requestFocus />
+            <requestFocus />
+
+        </EditText>
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/period" />
+
+        <EditText
+            android:id="@+id/ip2"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:nextFocusDown="@+id/ip3"
+            android:inputType="number" />
+
+        <TextView
+            android:id="@+id/TextView01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/period" />
+
+        <EditText
+            android:id="@+id/ip3"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:nextFocusDown="@+id/ip4"
+            android:inputType="number" />
+
+        <TextView
+            android:id="@+id/TextView02"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/period" />
+
+        <EditText
+            android:id="@+id/ip4"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:nextFocusDown="@+id/port1"
+            android:inputType="number" >
+
+        </EditText>
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow4"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" >
+
+        <TextView
+            android:id="@+id/HostIPAddressLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:gravity="center|center_horizontal|fill"
+            android:text="@string/serverPortString"
+            android:textSize="16dp" />
+
+        <EditText
+            android:id="@+id/portET"
+            android:layout_width="85dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:inputType="number" />
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/TableRow02"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center" >
+
+        <Button
+            android:id="@+id/connectButton"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:text="@string/connectString" />
+
+    </TableRow>
+
+</LinearLayout>

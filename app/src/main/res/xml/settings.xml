@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<CheckBoxPreference android:summary="Determines if the help screen is shown on startup"
+		android:key="showHelp" android:title="Show help screen on startup"
+		android:defaultValue="true" />	
+	<CheckBoxPreference
+		android:summaryOff="Connecting to a default server will not be attempted on startup"
+		android:summaryOn="Connecting to the default server will be attempted on startup"
+		android:title="Connect to default server on startup" android:key="defaultServer"
+		android:summary="Set up a default server to connect to on startup"
+		android:defaultValue="false" android:enabled="true" />
+	<Preference android:title="Default server host address"
+		android:summary="The host address of the default server" android:key="serverIP"
+		android:enabled="true" android:dialogTitle="Server host address"
+		android:dependency="defaultServer" />
+	<Preference android:dialogTitle="Server port"
+		android:key="serverPort" android:title="Default server port"
+		android:summary="The port of the default server" android:defaultValue="18250"
+		android:enabled="true" android:dependency="defaultServer" />
+	<CheckBoxPreference android:title="Vibrate on finger down"
+		android:key="vibrateDown" android:defaultValue="true"
+		android:summaryOff="The device will not vibrate when the user touches a clickable area"
+		android:summaryOn="The device will vibrate when the user touches a clickable area"
+		android:enabled="true" />
+	<CheckBoxPreference
+		android:summaryOn="The device will vibrate when the user lifts their finger off the screen"
+		android:summaryOff="The device will not vibrate when the user lifts their finger off the screen"
+		android:title="Vibrate on finger up" android:key="vibrateUp"
+		android:defaultValue="true" android:enabled="true" />
+	<ListPreference android:key="vibrationDownIntensity"
+		android:defaultValue="30ms" android:title="Vibration down intensity"
+		android:summary="Determines the intensity (duration) of the vibration on finger down"
+		android:dialogTitle="Vibration down intensity" android:entries="@array/listVibration"
+		android:entryValues="@array/listVibrationReturn" android:dependency="vibrateDown" />
+	<ListPreference android:key="vibrationUpIntensity"
+		android:defaultValue="20ms" android:title="VIbration up intensity"
+		android:summary="Determines the intensity (duration) of the vibration on finger up"
+		android:dialogTitle="Vibration up intensity" android:entries="@array/listVibration"
+		android:entryValues="@array/listVibrationReturn" android:dependency="vibrateUp" />
+	<CheckBoxPreference android:summary="Inverts the up/down movement of the cursor"
+		android:key="invertX" android:title="Enable inverted X-axis acceleration"
+		android:defaultValue="false" />
+	<CheckBoxPreference android:summary="Inverts the left/right movement of the cursor"
+		android:key="invertY" android:title="Enable inverted Y-axis acceleration"
+		android:defaultValue="false" />
+	<CheckBoxPreference
+		android:summary="Puts a deadzone on the cursor to prevent it from moving ever so slightly"
+		android:key="deadzone" android:title="Enable accelerometer deadzone"
+		android:defaultValue="false" />
+	<CheckBoxPreference
+		android:summary="Select this option for phones with lanscape screens (i.e HTC Status, Tablets)"
+		android:key="tablet" android:title="Tablet mode"
+		android:defaultValue="false" />
+	<ListPreference android:defaultValue="22" android:summary="Specifies the incline (on Y-axis) at which the mouse will remain stationary" android:title="Zero position (calibration)" android:dialogTitle="Zero Position" android:entryValues="@array/listAngleReturn" android:key="zeroPosition" android:entries="@array/listAngle"/>
+</PreferenceScreen>
