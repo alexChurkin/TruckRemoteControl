@@ -2,13 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <TableRow
         android:id="@+id/tableRow1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="center" >
+        android:gravity="center">
 
 
         <EditText
@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:inputType="number"
-            android:nextFocusDown="@+id/dip2" >
+            android:nextFocusDown="@+id/dip2">
 
             <requestFocus />
 
@@ -37,8 +37,8 @@
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:nextFocusDown="@+id/dip3"
-            android:inputType="number" />
+            android:inputType="number"
+            android:nextFocusDown="@+id/dip3" />
 
         <TextView
             android:id="@+id/TextView01"
@@ -51,8 +51,8 @@
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:nextFocusDown="@+id/dip4"
-            android:inputType="number" />
+            android:inputType="number"
+            android:nextFocusDown="@+id/dip4" />
 
         <TextView
             android:id="@+id/TextView02"
@@ -65,8 +65,8 @@
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:nextFocusDown="@+id/port1"
-            android:inputType="number" >
+            android:inputType="number"
+            android:nextFocusDown="@+id/port1">
 
         </EditText>
 
