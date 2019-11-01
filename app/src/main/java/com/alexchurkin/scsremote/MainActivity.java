@@ -1,7 +1,6 @@
 package com.alexchurkin.scsremote;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,9 +16,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -31,7 +31,9 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements SensorEventListener, OnTouchListener {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity implements SensorEventListener, OnTouchListener {
 
     private SensorManager mSensorManager;
     private Sensor mSensor;
@@ -41,10 +43,10 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
     public static int dBm = -200;
     private final static double compression = 0.75;
     public static WifiManager wifi;
-    private boolean defaultServer = false, showHelp = false, invertX = false, invertY = false, deadzone = false, tablet = false, changingOr = false, justChangedOr = false, gammaUpdate = false;
+    private boolean defaultServer = false, invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
     private int defaultServerPort = 18250, number = 1280, zero = 22;
     private String defaultServerIp = "shit";
-    protected PowerManager.WakeLock mWakeLock;
+    private int displayWidth, displayHeight;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -55,28 +57,16 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
         wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         setContentView(graphicsView);
 
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        displayWidth = displayMetrics.widthPixels;
+        displayHeight = displayMetrics.heightPixels;
+
+        makeFullscreen();
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         graphicsView.setOnTouchListener(this);
-        if (showHelp || !gammaUpdate) {
-            // Show help on startup only once! This keeps track
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("release", true);
-            if (!gammaUpdate)
-                editor.putBoolean("showHelp", false);
-            editor.apply();
-            // Show help dialog
-            Intent i = new Intent(this, HelpActivity.class);
-            startActivity(i);
-        }
         client = new AccelerometerMouseClient("Bullshit", 18250);
         dBm = getSignalStrength();
         if (wifi.isWifiEnabled() && !AccelerometerMouseClient.running && !justChangedOr) {
@@ -93,40 +83,40 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                 }
             }
         }
-        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "SCSRemote:AccelMouseLock");
-        this.mWakeLock.acquire(60000*15);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            makeFullscreen();
         }
     }
 
+    private void makeFullscreen() {
+        int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.KEEP_SCREEN_ON;
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            flags = flags | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        }
+
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+    }
+
     private void updatePrefs() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         try {
-            showHelp = prefs.getBoolean("showHelp", true);
             defaultServer = prefs.getBoolean("defaultServer", false);
             invertX = prefs.getBoolean("invertX", false);
             invertY = prefs.getBoolean("invertY", false);
-            deadzone = prefs.getBoolean("deadzone", false);
+            deadZone = prefs.getBoolean("deadZone", false);
             tablet = prefs.getBoolean("tablet", false);
             justChangedOr = prefs.getBoolean("justChangedOr", false);
-            gammaUpdate = prefs.getBoolean("release", false);
             defaultServerIp = prefs.getString("serverIP", "shit");
             zero = Integer.parseInt(prefs.getString("zeroPosition", "22"));
             defaultServerPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
@@ -188,7 +178,6 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        this.mWakeLock.release();
         client.stop();
         graphicsView.stop();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
@@ -221,7 +210,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                         break;
                 }
             }
-            if (deadzone) {
+            if (deadZone) {
                 x = applyDeadZoneX(x);
                 y = applyDeadZoneY(y);
             }
@@ -235,8 +224,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                 }
                 AccelerometerMouseClient.toastShown = true;
             }
-        } catch (Exception e) {
-
+        } catch (Exception ignore) {
         }
     }
 
@@ -272,18 +260,18 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                     }
                 }
             }
-            if (event.getX(getPID(event)) > getWindowManager().getDefaultDisplay().getWidth() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5) && event.getY(getPID(event)) > getWindowManager().getDefaultDisplay().getHeight() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5)) {
+            if (event.getX(getPID(event)) > displayWidth - (int) (displayWidth * 88 / number + 0.5) && event.getY(getPID(event)) > displayHeight - (int) (displayWidth * 88 / number + 0.5)) {
                 if (wifi.isWifiEnabled())
                     showToast("Wi-Fi signal strength: " + getSignalStrength() + "dBm", Toast.LENGTH_SHORT);
                 else
                     getSignalStrength();
-            } else if (event.getX(getPID(event)) < (getWindowManager().getDefaultDisplay().getWidth() / 60) + 40 && event.getY(getPID(event)) < (getWindowManager().getDefaultDisplay().getHeight() / 60) + 40) {
+            } else if (event.getX(getPID(event)) < (displayWidth / 60.0) + 40 && event.getY(getPID(event)) < (displayHeight / 60.0) + 40) {
                 if (AccelerometerMouseClient.connected) {
                     showToast("Connected to server at " + client.socket.getInetAddress().getHostAddress(), Toast.LENGTH_LONG);
                 } else {
                     showToast("Not connected to a server. Please try searching for one by clicking \"Search for Server\" in the menu, or manually connect to the server by clicking \"Manually Connect\".", Toast.LENGTH_LONG);
                 }
-            } else if (event.getX(getPID(event)) > getWindowManager().getDefaultDisplay().getWidth() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5) && event.getY(getPID(event)) < (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5)) {
+            } else if (event.getX(getPID(event)) > displayWidth - (int) (displayWidth * 88 / number + 0.5) && event.getY(getPID(event)) < (int) (displayWidth * 88 / number + 0.5)) {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
                 SharedPreferences.Editor editor = prefs.edit();
                 try {
@@ -296,16 +284,16 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                     // You never know...
                 }
                 editor.apply();
-            } else if (event.getX(getPID(event)) < (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5) && event.getY(getPID(event)) > getWindowManager().getDefaultDisplay().getHeight() - (int) (getWindowManager().getDefaultDisplay().getWidth() * 88 / number + 0.5)) {
+            } else if (event.getX(getPID(event)) < (int) (displayWidth * 88 / number + 0.5) && event.getY(getPID(event)) > displayHeight - (int) (displayWidth * 88 / number + 0.5)) {
                 if (AccelerometerMouseClient.connected) {
                     client.pause(!AccelerometerMouseClient.paused);
                 }
             }
         } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == 262 || event.getAction() == 6) {
             if (event.getPointerCount() > 1) {
-                if (leftButton.getState() && event.getX(getPID(event)) < getWindowManager().getDefaultDisplay().getWidth() / 2) {
+                if (leftButton.getState() && event.getX(getPID(event)) < displayWidth / 2.0) {
                     leftButton.setState(false);
-                } else if (rightButton.getState() && event.getX(getPID(event)) > getWindowManager().getDefaultDisplay().getWidth() / 2) {
+                } else if (rightButton.getState() && event.getX(getPID(event)) > displayWidth / 2.0) {
                     rightButton.setState(false);
                 } else if (scrollWheel.getState() && isMiddle(event)) {
                     scrollWheel.setState(false);
@@ -324,11 +312,11 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
     }
 
     private boolean isLeft(float x, float y) {
-        return (x < (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16) && x > getWindowManager().getDefaultDisplay().getWidth() * 0.2125) && (y > getWindowManager().getDefaultDisplay().getHeight() * 0.2);
+        return (x < (displayWidth / 2.0)-(displayWidth / 16.0)) && (y > displayHeight * 0.05) && (y < displayHeight * 0.9125);
     }
 
     private boolean isRight(float x, float y) {
-        return (x > (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && x < getWindowManager().getDefaultDisplay().getWidth() * 0.7875) && (y > getWindowManager().getDefaultDisplay().getHeight() * 0.2);
+        return (x > (displayWidth / 2.0) + (displayWidth / 16.0)) && (y > displayHeight * 0.05) && (y < displayHeight * 0.9125);
     }
 
     private boolean isMiddle(MotionEvent event) {
@@ -336,12 +324,12 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             boolean sentinel = true;
             int falseCounts = 0;
             for (int i = 0; i < event.getPointerCount(); i++) {
-                if (event.getX(i) < (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getX(i) > (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16)) {
+                if (event.getX(i) < (displayWidth / 2.0) + (displayWidth / 16.0) && event.getX(i) > (displayWidth / 2.0) - (displayWidth / 16.0)) {
                     falseCounts++;
-                    sentinel = sentinel && false;
+                    sentinel = false;
                 }
             }
-            if (event.getX(getPID(event)) < (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getX(getPID(event)) > (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16)) {
+            if (event.getX(getPID(event)) < (displayWidth / 2.0) + (displayWidth / 16.0) && event.getX(getPID(event)) > (displayWidth / 2.0) - (displayWidth / 16.0)) {
                 sentinel = true;
             }
             if (falseCounts > 1) {
@@ -350,7 +338,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
             return !(leftButton.getState() || rightButton.getState()) && sentinel;
         } else {
             if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == 261 || event.getAction() == 5) {
-                return !(leftButton.getState() || rightButton.getState()) && event.getX(getPID(event)) < (getWindowManager().getDefaultDisplay().getWidth() / 2) + (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getX(getPID(event)) > (getWindowManager().getDefaultDisplay().getWidth() / 2) - (getWindowManager().getDefaultDisplay().getWidth() / 16) && event.getY(getPID(event)) > getWindowManager().getDefaultDisplay().getHeight() * 0.4 && event.getY(getPID(event)) < getWindowManager().getDefaultDisplay().getHeight() * 0.7;
+                return !(leftButton.getState() || rightButton.getState()) && event.getX(getPID(event)) < (displayWidth / 2.0) + (displayWidth / 16.0) && event.getX(getPID(event)) > (displayWidth / 2) - (displayWidth / 16) && event.getY(getPID(event)) > displayHeight * 0.4 && event.getY(getPID(event)) < displayHeight * 0.7;
             } else {
                 return true;
             }
@@ -525,8 +513,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnTou
                         }
                     }
                     holder.unlockCanvasAndPost(canvas);
-                } catch (Exception e) {
-
+                } catch (Exception ignore) {
                 }
             }
         }
