@@ -173,11 +173,9 @@ public class AccelerometerMouseClient {
         this.z = z;
     }
 
-    public void feedTouchFlags(boolean leftClickFlag, boolean rightClickFlag, boolean middleFlag, boolean scrollFlag) {
+    public void feedTouchFlags(boolean leftClickFlag, boolean rightClickFlag) {
         this.leftClickFlag = leftClickFlag;
         this.rightClickFlag = rightClickFlag;
-        this.middleFlag = middleFlag;
-        this.scrollFlag = scrollFlag;
     }
 
     private void sleep(int ms) {

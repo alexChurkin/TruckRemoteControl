@@ -12,16 +12,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -46,226 +43,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean defaultServer = false, invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
     private int defaultServerPort = 18250, number = 1280, zero = 22;
     private String defaultServerIp = "shit";
-    private int displayWidth, displayHeight;
-
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        updatePrefs();
-        graphicsView = new GraphicsView(this);
-        wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        setContentView(graphicsView);
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
-        displayWidth = displayMetrics.widthPixels;
-        displayHeight = displayMetrics.heightPixels;
-
-        makeFullscreen();
-
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        graphicsView.setOnTouchListener(this);
-        client = new AccelerometerMouseClient("Bullshit", 18250);
-        dBm = getSignalStrength();
-        if (wifi.isWifiEnabled() && !AccelerometerMouseClient.running && !justChangedOr) {
-            if (!defaultServer) {
-                showToast("Searching for servers on the local network...", Toast.LENGTH_SHORT);
-                client.run(false);
-            } else {
-                if (defaultServerIp.equals("shit")) {
-                    showToast("Failed to connect to default server. None defined.", Toast.LENGTH_SHORT);
-                } else {
-                    showToast("Attempting to connect to " + defaultServerIp + "...", Toast.LENGTH_SHORT);
-                    client.forceUpdate(defaultServerIp, defaultServerPort);
-                    client.run(true);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            makeFullscreen();
-        }
-    }
-
-    private void makeFullscreen() {
-        int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.KEEP_SCREEN_ON;
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags = flags | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        }
-
-        getWindow().getDecorView().setSystemUiVisibility(flags);
-    }
-
-    private void updatePrefs() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        try {
-            defaultServer = prefs.getBoolean("defaultServer", false);
-            invertX = prefs.getBoolean("invertX", false);
-            invertY = prefs.getBoolean("invertY", false);
-            deadZone = prefs.getBoolean("deadZone", false);
-            tablet = prefs.getBoolean("tablet", false);
-            justChangedOr = prefs.getBoolean("justChangedOr", false);
-            defaultServerIp = prefs.getString("serverIP", "shit");
-            zero = Integer.parseInt(prefs.getString("zeroPosition", "22"));
-            defaultServerPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
-        } catch (Exception e) {
-            showToast("Error occrued while reading preferences. Please check that they are correct!", Toast.LENGTH_SHORT);
-        }
-    }
-
-    public int getSignalStrength() {
-        try {
-            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (!wifiManager.isWifiEnabled()) {
-                showToast("No Wi-Fi connection detected!", Toast.LENGTH_SHORT);
-            }
-            return wifiManager.getConnectionInfo().getRssi();
-        } catch (Exception e) {
-
-        }
-        return -50;
-    }
-
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Could care less
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        leftButton.setState(false);
-        rightButton.setState(false);
-        middleButton.setState(false);
-        scrollWheel.setState(false);
-        updatePrefs();
-        graphicsView.resume();
-        client.pause(false);
-        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        if (ManualConnectActivity.configured) {
-            client.stop();
-            client.forceUpdate(ManualConnectActivity.ipAddress, ManualConnectActivity.port);
-            showToast("Attempting to connect to " + ManualConnectActivity.ipAddress + " on port " + ManualConnectActivity.port, Toast.LENGTH_LONG);
-            client.run(true);
-            ManualConnectActivity.configured = false;
-        }
-    }
-
-    @Override
-    public void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        openOptionsMenu();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mSensorManager.unregisterListener(this, mSensor);
-        client.pause(true);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        client.stop();
-        graphicsView.stop();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("justChangedOr", changingOr);
-        if (!changingOr)
-            editor.putString("lastServer", "");
-        editor.apply();
-    }
-
-    public void onSensorChanged(SensorEvent event) {
-        try {
-            float x = invertX ? (-event.values[0] + 9.81f) : event.values[0];
-            float y = invertY ? (-event.values[1]) : event.values[1];
-            float z = event.values[2];
-            // Screen flipping and whatnot
-            {
-                if (tablet) {
-                    float dummyX = x;
-                    x = y;
-                    y = -dummyX;
-                }
-
-                switch (zero) {
-                    case 0:
-                        x += 4.9;
-                        break;
-                    case 22:
-                        x += 4.9 / 2;
-                        break;
-                }
-            }
-            if (deadZone) {
-                x = applyDeadZoneX(x);
-                y = applyDeadZoneY(y);
-            }
-            client.feedAccelerometerValues(x, y, z);
-            // Show connected toast if connected
-            if (!AccelerometerMouseClient.toastShown) {
-                if (AccelerometerMouseClient.connected) {
-                    showToast("Connected to server at " + client.socket.getInetAddress().getHostAddress(), Toast.LENGTH_LONG);
-                } else {
-                    showToast("Lost connection to server!", Toast.LENGTH_LONG);
-                }
-                AccelerometerMouseClient.toastShown = true;
-            }
-        } catch (Exception ignore) {
-        }
-    }
-
-    public float applyDeadZoneX(float x) {
-        if (x < 5.8 && x > 3.2) {
-            x = 4.90f;
-        }
-        return x;
-    }
-
-    public float applyDeadZoneY(float y) {
-        if (y > -.98 && y < .98) {
-            y = 0f;
-        }
-        return y;
-    }
 
     public boolean onTouch(View v, MotionEvent event) {
         number = 1280;
         if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == 261 || event.getAction() == 5) {
-            if (!middleButton.getState()) {
+            if (!middleButton.isPressed()) {
                 if (isLeft(event.getX(getPID(event)), event.getY(getPID(event)))) {
-                    leftButton.setState(true);
+                    leftButton.setPressed(true);
                     leftButton.setPID(getPID(event));
                 } else if (isRight(event.getX(getPID(event)), event.getY(getPID(event)))) {
-                    rightButton.setState(true);
+                    rightButton.setPressed(true);
                     rightButton.setPID(getPID(event));
                 } else if (isMiddle(event)) {
                     if (event.getPointerCount() > 1) {
-                        scrollWheel.setState(true);
+                        scrollWheel.setPressed(true);
                     } else {
-                        middleButton.setState(true);
+                        middleButton.setPressed(true);
                     }
                 }
             }
+
+            //WIFI INDICATOR
             if (event.getX(getPID(event)) > displayWidth - (int) (displayWidth * 88 / number + 0.5) && event.getY(getPID(event)) > displayHeight - (int) (displayWidth * 88 / number + 0.5)) {
                 if (wifi.isWifiEnabled())
                     showToast("Wi-Fi signal strength: " + getSignalStrength() + "dBm", Toast.LENGTH_SHORT);
                 else
                     getSignalStrength();
-            } else if (event.getX(getPID(event)) < (displayWidth / 60.0) + 40 && event.getY(getPID(event)) < (displayHeight / 60.0) + 40) {
+            }
+            //Server info
+            else if (event.getX(getPID(event)) < (displayWidth / 60.0) + 40 && event.getY(getPID(event)) < (displayHeight / 60.0) + 40) {
                 if (AccelerometerMouseClient.connected) {
                     showToast("Connected to server at " + client.socket.getInetAddress().getHostAddress(), Toast.LENGTH_LONG);
                 } else {
@@ -284,76 +90,40 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     // You never know...
                 }
                 editor.apply();
-            } else if (event.getX(getPID(event)) < (int) (displayWidth * 88 / number + 0.5) && event.getY(getPID(event)) > displayHeight - (int) (displayWidth * 88 / number + 0.5)) {
+            }
+            //Pause button
+            else if (event.getX(getPID(event)) < (int) (displayWidth * 88 / number + 0.5) && event.getY(getPID(event)) > displayHeight - (int) (displayWidth * 88 / number + 0.5)) {
                 if (AccelerometerMouseClient.connected) {
                     client.pause(!AccelerometerMouseClient.paused);
                 }
             }
-        } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == 262 || event.getAction() == 6) {
+        }
+        //Mouse buttons
+        else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == 262 || event.getAction() == 6) {
             if (event.getPointerCount() > 1) {
-                if (leftButton.getState() && event.getX(getPID(event)) < displayWidth / 2.0) {
-                    leftButton.setState(false);
-                } else if (rightButton.getState() && event.getX(getPID(event)) > displayWidth / 2.0) {
-                    rightButton.setState(false);
-                } else if (scrollWheel.getState() && isMiddle(event)) {
-                    scrollWheel.setState(false);
+                if (leftButton.isPressed() && event.getX(getPID(event)) < displayWidth / 2.0) {
+                    leftButton.setPressed(false);
+                } else if (rightButton.isPressed() && event.getX(getPID(event)) > displayWidth / 2.0) {
+                    rightButton.setPressed(false);
+                } else if (scrollWheel.isPressed() && isMiddle(event)) {
+                    scrollWheel.setPressed(false);
                 }
             } else {
-                if (leftButton.getState() || rightButton.getState() || scrollWheel.getState())
-                leftButton.setState(false);
-                rightButton.setState(false);
-                scrollWheel.setState(false);
-                middleButton.setState(false);
+                if (leftButton.isPressed() || rightButton.isPressed() || scrollWheel.isPressed())
+                leftButton.setPressed(false);
+                rightButton.setPressed(false);
+                scrollWheel.setPressed(false);
+                middleButton.setPressed(false);
             }
         }
-        client.feedTouchFlags(leftButton.getState(), rightButton.getState(), middleButton.getState(), scrollWheel.getState());
-        Log.d("Touch", "action=" + event.getAction() + ", left flag=" + leftButton.getState() + ", right flag=" + rightButton.getState() + ", middle flag=" + scrollWheel.getState() + ", pointers=" + event.getPointerCount());
+        client.feedTouchFlags(leftButton.isPressed(), rightButton.isPressed(), middleButton.isPressed(), scrollWheel.isPressed());
+        Log.d("Touch", "action=" + event.getAction() + ", left flag=" + leftButton.isPressed() + ", right flag=" + rightButton.isPressed() + ", middle flag=" + scrollWheel.isPressed() + ", pointers=" + event.getPointerCount());
         return true;
-    }
-
-    private boolean isLeft(float x, float y) {
-        return (x < (displayWidth / 2.0)-(displayWidth / 16.0)) && (y > displayHeight * 0.05) && (y < displayHeight * 0.9125);
-    }
-
-    private boolean isRight(float x, float y) {
-        return (x > (displayWidth / 2.0) + (displayWidth / 16.0)) && (y > displayHeight * 0.05) && (y < displayHeight * 0.9125);
-    }
-
-    private boolean isMiddle(MotionEvent event) {
-        if (event.getPointerCount() > 1) {
-            boolean sentinel = true;
-            int falseCounts = 0;
-            for (int i = 0; i < event.getPointerCount(); i++) {
-                if (event.getX(i) < (displayWidth / 2.0) + (displayWidth / 16.0) && event.getX(i) > (displayWidth / 2.0) - (displayWidth / 16.0)) {
-                    falseCounts++;
-                    sentinel = false;
-                }
-            }
-            if (event.getX(getPID(event)) < (displayWidth / 2.0) + (displayWidth / 16.0) && event.getX(getPID(event)) > (displayWidth / 2.0) - (displayWidth / 16.0)) {
-                sentinel = true;
-            }
-            if (falseCounts > 1) {
-                sentinel = false;
-            }
-            return !(leftButton.getState() || rightButton.getState()) && sentinel;
-        } else {
-            if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == 261 || event.getAction() == 5) {
-                return !(leftButton.getState() || rightButton.getState()) && event.getX(getPID(event)) < (displayWidth / 2.0) + (displayWidth / 16.0) && event.getX(getPID(event)) > (displayWidth / 2) - (displayWidth / 16) && event.getY(getPID(event)) > displayHeight * 0.4 && event.getY(getPID(event)) < displayHeight * 0.7;
-            } else {
-                return true;
-            }
-        }
     }
 
     private int getPID(MotionEvent event) {
         int action = event.getAction();
         return action >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-    }
-
-    private void showToast(String string, int duration) {
-        Toast toast = Toast.makeText(this, string, duration);
-        toast.setGravity(Gravity.TOP | Gravity.END, 0, 0);
-        toast.show();
     }
 
     /**
@@ -447,16 +217,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     paint.setDither(true);
 
                     int bitmapId = R.drawable.none;
-                    if (leftButton.getState() && !rightButton.getState()) {
+                    if (leftButton.isPressed() && !rightButton.isPressed()) {
                         bitmapId = R.drawable.left;
                     }
-                    if (!leftButton.getState() && rightButton.getState()) {
+                    if (!leftButton.isPressed() && rightButton.isPressed()) {
                         bitmapId = R.drawable.right;
                     }
-                    if (leftButton.getState() && rightButton.getState()) {
+                    if (leftButton.isPressed() && rightButton.isPressed()) {
                         bitmapId = R.drawable.all;
                     }
-                    if (middleButton.getState()) {
+                    if (middleButton.isPressed()) {
                         bitmapId = R.drawable.middle;
                     }
 

@@ -22,11 +22,11 @@ public class MouseButton {
         this.PID = PID;
     }
 
-    public void setState(boolean state) {
+    public void setPressed(boolean state) {
         this.state = state;
     }
 
-    public boolean getState() {
+    public boolean isPressed() {
         return state;
     }
 }
