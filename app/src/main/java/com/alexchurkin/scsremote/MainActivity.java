@@ -424,18 +424,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
                 try {
                     Canvas canvas = holder.lockCanvas();
-                    if (mouseNone == null) {
-                        Options options = new BitmapFactory.Options();
-                        options.inScaled = false;
-                        options.inDither = false;
-                        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                        mouseNone = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.none, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                        mouseAll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.all, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                        mouseMiddle = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.middle, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                        mouseScroll = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.scroll, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                        mouseLeft = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.left, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
-                        mouseRight = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.right, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
 
+                    Options options = new BitmapFactory.Options();
+                    options.inScaled = false;
+                    options.inDither = false;
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+                    if (mouseNone == null) {
                         bar0 = BitmapFactory.decodeResource(getResources(), R.drawable.bar0);
                         bar1 = BitmapFactory.decodeResource(getResources(), R.drawable.bar1);
                         bar2 = BitmapFactory.decodeResource(getResources(), R.drawable.bar2);
@@ -450,22 +445,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     paint.setAntiAlias(true);
                     paint.setFilterBitmap(true);
                     paint.setDither(true);
-                    Bitmap bitmap = mouseNone;
+
+                    int bitmapId = R.drawable.none;
                     if (leftButton.getState() && !rightButton.getState()) {
-                        bitmap = mouseLeft;
+                        bitmapId = R.drawable.left;
                     }
                     if (!leftButton.getState() && rightButton.getState()) {
-                        bitmap = mouseRight;
+                        bitmapId = R.drawable.right;
                     }
                     if (leftButton.getState() && rightButton.getState()) {
-                        bitmap = mouseAll;
+                        bitmapId = R.drawable.all;
                     }
                     if (middleButton.getState()) {
-                        bitmap = mouseMiddle;
+                        bitmapId = R.drawable.middle;
                     }
-                    if (scrollWheel.getState()) {
-                        bitmap = mouseScroll;
-                    }
+
+                    Bitmap bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), bitmapId, options), (int) (canvas.getWidth() * compression), (int) (canvas.getHeight() * compression), true);
+
                     canvas.drawBitmap(bitmap, null, new RectF(0, 0, canvas.getWidth(), canvas.getHeight()), paint);
                     // Draw a circle for connectivity
                     if (!AccelerometerMouseClient.connected) {
