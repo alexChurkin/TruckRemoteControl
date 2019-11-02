@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/backgroundMain"
@@ -27,25 +26,14 @@
             app:srcCompat="@drawable/gas" />
 
         <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/wifiIndicator"
+            android:id="@+id/connectionIndicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@null"
             android:padding="12dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/connection_indicator_green" />
-
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/signalLevelIndicator"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@null"
-            android:padding="8dp"
-            android:scaleType="centerInside"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/wifiIndicator"
-            app:srcCompat="@drawable/bar4" />
+            app:srcCompat="@drawable/connection_indicator_red" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

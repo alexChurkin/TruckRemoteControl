@@ -10,11 +10,21 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 //Client object
-public class AccelerometerMouseClient {
+public class AccelerometerClient {
+
+    public interface ConnectionListener {
+        public void onConnectionChanged(boolean isConnected);
+    }
+
+    public static boolean running = false, paused = false;
+    public static boolean connected = false;
+    public static boolean toastShown = true;
+
     private String ip;
     public int port;
     public Socket socket;
-    public static boolean running = false, paused = false;
+    private ConnectionListener listener;
+
 
     public float x = 0, y = 0, z = 0;
     private boolean
@@ -23,14 +33,18 @@ public class AccelerometerMouseClient {
             middleFlag = false,
             scrollFlag = false;
 
-    public static String keyboardData = "";
-    public static boolean connected = false;
-    public static boolean toastShown = true;
+
     public boolean sentJam = true;
 
-    public AccelerometerMouseClient(String ip, int port) {
+
+
+    public AccelerometerClient(String ip, int port) {
         this.ip = ip;
         this.port = port;
+    }
+
+    public void setConnectionListener(ConnectionListener listener) {
+        this.listener = listener;
     }
 
     private void start() {
@@ -57,8 +71,7 @@ public class AccelerometerMouseClient {
                             writer.flush();
                         } else {
                             writer = new PrintWriter(socket.getOutputStream(), true);
-                            writer.println("paused:" + keyboardData);
-                            keyboardData = "";
+                            writer.println("paused");
                             writer.flush();
                             sleep(500);
                         }
@@ -67,6 +80,7 @@ public class AccelerometerMouseClient {
                     writer.close();
                     socket.close();
                     connected = false;
+                    listener.onConnectionChanged(false);
                     toastShown = false;
                 } catch (Exception e) {
                     Log.d("Client IO", "Major Error: " + e.getMessage());
@@ -88,8 +102,10 @@ public class AccelerometerMouseClient {
                         Socket s = new Socket(ip, socket.getPort());
                         s.close();
                         connected = true;
+                        listener.onConnectionChanged(true);
                     } catch (IOException e) {
                         connected = false;
+                        listener.onConnectionChanged(false);
                         toastShown = false;
                         break;
                     } catch (InterruptedException e) {
@@ -97,6 +113,7 @@ public class AccelerometerMouseClient {
                     }
                 }
                 connected = false;
+                listener.onConnectionChanged(false);
             }
         };
         new Thread(r).start();
@@ -130,6 +147,7 @@ public class AccelerometerMouseClient {
                             socket = new Socket(receivePacket.getAddress().getHostAddress(), port);
                             clientSocket.close();
                             connected = true;
+                            listener.onConnectionChanged(true);
                             toastShown = false;
                             start();
                         } catch (Exception e) {
@@ -138,6 +156,7 @@ public class AccelerometerMouseClient {
                     } else {
                         socket = new Socket(ip, port);
                         connected = true;
+                        listener.onConnectionChanged(true);
                         toastShown = false;
                         start();
                     }
@@ -155,7 +174,7 @@ public class AccelerometerMouseClient {
             public void run() {
                 while (running) {
                     if (!paused) {
-                        MainActivityNew.dBm = MainActivityNew.wifi.getConnectionInfo().getRssi();
+                        MainActivity.dBm = MainActivity.wifi.getConnectionInfo().getRssi();
                     }
                     try {
                         Thread.sleep(1000);
@@ -166,10 +185,6 @@ public class AccelerometerMouseClient {
 
         };
         new Thread(r).start();
-    }
-
-    public boolean isRunning() {
-        return running;
     }
 
     public void feedAccelerometerValues(float x, float y, float z) {
@@ -188,12 +203,13 @@ public class AccelerometerMouseClient {
     private void sleep(int ms) {
         try {
             Thread.sleep(ms);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
         }
     }
 
     public void stop() {
         connected = false;
+        listener.onConnectionChanged(false);
         running = false;
     }
 
@@ -219,8 +235,8 @@ public class AccelerometerMouseClient {
     }
 
     public void setPaused(boolean b) {
-        AccelerometerMouseClient.paused = b;
-        AccelerometerMouseClient.toastShown = true;
+        AccelerometerClient.paused = b;
+        AccelerometerClient.toastShown = true;
     }
 
     public void overrideSocket(String ip, int port) {

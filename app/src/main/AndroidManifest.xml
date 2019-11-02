@@ -16,7 +16,7 @@
         android:label="@string/app_name"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".MainActivityNew"
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme">
