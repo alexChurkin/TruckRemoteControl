@@ -17,7 +17,7 @@
     <string name="defaultServerIP">Стандартный адрес сервера</string>
     <string name="defaultServerPort">Стандартный порт сервера</string>
     <string-array name="menu_items">
-        <item>Автоматически подключиться</item>
+        <item>Подключиться автоматически</item>
         <item>Ручное подключение</item>
         <item>Отключиться</item>
         <item>Настройки</item>
@@ -29,7 +29,7 @@
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
     <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
     <string name="connected_to_server_at">Подключен к серверу</string>
-    <string name="not_connected_long_msg">Не подключен к серверу. Попробуйте нажать "Автоматически подключиться" в меню или подключиться вручную через "Ручное подключение".</string>
+    <string name="not_connected_long_msg">Не подключен к серверу. Попробуйте нажать "Подключиться автоматически" в меню или подключиться вручную через "Ручное подключение".</string>
     <string name="disconnected_msg">Отключен от сервера.</string>
     <string name="on_port">порт</string>
     <string name="connection_lost">Соединение с сервером потеряно!</string>

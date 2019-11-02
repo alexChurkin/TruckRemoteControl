@@ -14,7 +14,7 @@
 
         <TextView
             android:id="@+id/TextView03"
-            android:layout_width="240dp"
+            android:layout_width="252dp"
             android:layout_height="wrap_content"
             android:gravity="center|fill"
             android:text="@string/serverIpString"
