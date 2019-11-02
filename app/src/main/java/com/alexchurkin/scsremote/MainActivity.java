@@ -25,7 +25,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.view.ViewCompat;
 
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
@@ -41,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements
     private SensorManager mSensorManager;
     private Sensor mSensor;
 
-    private LinearLayoutCompat rootView;
+    private ConstraintLayout rootView;
     private AppCompatImageButton mConnectionIndicator, mPauseButton, mSettingsButton;
     private ConstraintLayout mBreakLayout, mGasLayout;
 

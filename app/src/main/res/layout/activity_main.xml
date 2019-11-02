@@ -1,89 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/backgroundMain"
-    android:id="@+id/rootView"
     android:orientation="horizontal">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/breakLayout"
-        android:layout_width="wrap_content"
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/linearLayoutCompat2"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/backgroundpress"
-        android:clickable="true"
-        android:focusable="true">
+        android:orientation="horizontal">
 
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/connectionIndicator"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/breakLayout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:padding="12dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/connection_indicator_red" />
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/backgroundpress"
+            android:clickable="true"
+            android:focusable="true">
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/breakImageView"
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/connectionIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:padding="12dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/connection_indicator_red" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/breakImageView"
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:layout_marginStart="60dp"
+                android:layout_marginBottom="24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:srcCompat="@drawable/tormoz" />
+
+            <ImageButton
+                android:id="@+id/buttonLeftSignal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="64dp"
+                android:background="@null"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/left_disabled" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/gasLayout"
             android:layout_width="wrap_content"
-            android:layout_height="200dp"
-            android:layout_marginStart="60dp"
-            android:layout_marginBottom="24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/tormoz" />
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/backgroundpress"
+            android:clickable="true"
+            android:focusable="true">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/pauseButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:padding="6dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/pause_btn_resumed" />
 
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/settingsButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginEnd="6dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/pauseButton"
+                app:layout_constraintTop_toBottomOf="@+id/pauseButton"
+                app:srcCompat="@drawable/ic_settings" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/gasLayout"
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/gasImageView"
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:layout_marginEnd="60dp"
+                android:layout_marginBottom="24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:srcCompat="@drawable/gas" />
+
+            <ImageButton
+                android:id="@+id/buttonRightSignal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="64dp"
+                android:layout_marginTop="24dp"
+                android:background="@null"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/right_disabled" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <ImageButton
+        android:id="@+id/imageButton3"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/backgroundpress"
-        android:clickable="true"
-        android:focusable="true">
-
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/pauseButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:padding="6dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/pause_btn_resumed" />
-
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/settingsButton"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_marginEnd="6dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:padding="6dp"
-            android:scaleType="fitCenter"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/pauseButton"
-            app:layout_constraintTop_toBottomOf="@+id/pauseButton"
-            app:srcCompat="@drawable/ic_settings" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/gasImageView"
-            android:layout_width="wrap_content"
-            android:layout_height="200dp"
-            android:layout_marginEnd="60dp"
-            android:layout_marginBottom="24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/gas" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/leftright" />
 
 
-</androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.constraintlayout.widget.ConstraintLayout>

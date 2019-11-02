@@ -30,12 +30,11 @@ public class AccelerometerClient {
     private boolean
             breakClickFlag = false,
             gasClickFlag = false,
-            middleFlag = false,
-            scrollFlag = false;
+            turnSignalLeft = false,
+            turnSignalRight = false;
 
 
     public boolean sentJam = true;
-
 
 
     public AccelerometerClient(String ip, int port) {
@@ -66,7 +65,7 @@ public class AccelerometerClient {
                     }
                     if (!paused) {
                         writer = new PrintWriter(socket.getOutputStream(), true);
-                        writer.println(x + "," + y + "," + z + "," + breakClickFlag + "," + gasClickFlag + "," + middleFlag + "," + scrollFlag);
+                        writer.println(x + "," + y + "," + z + "," + breakClickFlag + "," + gasClickFlag);
                         writer.flush();
                     } else {
                         writer = new PrintWriter(socket.getOutputStream(), true);
