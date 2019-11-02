@@ -15,9 +15,14 @@ public class AccelerometerMouseClient {
     public int port;
     public Socket socket;
     public static boolean running = false, paused = false;
-    ;
+
     public float x = 0, y = 0, z = 0;
-    private boolean leftClickFlag = false, rightClickFlag = false, middleFlag = false, scrollFlag = false;
+    private boolean
+            breakClickFlag = false,
+            gasClickFlag = false,
+            middleFlag = false,
+            scrollFlag = false;
+
     public static String keyboardData = "";
     public static boolean connected = false;
     public static boolean toastShown = true;
@@ -48,7 +53,7 @@ public class AccelerometerMouseClient {
                         }
                         if (!paused) {
                             writer = new PrintWriter(socket.getOutputStream(), true);
-                            writer.println(x + "," + y + "," + z + "," + leftClickFlag + "," + rightClickFlag + "," + middleFlag + "," + scrollFlag);
+                            writer.println(x + "," + y + "," + z + "," + breakClickFlag + "," + gasClickFlag + "," + middleFlag + "," + scrollFlag);
                             writer.flush();
                         } else {
                             writer = new PrintWriter(socket.getOutputStream(), true);
@@ -150,11 +155,11 @@ public class AccelerometerMouseClient {
             public void run() {
                 while (running) {
                     if (!paused) {
-                        MainActivity.dBm = MainActivity.wifi.getConnectionInfo().getRssi();
+                        MainActivityNew.dBm = MainActivityNew.wifi.getConnectionInfo().getRssi();
                     }
                     try {
                         Thread.sleep(1000);
-                    } catch (Exception e) {
+                    } catch (Exception ignore) {
                     }
                 }
             }
@@ -173,9 +178,11 @@ public class AccelerometerMouseClient {
         this.z = z;
     }
 
-    public void feedTouchFlags(boolean leftClickFlag, boolean rightClickFlag) {
-        this.leftClickFlag = leftClickFlag;
-        this.rightClickFlag = rightClickFlag;
+    public void feedTouchFlags(
+            boolean breakClickFlag,
+            boolean gasClickFlag) {
+        this.breakClickFlag = breakClickFlag;
+        this.gasClickFlag = gasClickFlag;
     }
 
     private void sleep(int ms) {
@@ -211,7 +218,7 @@ public class AccelerometerMouseClient {
         }
     }
 
-    public void pause(boolean b) {
+    public void setPaused(boolean b) {
         AccelerometerMouseClient.paused = b;
         AccelerometerMouseClient.toastShown = true;
     }

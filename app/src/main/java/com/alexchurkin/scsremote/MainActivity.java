@@ -1,6 +1,5 @@
 package com.alexchurkin.scsremote;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,9 +14,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
-import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,19 +27,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, OnTouchListener {
-
-    private SensorManager mSensorManager;
-    private Sensor mSensor;
-    private GraphicsView graphicsView;
-    private AccelerometerMouseClient client;
-    public static MouseButton leftButton = new MouseButton(), rightButton = new MouseButton(), middleButton = new MouseButton(), scrollWheel = new MouseButton();
-    public static int dBm = -200;
-    private final static double compression = 0.75;
-    public static WifiManager wifi;
-    private boolean defaultServer = false, invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
-    private int defaultServerPort = 18250, number = 1280, zero = 22;
-    private String defaultServerIp = "shit";
+/*public class MainActivity extends AppCompatActivity implements SensorEventListener, OnTouchListener {
 
     public boolean onTouch(View v, MotionEvent event) {
         number = 1280;
@@ -63,15 +48,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
 
-            //WIFI INDICATOR
-            if (event.getX(getPID(event)) > displayWidth - (int) (displayWidth * 88 / number + 0.5) && event.getY(getPID(event)) > displayHeight - (int) (displayWidth * 88 / number + 0.5)) {
-                if (wifi.isWifiEnabled())
-                    showToast("Wi-Fi signal strength: " + getSignalStrength() + "dBm", Toast.LENGTH_SHORT);
-                else
-                    getSignalStrength();
-            }
             //Server info
-            else if (event.getX(getPID(event)) < (displayWidth / 60.0) + 40 && event.getY(getPID(event)) < (displayHeight / 60.0) + 40) {
+            if (event.getX(getPID(event)) < (displayWidth / 60.0) + 40 && event.getY(getPID(event)) < (displayHeight / 60.0) + 40) {
                 if (AccelerometerMouseClient.connected) {
                     showToast("Connected to server at " + client.socket.getInetAddress().getHostAddress(), Toast.LENGTH_LONG);
                 } else {
@@ -116,21 +94,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 middleButton.setPressed(false);
             }
         }
-        client.feedTouchFlags(leftButton.isPressed(), rightButton.isPressed(), middleButton.isPressed(), scrollWheel.isPressed());
-        Log.d("Touch", "action=" + event.getAction() + ", left flag=" + leftButton.isPressed() + ", right flag=" + rightButton.isPressed() + ", middle flag=" + scrollWheel.isPressed() + ", pointers=" + event.getPointerCount());
+        client.feedTouchFlags(leftButton.isPressed(), rightButton.isPressed());
         return true;
-    }
-
-    private int getPID(MotionEvent event) {
-        int action = event.getAction();
-        return action >> MotionEvent.ACTION_POINTER_ID_SHIFT;
     }
 
     /**
      * Menu
      */
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, 0, 0, "Auto Connect"); // Index 0
         menu.add(0, 1, 0, "Manually Connect"); // Index 1
@@ -175,12 +147,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * GraphicsView
      */
 
-    static public class GraphicsView extends SurfaceView implements Runnable {
+    /*static public class GraphicsView extends SurfaceView implements Runnable {
 
         Thread t;
         SurfaceHolder holder;
         boolean loop = false;
-        Bitmap mouseNone, mouseAll, mouseLeft, mouseRight, mouseMiddle, mouseScroll, bar0, bar1, bar2, bar3, bar4, bar5, paused, playing, fluff;
+        Bitmap mouseNone, mouseAll, mouseLeft, mouseRight, bar0, bar1, bar2, bar3, bar4, bar5, paused, playing, fluff;
 
         public GraphicsView(Context context) {
             super(context);
@@ -268,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     canvas.drawBitmap(fluff, null, new RectF(canvas.getWidth() - radius, canvas.getHeight() - radius, canvas.getWidth() + radius, canvas.getHeight() + radius), paintFluff);
                     // Draw bars
                     canvas.drawBitmap(bitmap, null, new RectF(canvas.getWidth() - (int) (canvas.getWidth() * 68 / number + 0.5), canvas.getHeight() - (int) (canvas.getWidth() * 68 / number + 0.5), canvas.getWidth() - 10, canvas.getHeight() - 10), paint);
-                    // Draw pause/play icon
+                    // Draw setPaused/play icon
                     if (AccelerometerMouseClient.connected) {
                         // Draw fluff
                         canvas.drawBitmap(fluff, null, new RectF(-radius, canvas.getHeight() - radius, radius, canvas.getHeight() + radius), paintFluff);
@@ -283,15 +255,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         }
-
-        public void stop() {
-            loop = false;
-        }
-
-        public void resume() {
-            loop = true;
-            t = new Thread(this);
-            t.start();
-        }
     }
-}
+}*/

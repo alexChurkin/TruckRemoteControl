@@ -1,5 +1,6 @@
 package com.alexchurkin.scsremote;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
@@ -25,21 +26,23 @@ public class MainActivityNew extends AppCompatActivity implements
         View.OnClickListener,
         View.OnTouchListener {
 
+    public static WifiManager wifi;
+    public static ControllerButton breakButton = new ControllerButton();
+    public static ControllerButton gasButton = new ControllerButton();
+    public static int dBm = -200;
+
     private SensorManager mSensorManager;
-    public WifiManager wifi;
     private Sensor mSensor;
 
-    private AppCompatImageButton mConnectionIndicator;
+    private AppCompatImageButton mWifiIndicator, mSignalIndicator, mPauseButton;
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private AccelerometerMouseClient client;
-    public static int dBm = -200;
-    private final static double compression = 0.75;
     private boolean defaultServer = false, invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
-    private int defaultServerPort = 18250, number = 1280, zero = 22;
+    private int defaultServerPort = 18250, zero = 22;
     private String defaultServerIp = "shit";
-    public static MouseButton leftButton = new MouseButton(), rightButton = new MouseButton();
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,13 +51,18 @@ public class MainActivityNew extends AppCompatActivity implements
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         setContentView(R.layout.activity_main);
-        mConnectionIndicator = findViewById(R.id.connectionIndicator);
+        mWifiIndicator = findViewById(R.id.wifiIndicator);
+        mSignalIndicator = findViewById(R.id.signalLevelIndicator);
+        mPauseButton = findViewById(R.id.pauseButton);
         mBreakLayout = findViewById(R.id.breakLayout);
         mGasLayout = findViewById(R.id.gasLayout);
 
         mBreakLayout.setOnTouchListener(this);
-        mGasLayout.setOnClickListener(this);
-        mConnectionIndicator.setOnClickListener(this);
+        mGasLayout.setOnTouchListener(this);
+
+        mSignalIndicator.setOnClickListener(this);
+        mWifiIndicator.setOnClickListener(this);
+        mPauseButton.setOnClickListener(this);
 
         makeFullscreen();
         updatePrefs();
@@ -81,16 +89,31 @@ public class MainActivityNew extends AppCompatActivity implements
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.connectionIndicator:
-                if (wifi.isWifiEnabled())
+            case R.id.wifiIndicator:
+                if (wifi.isWifiEnabled()) {
                     showToast("Wi-Fi signal strength: " + getSignalStrength() + "dBm");
+                } else {
+                    getSignalStrength();
+                }
                 break;
-            case R.id.breakLayout:
-                leftButton.setPressed(true);
+
+            case R.id.signalLevelIndicator:
+                if (AccelerometerMouseClient.connected) {
+                    showToast("Connected to server at " + client.socket.getInetAddress().getHostAddress());
+                } else {
+                    showToast("Not connected to a server. Please try searching for one by clicking \"Search for Server\" in the menu, or manually connect to the server by clicking \"Manually Connect\".");
+                }
                 break;
-            case R.id.gasLayout:
-                rightButton.setPressed(true);
-                //TODO2
+            case R.id.pauseButton:
+                if (AccelerometerMouseClient.connected) {
+                    boolean newState = !AccelerometerMouseClient.paused;
+                    client.setPaused(newState);
+                    if (newState) {
+                        mPauseButton.setImageResource(R.drawable.pause_btn_paused);
+                    } else {
+                        mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
+                    }
+                }
                 break;
         }
     }
@@ -100,30 +123,30 @@ public class MainActivityNew extends AppCompatActivity implements
         switch (view.getId()) {
             case R.id.breakLayout:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    leftButton.setPressed(true);
+                    breakButton.setPressed(true);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    leftButton.setPressed(false);
+                    breakButton.setPressed(false);
                 }
                 break;
             case R.id.gasLayout:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    rightButton.setPressed(true);
+                    gasButton.setPressed(true);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    rightButton.setPressed(false);
+                    gasButton.setPressed(false);
                 }
                 break;
         }
-        client.feedTouchFlags(leftButton.isPressed(), rightButton.isPressed());
+        client.feedTouchFlags(breakButton.isPressed(), gasButton.isPressed());
         return false;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        leftButton.setPressed(false);
-        rightButton.setPressed(false);
+        breakButton.setPressed(false);
+        gasButton.setPressed(false);
         updatePrefs();
-        client.pause(false);
+        client.setPaused(false);
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
         if (ManualConnectActivity.configured) {
             client.stop();
@@ -138,7 +161,7 @@ public class MainActivityNew extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this, mSensor);
-        client.pause(true);
+        client.setPaused(true);
     }
 
     @Override
@@ -249,9 +272,9 @@ public class MainActivityNew extends AppCompatActivity implements
 
     private void updateConnectionIndicatorState(boolean isConnected) {
         if (isConnected) {
-            mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
+            mWifiIndicator.setImageResource(R.drawable.connection_indicator_green);
         } else {
-            mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
+            mWifiIndicator.setImageResource(R.drawable.connection_indicator_red);
         }
     }
 
@@ -262,7 +285,6 @@ public class MainActivityNew extends AppCompatActivity implements
             }
             return wifi.getConnectionInfo().getRssi();
         } catch (Exception ignore) {
-
         }
         return -50;
     }
