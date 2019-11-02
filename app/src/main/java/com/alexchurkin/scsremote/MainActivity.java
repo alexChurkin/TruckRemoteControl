@@ -107,7 +107,7 @@ import androidx.appcompat.app.AppCompatActivity;
         menu.add(0, 0, 0, "Auto Connect"); // Index 0
         menu.add(0, 1, 0, "Manually Connect"); // Index 1
         menu.add(0, 2, 0, "Disconnect"); // Index 2
-        menu.add(0, 3, 0, "Preferences"); // Index 3
+        menu.add(0, 3, 0, "SettingsActivity"); // Index 3
         Log.i("Menu", "Menu shown");
         return true;
     }
@@ -136,7 +136,7 @@ import androidx.appcompat.app.AppCompatActivity;
                 showToast("Disconnected from server.", Toast.LENGTH_SHORT);
                 break;
             case 3:
-                Intent i2 = new Intent(this, Preferences.class);
+                Intent i2 = new Intent(this, SettingsActivity.class);
                 startActivity(i2);
                 break;
         }

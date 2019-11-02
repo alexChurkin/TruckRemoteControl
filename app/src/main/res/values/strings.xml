@@ -16,4 +16,21 @@
     <string name="setServerPort">Set default server port</string>
     <string name="defaultServerIP">Default server address</string>
     <string name="defaultServerPort">Default server port</string>
+    <string-array name="menu_items">
+        <item>Auto connect</item>
+        <item>Manually connect</item>
+        <item>Disconnect</item>
+        <item>Settings</item>
+    </string-array>
+    <string name="settings">Settings</string>
+    <string name="searching_on_local">Searching for servers on the local network…</string>
+    <string name="failed_default_connect">Failed to connect to default server. None defined.</string>
+    <string name="attempting_to_connect_to">Attempting to connect to</string>
+    <string name="signal_strength">Wi-Fi signal strength:</string>
+    <string name="no_wifi_conn_detected">No Wi-Fi connection detected!</string>
+    <string name="connected_to_server_at">Connected to server at</string>
+    <string name="not_connected_long_msg">Not connected to a server. Please try searching for one by clicking "Search for Server" in the menu, or manually connect to the server by clicking "Manually Connect".</string>
+    <string name="disconnected_msg">Disconnected from server.</string>
+    <string name="on_port">on port</string>
+    <string name="connection_lost">Lost connection to server!</string>
 </resources>

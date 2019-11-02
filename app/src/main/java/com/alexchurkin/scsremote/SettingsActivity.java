@@ -6,7 +6,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 
-public class Preferences extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,7 +18,7 @@ public class Preferences extends PreferenceActivity {
 
     Preference.OnPreferenceClickListener serverIPClickListener = new OnPreferenceClickListener() {
         public boolean onPreferenceClick(Preference preference) {
-            Intent i = new Intent(Preferences.this, DefaultServerIPActivity.class);
+            Intent i = new Intent(SettingsActivity.this, DefaultServerIPActivity.class);
             startActivity(i);
             return true;
         }
@@ -26,7 +26,7 @@ public class Preferences extends PreferenceActivity {
 
     Preference.OnPreferenceClickListener serverPortClickListener = new OnPreferenceClickListener() {
         public boolean onPreferenceClick(Preference preference) {
-            Intent i = new Intent(Preferences.this, DefaultServerPortActivity.class);
+            Intent i = new Intent(SettingsActivity.this, DefaultServerPortActivity.class);
             startActivity(i);
             return true;
         }

@@ -2,6 +2,8 @@ package com.alexchurkin.scsremote;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -17,6 +19,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -34,7 +38,7 @@ public class MainActivityNew extends AppCompatActivity implements
     private SensorManager mSensorManager;
     private Sensor mSensor;
 
-    private AppCompatImageButton mWifiIndicator, mSignalIndicator, mPauseButton;
+    private AppCompatImageButton mWifiIndicator, mSignalIndicator, mPauseButton, mSettingsButton;
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private AccelerometerMouseClient client;
@@ -54,6 +58,8 @@ public class MainActivityNew extends AppCompatActivity implements
         mWifiIndicator = findViewById(R.id.wifiIndicator);
         mSignalIndicator = findViewById(R.id.signalLevelIndicator);
         mPauseButton = findViewById(R.id.pauseButton);
+        mSettingsButton = findViewById(R.id.settingsButton);
+
         mBreakLayout = findViewById(R.id.breakLayout);
         mGasLayout = findViewById(R.id.gasLayout);
 
@@ -63,6 +69,7 @@ public class MainActivityNew extends AppCompatActivity implements
         mSignalIndicator.setOnClickListener(this);
         mWifiIndicator.setOnClickListener(this);
         mPauseButton.setOnClickListener(this);
+        mSettingsButton.setOnClickListener(this);
 
         makeFullscreen();
         updatePrefs();
@@ -72,13 +79,14 @@ public class MainActivityNew extends AppCompatActivity implements
 
         if (wifi.isWifiEnabled() && !AccelerometerMouseClient.running && !justChangedOr) {
             if (!defaultServer) {
-                showToast("Searching for servers on the local network...");
+                showToast(R.string.searching_on_local);
                 client.run(false);
             } else {
                 if (defaultServerIp.equals("shit")) {
-                    showToast("Failed to connect to default server. None defined.");
+                    showToast(R.string.failed_default_connect);
                 } else {
-                    showToast("Attempting to connect to " + defaultServerIp + "...");
+                    showToast(getString(
+                            R.string.attempting_to_connect_to) + " " + defaultServerIp + "...");
                     client.forceUpdate(defaultServerIp, defaultServerPort);
                     client.run(true);
                 }
@@ -91,7 +99,8 @@ public class MainActivityNew extends AppCompatActivity implements
         switch (view.getId()) {
             case R.id.wifiIndicator:
                 if (wifi.isWifiEnabled()) {
-                    showToast("Wi-Fi signal strength: " + getSignalStrength() + "dBm");
+                    showToast(getString(R.string.signal_strength) + " "
+                            + getSignalStrength() + "dBm");
                 } else {
                     getSignalStrength();
                 }
@@ -99,9 +108,10 @@ public class MainActivityNew extends AppCompatActivity implements
 
             case R.id.signalLevelIndicator:
                 if (AccelerometerMouseClient.connected) {
-                    showToast("Connected to server at " + client.socket.getInetAddress().getHostAddress());
+                    showToast(getString(R.string.connected_to_server_at) + " " +
+                            client.socket.getInetAddress().getHostAddress());
                 } else {
-                    showToast("Not connected to a server. Please try searching for one by clicking \"Search for Server\" in the menu, or manually connect to the server by clicking \"Manually Connect\".");
+                    showToast(R.string.not_connected_long_msg);
                 }
                 break;
             case R.id.pauseButton:
@@ -115,9 +125,50 @@ public class MainActivityNew extends AppCompatActivity implements
                     }
                 }
                 break;
+            case R.id.settingsButton:
+                showSettingsDialog();
+                break;
         }
     }
 
+    private void showSettingsDialog() {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setItems(R.array.menu_items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch (i) {
+                            case 0:
+                                client.stop();
+                                client = null;
+                                client = new AccelerometerMouseClient("Bullshit", 18250);
+                                if (wifi.isWifiEnabled()) {
+                                    client.run(false);
+                                    showToast(R.string.searching_on_local);
+                                } else {
+                                    showToast(R.string.no_wifi_conn_detected);
+                                }
+                                break;
+                            case 1:
+                                Intent toManual = new Intent(
+                                        MainActivityNew.this, ManualConnectActivity.class);
+                                startActivity(toManual);
+                                break;
+                            case 2:
+                                client.stop();
+                                showToast(R.string.disconnected_msg);
+                                break;
+                            case 3:
+                                Intent toSettings = new Intent(MainActivityNew.this, SettingsActivity.class);
+                                startActivity(toSettings);
+                                break;
+                        }
+                    }
+                })
+                .create();
+        dialog.show();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         switch (view.getId()) {
@@ -151,7 +202,9 @@ public class MainActivityNew extends AppCompatActivity implements
         if (ManualConnectActivity.configured) {
             client.stop();
             client.forceUpdate(ManualConnectActivity.ipAddress, ManualConnectActivity.port);
-            showToast("Attempting to connect to " + ManualConnectActivity.ipAddress + " on port " + ManualConnectActivity.port);
+            showToast(getString(R.string.attempting_to_connect_to)
+                    + " " + ManualConnectActivity.ipAddress
+                    + " " + getString(R.string.on_port) + " " + ManualConnectActivity.port);
             client.run(true);
             ManualConnectActivity.configured = false;
         }
@@ -214,9 +267,10 @@ public class MainActivityNew extends AppCompatActivity implements
             // Show connected toast if connected
             if (!AccelerometerMouseClient.toastShown) {
                 if (AccelerometerMouseClient.connected) {
-                    showToast("Connected to server at " + client.socket.getInetAddress().getHostAddress());
+                    showToast(getString(R.string.connected_to_server_at)
+                            + " " + client.socket.getInetAddress().getHostAddress());
                 } else {
-                    showToast("Lost connection to server!");
+                    showToast(R.string.connection_lost);
                 }
                 AccelerometerMouseClient.toastShown = true;
             }
@@ -281,12 +335,16 @@ public class MainActivityNew extends AppCompatActivity implements
     public int getSignalStrength() {
         try {
             if (!wifi.isWifiEnabled()) {
-                showToast("No Wi-Fi connection detected!");
+                showToast(R.string.no_wifi_conn_detected);
             }
             return wifi.getConnectionInfo().getRssi();
         } catch (Exception ignore) {
         }
         return -50;
+    }
+
+    private void showToast(@StringRes int resId) {
+        showToast(getString(resId));
     }
 
     private void showToast(String string) {
