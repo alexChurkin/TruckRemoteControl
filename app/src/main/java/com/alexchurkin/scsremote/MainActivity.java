@@ -2,7 +2,6 @@ package com.alexchurkin.scsremote;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
@@ -12,7 +11,9 @@ import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,7 +24,6 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class MainActivity extends AppCompatActivity implements
@@ -39,15 +39,19 @@ public class MainActivity extends AppCompatActivity implements
 
     private SensorManager mSensorManager;
     private Sensor mSensor;
+    private Handler mHandler;
 
     private ConstraintLayout rootView;
     private AppCompatImageButton mConnectionIndicator, mPauseButton, mSettingsButton;
+    private AppCompatImageButton mLeftSignalButton, mRightSignalButton, mAllSignalsButton;
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private AccelerometerClient client;
     private boolean defaultServer = false, invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
     private int defaultServerPort = 18250, zero = 22;
     private String defaultServerIp = "shit";
+
+    private boolean previousSignalGreen;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -56,12 +60,18 @@ public class MainActivity extends AppCompatActivity implements
         wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mHandler = new Handler();
 
         setContentView(R.layout.activity_main);
         rootView = findViewById(R.id.rootView);
+
         mConnectionIndicator = findViewById(R.id.connectionIndicator);
         mPauseButton = findViewById(R.id.pauseButton);
         mSettingsButton = findViewById(R.id.settingsButton);
+
+        mLeftSignalButton = findViewById(R.id.buttonLeftSignal);
+        mRightSignalButton = findViewById(R.id.buttonRightSignal);
+        mAllSignalsButton = findViewById(R.id.buttonAllSignals);
 
         mBreakLayout = findViewById(R.id.breakLayout);
         mGasLayout = findViewById(R.id.gasLayout);
@@ -72,6 +82,10 @@ public class MainActivity extends AppCompatActivity implements
         mConnectionIndicator.setOnClickListener(this);
         mPauseButton.setOnClickListener(this);
         mSettingsButton.setOnClickListener(this);
+
+        mLeftSignalButton.setOnClickListener(this);
+        mRightSignalButton.setOnClickListener(this);
+        mAllSignalsButton.setOnClickListener(this);
 
         makeFullscreen();
         updatePrefs();
@@ -96,6 +110,50 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
     }
+
+    Runnable turnSignalsRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (client.turnSignalLeft && client.turnSignalRight) {
+                if (previousSignalGreen) {
+                    mLeftSignalButton.setImageResource(R.drawable.left_disabled);
+                    mRightSignalButton.setImageResource(R.drawable.right_disabled);
+                } else {
+                    mLeftSignalButton.setImageResource(R.drawable.left_enabled);
+                    mRightSignalButton.setImageResource(R.drawable.right_enabled);
+                }
+                previousSignalGreen = !previousSignalGreen;
+                mHandler.postDelayed(this, 700);
+            } else if (client.turnSignalLeft) {
+                if (previousSignalGreen) {
+                    mLeftSignalButton.setImageResource(R.drawable.left_disabled);
+                    mRightSignalButton.setImageResource(R.drawable.right_disabled);
+                } else {
+                    mRightSignalButton.setImageResource(R.drawable.right_disabled);
+                    mLeftSignalButton.setImageResource(R.drawable.left_enabled);
+                }
+                previousSignalGreen = !previousSignalGreen;
+                mHandler.postDelayed(this, 700);
+            } else if (client.turnSignalRight) {
+                if (previousSignalGreen) {
+                    mLeftSignalButton.setImageResource(R.drawable.left_disabled);
+                    mRightSignalButton.setImageResource(R.drawable.right_disabled);
+                    Log.d("TAG", "Green");
+                } else {
+                    mLeftSignalButton.setImageResource(R.drawable.left_disabled);
+                    mRightSignalButton.setImageResource(R.drawable.right_enabled);
+                    Log.d("TAG", "NotGreen");
+                }
+                previousSignalGreen = !previousSignalGreen;
+                mHandler.postDelayed(this, 700);
+            } else {
+                mHandler.removeCallbacksAndMessages(null);
+                mLeftSignalButton.setImageResource(R.drawable.left_disabled);
+                mRightSignalButton.setImageResource(R.drawable.right_disabled);
+                previousSignalGreen = false;
+            }
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -138,6 +196,37 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.buttonLeftSignal:
+                if (client.turnSignalLeft && client.turnSignalRight) return;
+
+                if (client.turnSignalRight || client.turnSignalLeft) {
+                    mHandler.removeCallbacksAndMessages(null);
+                }
+
+                client.feedSignals(!client.turnSignalLeft, false);
+                mHandler.post(turnSignalsRunnable);
+                break;
+            case R.id.buttonRightSignal:
+                if (client.turnSignalLeft && client.turnSignalRight) return;
+
+                if (client.turnSignalRight || client.turnSignalLeft) {
+                    mHandler.removeCallbacksAndMessages(null);
+                }
+
+                client.feedSignals(false, !client.turnSignalRight);
+                mHandler.post(turnSignalsRunnable);
+                break;
+            case R.id.buttonAllSignals:
+
+                boolean allEnabled = client.turnSignalLeft && client.turnSignalRight;
+                client.feedSignals(!allEnabled, !allEnabled);
+
+                if (client.turnSignalLeft || client.turnSignalRight) {
+                    mHandler.removeCallbacksAndMessages(null);
+                }
+                mHandler.post(turnSignalsRunnable);
+                break;
+
             case R.id.connectionIndicator:
                 if (wifi.isWifiEnabled()) {
                     showToast(getString(R.string.signal_strength) + " "
@@ -165,36 +254,33 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showSettingsDialog() {
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setItems(R.array.menu_items, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        switch (i) {
-                            case 0:
-                                client.stop();
-                                client = null;
-                                client = new AccelerometerClient("Bullshit", 18250);
-                                client.setConnectionListener(MainActivity.this);
-                                if (wifi.isWifiEnabled()) {
-                                    client.run(false);
-                                    showToast(R.string.searching_on_local);
-                                } else {
-                                    showToast(R.string.no_wifi_conn_detected);
-                                }
-                                break;
-                            case 1:
-                                Intent toManual = new Intent(
-                                        MainActivity.this, ManualConnectActivity.class);
-                                startActivity(toManual);
-                                break;
-                            case 2:
-                                client.stop();
-                                showToast(R.string.disconnected_msg);
-                                break;
-                            case 3:
-                                Intent toSettings = new Intent(MainActivity.this, SettingsActivity.class);
-                                startActivity(toSettings);
-                                break;
-                        }
+                .setItems(R.array.menu_items, (dialogInterface, i) -> {
+                    switch (i) {
+                        case 0:
+                            client.stop();
+                            client = null;
+                            client = new AccelerometerClient("Bullshit", 18250);
+                            client.setConnectionListener(MainActivity.this);
+                            if (wifi.isWifiEnabled()) {
+                                client.run(false);
+                                showToast(R.string.searching_on_local);
+                            } else {
+                                showToast(R.string.no_wifi_conn_detected);
+                            }
+                            break;
+                        case 1:
+                            Intent toManual = new Intent(
+                                    MainActivity.this, ManualConnectActivity.class);
+                            startActivity(toManual);
+                            break;
+                        case 2:
+                            client.stop();
+                            showToast(R.string.disconnected_msg);
+                            break;
+                        case 3:
+                            Intent toSettings = new Intent(MainActivity.this, SettingsActivity.class);
+                            startActivity(toSettings);
+                            break;
                     }
                 })
                 .create();

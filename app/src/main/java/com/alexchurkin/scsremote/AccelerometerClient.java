@@ -27,11 +27,8 @@ public class AccelerometerClient {
 
 
     public float x = 0, y = 0, z = 0;
-    private boolean
-            breakClickFlag = false,
-            gasClickFlag = false,
-            turnSignalLeft = false,
-            turnSignalRight = false;
+    private boolean breakClickFlag, gasClickFlag;
+    public boolean turnSignalLeft, turnSignalRight;
 
 
     public boolean sentJam = true;
@@ -65,7 +62,9 @@ public class AccelerometerClient {
                     }
                     if (!paused) {
                         writer = new PrintWriter(socket.getOutputStream(), true);
-                        writer.println(x + "," + y + "," + z + "," + breakClickFlag + "," + gasClickFlag);
+                        writer.println(x + "," + y + "," + z + ","
+                                + breakClickFlag + "," + gasClickFlag + ","
+                                + turnSignalLeft + "," + turnSignalRight);
                         writer.flush();
                     } else {
                         writer = new PrintWriter(socket.getOutputStream(), true);
@@ -182,11 +181,14 @@ public class AccelerometerClient {
         this.z = z;
     }
 
-    public void feedTouchFlags(
-            boolean breakClickFlag,
-            boolean gasClickFlag) {
+    public void feedTouchFlags(boolean breakClickFlag, boolean gasClickFlag) {
         this.breakClickFlag = breakClickFlag;
         this.gasClickFlag = gasClickFlag;
+    }
+
+    public void feedSignals(boolean turnSignalLeft, boolean turnSignalRight) {
+        this.turnSignalLeft = turnSignalLeft;
+        this.turnSignalRight = turnSignalRight;
     }
 
     private void sleep(int ms) {
