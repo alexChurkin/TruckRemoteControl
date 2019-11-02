@@ -51,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements
     private int defaultServerPort = 18250, zero = 22;
     private String defaultServerIp = "shit";
 
+    private boolean isConnected;
+
     private boolean previousSignalGreen;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -114,7 +116,10 @@ public class MainActivity extends AppCompatActivity implements
     Runnable turnSignalsRunnable = new Runnable() {
         @Override
         public void run() {
-            if (client.turnSignalLeft && client.turnSignalRight) {
+            if (!isConnected) {
+                mLeftSignalButton.setImageResource(R.drawable.left_disabled);
+                mRightSignalButton.setImageResource(R.drawable.right_disabled);
+            } else if (client.turnSignalLeft && client.turnSignalRight) {
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                     mRightSignalButton.setImageResource(R.drawable.right_disabled);
@@ -312,6 +317,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onConnectionChanged(boolean isConnected) {
+        this.isConnected = isConnected;
         if (isConnected) {
             mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
         } else {
