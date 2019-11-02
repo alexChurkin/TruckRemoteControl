@@ -23,7 +23,9 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.ViewCompat;
 
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
@@ -39,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements
     private SensorManager mSensorManager;
     private Sensor mSensor;
 
+    private LinearLayoutCompat rootView;
     private AppCompatImageButton mConnectionIndicator, mPauseButton, mSettingsButton;
     private ConstraintLayout mBreakLayout, mGasLayout;
 
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         setContentView(R.layout.activity_main);
+        rootView = findViewById(R.id.rootView);
         mConnectionIndicator = findViewById(R.id.connectionIndicator);
         mPauseButton = findViewById(R.id.pauseButton);
         mSettingsButton = findViewById(R.id.settingsButton);
@@ -95,12 +99,41 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onConnectionChanged(boolean isConnected) {
-        if (isConnected) {
-            mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
-        } else {
-            mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
+    protected void onResume() {
+        super.onResume();
+        breakButton.setPressed(false);
+        gasButton.setPressed(false);
+        updatePrefs();
+        client.setPaused(false);
+        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        if (ManualConnectActivity.configured) {
+            client.stop();
+            client.forceUpdate(ManualConnectActivity.ipAddress, ManualConnectActivity.port);
+            showToast(getString(R.string.attempting_to_connect_to)
+                    + " " + ManualConnectActivity.ipAddress
+                    + " " + getString(R.string.on_port) + " " + ManualConnectActivity.port);
+            client.run(true);
+            ManualConnectActivity.configured = false;
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mSensorManager.unregisterListener(this, mSensor);
+        client.setPaused(true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        client.stop();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("justChangedOr", changingOr);
+        if (!changingOr)
+            editor.putString("lastServer", "");
+        editor.apply();
     }
 
     @Override
@@ -193,41 +226,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        breakButton.setPressed(false);
-        gasButton.setPressed(false);
-        updatePrefs();
-        client.setPaused(false);
-        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        if (ManualConnectActivity.configured) {
-            client.stop();
-            client.forceUpdate(ManualConnectActivity.ipAddress, ManualConnectActivity.port);
-            showToast(getString(R.string.attempting_to_connect_to)
-                    + " " + ManualConnectActivity.ipAddress
-                    + " " + getString(R.string.on_port) + " " + ManualConnectActivity.port);
-            client.run(true);
-            ManualConnectActivity.configured = false;
+    public void onConnectionChanged(boolean isConnected) {
+        if (isConnected) {
+            mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
+        } else {
+            mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mSensorManager.unregisterListener(this, mSensor);
-        client.setPaused(true);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        client.stop();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("justChangedOr", changingOr);
-        if (!changingOr)
-            editor.putString("lastServer", "");
-        editor.apply();
     }
 
     @Override
@@ -342,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showToast(String string) {
         Toast toast = Toast.makeText(this, string, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP | Gravity.END, 0, 0);
+        toast.setGravity(Gravity.TOP, 0, 0);
         toast.show();
     }
 }
