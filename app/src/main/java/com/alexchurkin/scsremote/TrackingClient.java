@@ -1,6 +1,7 @@
 package com.alexchurkin.scsremote;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -118,8 +119,10 @@ public class TrackingClient {
 
             try {
                 if (ip == null) {
+                    Log.d("TAG", "Autoconnect");
                     attemptAutoConnect();
                 } else {
+                    Log.d("TAG", "Connect ip = " + ip + "; port = " + port);
                     socket = new Socket(ip, port);
                     socket.setTcpNoDelay(true);
                 }
@@ -149,6 +152,7 @@ public class TrackingClient {
             } catch (Exception e) {
                 e.printStackTrace();
                 listener.onConnectionChanged(false);
+                Log.d("TAG", e.toString());
             }
             return null;
         }
