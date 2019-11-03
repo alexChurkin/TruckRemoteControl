@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements
                     mRightSignalButton.setImageResource(R.drawable.right_enabled);
                 }
                 previousSignalGreen = !previousSignalGreen;
-                mHandler.postDelayed(this, 700);
+                mHandler.postDelayed(this, 400);
             } else if (client.turnSignalLeft) {
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements
                     mLeftSignalButton.setImageResource(R.drawable.left_enabled);
                 }
                 previousSignalGreen = !previousSignalGreen;
-                mHandler.postDelayed(this, 700);
+                mHandler.postDelayed(this, 400);
             } else if (client.turnSignalRight) {
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements
                     Log.d("TAG", "NotGreen");
                 }
                 previousSignalGreen = !previousSignalGreen;
-                mHandler.postDelayed(this, 700);
+                mHandler.postDelayed(this, 400);
             } else {
                 mHandler.removeCallbacksAndMessages(null);
                 mLeftSignalButton.setImageResource(R.drawable.left_disabled);
