@@ -18,12 +18,9 @@
     </string-array>
     <string name="settings">Настройки</string>
     <string name="searching_on_local">Поиск серверов в локальной сети…</string>
-    <string name="attempting_to_connect_to">Попытка подключения к</string>
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
     <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
     <string name="connected_to_server_at">Подключен к серверу</string>
-    <string name="disconnected_msg">Отключен от сервера.</string>
-    <string name="on_port">порт</string>
     <string name="connection_lost">Соединение с сервером прервано</string>
 
     <string name="connect_to_default_on_startup_title">Подключаться к стандартному серверу при запуске</string>
@@ -62,5 +59,4 @@
         <item>22</item>
         <item>45</item>
     </string-array>
-
 </resources>

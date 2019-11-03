@@ -18,12 +18,9 @@
     </string-array>
     <string name="settings">Settings</string>
     <string name="searching_on_local">Searching for servers on the local network…</string>
-    <string name="attempting_to_connect_to">Attempting to connect to</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
     <string name="no_wifi_conn_detected">No Wi-Fi connection detected!</string>
     <string name="connected_to_server_at">Connected to server at</string>
-    <string name="disconnected_msg">Disconnected from server.</string>
-    <string name="on_port">on port</string>
     <string name="connection_lost">Lost connection to server!</string>
 
     <string name="connect_to_default_on_startup_title">Connect to default server on startup</string>
@@ -62,5 +59,4 @@
         <item>22</item>
         <item>45</item>
     </string-array>
-
 </resources>
