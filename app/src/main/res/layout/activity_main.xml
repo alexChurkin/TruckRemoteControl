@@ -47,17 +47,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:srcCompat="@drawable/tormoz" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/buttonLeftSignal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="64dp"
-                android:background="@null"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/left_disabled" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -104,17 +93,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/gas" />
 
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/buttonRightSignal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="64dp"
-                android:layout_marginTop="24dp"
-                android:background="@null"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/right_disabled" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -128,6 +106,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/leftright" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/buttonLeftSignal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginRight="28dp"
+        android:background="@null"
+        app:layout_constraintRight_toLeftOf="@+id/buttonAllSignals"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/left_disabled" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/buttonRightSignal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="24dp"
+        android:background="@null"
+        app:layout_constraintStart_toEndOf="@+id/buttonAllSignals"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/right_disabled" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
