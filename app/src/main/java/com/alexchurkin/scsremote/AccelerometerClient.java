@@ -12,36 +12,16 @@ import java.net.Socket;
 //Client object
 public class AccelerometerClient {
 
-    public interface ConnectionListener {
-        void onConnectionChanged(boolean isConnected);
-    }
-
     public static boolean running = false, paused = false;
     public static boolean connected = false;
     public static boolean toastShown = true;
 
-    private String ip;
-    public int port;
-    public Socket socket;
-    private ConnectionListener listener;
 
-
-    public float x = 0, y = 0, z = 0;
     private boolean breakClickFlag, gasClickFlag;
     public boolean turnSignalLeft, turnSignalRight;
 
 
     public boolean sentJam = true;
-
-
-    public AccelerometerClient(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
-    }
-
-    public void setConnectionListener(ConnectionListener listener) {
-        this.listener = listener;
-    }
 
     private void start() {
         paused = false;
@@ -103,8 +83,7 @@ public class AccelerometerClient {
                     listener.onConnectionChanged(false);
                     toastShown = false;
                     break;
-                } catch (InterruptedException e) {
-
+                } catch (InterruptedException ignore) {
                 }
             }
             connected = false;
@@ -128,7 +107,7 @@ public class AccelerometerClient {
                         System.out.println("Client Started");
                         DatagramSocket clientSocket = new DatagramSocket();
                         InetAddress IPAddress = InetAddress.getByName("255.255.255.255");
-                        byte[] sendData = new byte[1024];
+                        byte[] sendData;
                         byte[] receiveData = new byte[1024];
                         // Send HELLO
                         sendData = "HELLO".getBytes();
@@ -175,28 +154,7 @@ public class AccelerometerClient {
         new Thread(r).start();
     }
 
-    public void feedAccelerometerValues(float x, float y, float z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
 
-    public void feedTouchFlags(boolean breakClickFlag, boolean gasClickFlag) {
-        this.breakClickFlag = breakClickFlag;
-        this.gasClickFlag = gasClickFlag;
-    }
-
-    public void feedSignals(boolean turnSignalLeft, boolean turnSignalRight) {
-        this.turnSignalLeft = turnSignalLeft;
-        this.turnSignalRight = turnSignalRight;
-    }
-
-    private void sleep(int ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException ignore) {
-        }
-    }
 
     public void stop() {
         connected = false;
@@ -204,30 +162,8 @@ public class AccelerometerClient {
         running = false;
     }
 
-    public void sendJamSignal() {
-        if (!connected)
-            return;
-        Runnable timer = () -> {
-            long startTime = System.currentTimeMillis();
-            while (System.currentTimeMillis() - startTime < 2500) {
-
-            }
-            sentJam = true;
-        };
-        new Thread(timer).start();
-        sentJam = false;
-        while (sentJam == false) {
-
-        }
-    }
-
     public void setPaused(boolean b) {
         AccelerometerClient.paused = b;
         AccelerometerClient.toastShown = true;
-    }
-
-    public void overrideSocket(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
     }
 }

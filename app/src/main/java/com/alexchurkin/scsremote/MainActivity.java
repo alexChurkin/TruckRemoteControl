@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
         View.OnClickListener,
         View.OnTouchListener,
-        AccelerometerClient.ConnectionListener {
+        TrackingClient.ConnectionListener {
 
     public static WifiManager wifi;
     public static ControllerButton breakButton = new ControllerButton();
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements
     private AppCompatImageButton mLeftSignalButton, mRightSignalButton, mAllSignalsButton;
     private ConstraintLayout mBreakLayout, mGasLayout;
 
-    private AccelerometerClient client;
+    private TrackingClient client;
     private boolean defaultServer = false, invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
     private int defaultServerPort = 18250, zero = 22;
     private String defaultServerIp = "shit";
@@ -92,24 +92,12 @@ public class MainActivity extends AppCompatActivity implements
         makeFullscreen();
         updatePrefs();
 
-        client = new AccelerometerClient("Bullshit", 18250);
-        client.setConnectionListener(this);
+        client = new TrackingClient("Bullshit", 18250, this);
         dBm = getSignalStrength();
 
         if (wifi.isWifiEnabled() && !AccelerometerClient.running && !justChangedOr) {
-            if (!defaultServer) {
-                showToast(R.string.searching_on_local);
-                client.run(false);
-            } else {
-                if (defaultServerIp.equals("shit")) {
-                    showToast(R.string.failed_default_connect);
-                } else {
-                    showToast(getString(
-                            R.string.attempting_to_connect_to) + " " + defaultServerIp + "...");
-                    client.forceUpdate(defaultServerIp, defaultServerPort);
-                    client.run(true);
-                }
-            }
+            showToast(R.string.searching_on_local);
+            client.start();
         }
     }
 
@@ -119,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements
             if (!isConnected) {
                 mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                 mRightSignalButton.setImageResource(R.drawable.right_disabled);
-            } else if (client.turnSignalLeft && client.turnSignalRight) {
+            } else if (client.isTwoTurnSignals()) {
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                     mRightSignalButton.setImageResource(R.drawable.right_disabled);
@@ -129,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 previousSignalGreen = !previousSignalGreen;
                 mHandler.postDelayed(this, 400);
-            } else if (client.turnSignalLeft) {
+            } else if (client.isTurnSignalLeft()) {
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                     mRightSignalButton.setImageResource(R.drawable.right_disabled);
@@ -139,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 previousSignalGreen = !previousSignalGreen;
                 mHandler.postDelayed(this, 400);
-            } else if (client.turnSignalRight) {
+            } else if (client.isTurnSignalRight()) {
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                     mRightSignalButton.setImageResource(R.drawable.right_disabled);
@@ -166,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements
         breakButton.setPressed(false);
         gasButton.setPressed(false);
         updatePrefs();
-        client.setPaused(false);
+        client.resume();
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
         if (ManualConnectActivity.configured) {
             client.stop();
@@ -183,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this, mSensor);
-        client.setPaused(true);
+        client.pause();
     }
 
     @Override
@@ -202,31 +190,31 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.buttonLeftSignal:
-                if (client.turnSignalLeft && client.turnSignalRight) return;
+                if (client.isTurnSignalLeft() && client.isTurnSignalRight()) return;
 
-                if (client.turnSignalRight || client.turnSignalLeft) {
+                if (client.isTurnSignalRight() || client.isTurnSignalLeft()) {
                     mHandler.removeCallbacksAndMessages(null);
                 }
 
-                client.feedSignals(!client.turnSignalLeft, false);
+                client.provideSignalsInfo(!client.isTurnSignalLeft(), false);
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonRightSignal:
-                if (client.turnSignalLeft && client.turnSignalRight) return;
+                if (client.isTurnSignalLeft() && client.isTurnSignalRight()) return;
 
-                if (client.turnSignalRight || client.turnSignalLeft) {
+                if (client.isTurnSignalRight() || client.isTurnSignalLeft()) {
                     mHandler.removeCallbacksAndMessages(null);
                 }
 
-                client.feedSignals(false, !client.turnSignalRight);
+                client.provideSignalsInfo(false, !client.isTurnSignalRight());
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonAllSignals:
 
-                boolean allEnabled = client.turnSignalLeft && client.turnSignalRight;
-                client.feedSignals(!allEnabled, !allEnabled);
+                boolean allEnabled = client.isTurnSignalLeft() && client.isTurnSignalRight();
+                client.provideSignalsInfo(!allEnabled, !allEnabled);
 
-                if (client.turnSignalLeft || client.turnSignalRight) {
+                if (client.isTurnSignalLeft() || client.isTurnSignalRight()) {
                     mHandler.removeCallbacksAndMessages(null);
                 }
                 mHandler.post(turnSignalsRunnable);
@@ -243,10 +231,11 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.pauseButton:
                 if (AccelerometerClient.connected) {
                     boolean newState = !AccelerometerClient.paused;
-                    client.setPaused(newState);
                     if (newState) {
+                        client.pause();
                         mPauseButton.setImageResource(R.drawable.pause_btn_paused);
                     } else {
+                        client.resume();
                         mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                     }
                 }
@@ -264,8 +253,7 @@ public class MainActivity extends AppCompatActivity implements
                         case 0:
                             client.stop();
                             client = null;
-                            client = new AccelerometerClient("Bullshit", 18250);
-                            client.setConnectionListener(MainActivity.this);
+                            client = new TrackingClient("Bullshit", 18250, this);
                             if (wifi.isWifiEnabled()) {
                                 client.run(false);
                                 showToast(R.string.searching_on_local);
@@ -312,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
         }
-        client.feedTouchFlags(breakButton.isPressed(), gasButton.isPressed());
+        client.provideMotionState(breakButton.isPressed(), gasButton.isPressed());
         return false;
     }
 
@@ -360,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements
                 x = applyDeadZoneX(x);
                 y = applyDeadZoneY(y);
             }
-            client.feedAccelerometerValues(x, y, z);
+            client.provideAccelerometerY(y);
             // Show connected toast if connected
             if (!AccelerometerClient.toastShown) {
                 if (AccelerometerClient.connected) {
