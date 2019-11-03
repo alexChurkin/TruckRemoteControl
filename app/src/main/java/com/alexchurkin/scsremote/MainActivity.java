@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements
     private ConstraintLayout rootView;
     private AppCompatImageButton mConnectionIndicator, mPauseButton, mSettingsButton;
     private AppCompatImageButton mLeftSignalButton, mRightSignalButton, mAllSignalsButton;
+    private AppCompatImageButton mButtonParking;
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private TrackingClient client;
@@ -123,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements
         mRightSignalButton = findViewById(R.id.buttonRightSignal);
         mAllSignalsButton = findViewById(R.id.buttonAllSignals);
 
+        mButtonParking = findViewById(R.id.buttonParking);
+
         mBreakLayout = findViewById(R.id.breakLayout);
         mGasLayout = findViewById(R.id.gasLayout);
 
@@ -132,10 +135,10 @@ public class MainActivity extends AppCompatActivity implements
         mConnectionIndicator.setOnClickListener(this);
         mPauseButton.setOnClickListener(this);
         mSettingsButton.setOnClickListener(this);
-
         mLeftSignalButton.setOnClickListener(this);
         mRightSignalButton.setOnClickListener(this);
         mAllSignalsButton.setOnClickListener(this);
+        mButtonParking.setOnClickListener(this);
 
         makeFullscreen();
         updatePrefs();
@@ -228,6 +231,16 @@ public class MainActivity extends AppCompatActivity implements
                     mHandler.removeCallbacksAndMessages(null);
                 }
                 mHandler.post(turnSignalsRunnable);
+                break;
+            case R.id.buttonParking:
+                if(!isConnected) return;
+                boolean newValue = !client.isParkingBreakEnabled();
+                client.setParkingBreakEnabled(newValue);
+                if(newValue) {
+                    mButtonParking.setImageResource(R.drawable.parking_break_on);
+                } else {
+                    mButtonParking.setImageResource(R.drawable.parking_break_off);
+                }
                 break;
 
             case R.id.connectionIndicator:

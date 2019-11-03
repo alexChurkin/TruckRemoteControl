@@ -29,6 +29,7 @@ public class TrackingClient {
     private float y;
     private boolean breakClicked, gasClicked;
     private boolean turnSignalLeft, turnSignalRight;
+    private boolean isParkingBreakEnabled;
 
     public TrackingClient(String ip, int port, @NonNull ConnectionListener listener) {
         this.ip = ip;
@@ -58,6 +59,10 @@ public class TrackingClient {
         this.turnSignalRight = turnSignalRight;
     }
 
+    public void setParkingBreakEnabled(boolean isEnabled) {
+        this.isParkingBreakEnabled = isEnabled;
+    }
+
     public boolean isTwoTurnSignals() {
         return turnSignalLeft && turnSignalRight;
     }
@@ -68,6 +73,10 @@ public class TrackingClient {
 
     public boolean isTurnSignalRight() {
         return turnSignalRight;
+    }
+
+    public boolean isParkingBreakEnabled() {
+        return isParkingBreakEnabled;
     }
 
     public String getSocketInetHostAddress() {
@@ -129,7 +138,8 @@ public class TrackingClient {
                 while (running) {
                     if (!isPaused) {
                         writer.println(y + "," + breakClicked + "," + gasClicked + ","
-                                + turnSignalLeft + "," + turnSignalRight);
+                                + turnSignalLeft + "," + turnSignalRight + ","
+                                + isParkingBreakEnabled);
                         writer.flush();
                         sleep(20);
                     } else {

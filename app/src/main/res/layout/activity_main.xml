@@ -9,6 +9,7 @@
     android:orientation="horizontal">
 
     <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/linearLayoutCompat2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
@@ -97,7 +98,7 @@
         android:id="@+id/buttonAllSignals"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="22dp"
         android:background="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -108,7 +109,7 @@
         android:id="@+id/buttonLeftSignal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="22dp"
         android:layout_marginRight="28dp"
         android:background="@null"
         app:layout_constraintRight_toLeftOf="@+id/buttonAllSignals"
@@ -120,11 +121,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="28dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="22dp"
         android:background="@null"
         app:layout_constraintStart_toEndOf="@+id/buttonAllSignals"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/right_disabled" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/buttonParking"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@null"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonAllSignals"
+        app:srcCompat="@drawable/parking_break_off" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
