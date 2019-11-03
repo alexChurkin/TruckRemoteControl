@@ -2,6 +2,8 @@ package com.alexchurkin.scsremote;
 
 import android.os.AsyncTask;
 
+import androidx.annotation.NonNull;
+
 import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -14,20 +16,36 @@ public class TrackingClient {
         void onConnectionChanged(boolean isConnected);
     }
 
-    public Socket socket;
+    private Socket socket;
+    @NonNull
     private ConnectionListener listener;
 
     private String ip;
     private int port;
+    private boolean running;
     private boolean isConnected, isPaused;
+    public boolean toastShown;
 
-    public float y;
+    private float y;
     private boolean breakClicked, gasClicked;
     private boolean turnSignalLeft, turnSignalRight;
 
-    public TrackingClient(String ip, int port, ConnectionListener listener) {
+    public TrackingClient(String ip, int port, @NonNull ConnectionListener listener) {
         this.ip = ip;
         this.port = port;
+        this.listener = listener;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
     }
 
     public void provideAccelerometerY(float y) {
@@ -56,21 +74,37 @@ public class TrackingClient {
         return turnSignalRight;
     }
 
+    public String getSocketInetHostAddress() {
+        return socket.getInetAddress().getHostAddress();
+    }
+
     public void start() {
+        running = true;
         TCPSessionSender sender = new TCPSessionSender();
         sender.execute(ip, port + "");
     }
 
-    public void pause() {
+    public void startForced() {
 
+    }
+
+    public void pause() {
+        this.isPaused = true;
     }
 
     public void stop() {
-
+        this.isConnected = false;
+        this.isPaused = false;
+        listener.onConnectionChanged(false);
     }
 
     public void resume() {
+        this.isPaused = false;
+    }
 
+    public void forceUpdate(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
     }
 
 
@@ -78,8 +112,8 @@ public class TrackingClient {
 
         @Override
         protected Void doInBackground(String... strings) {
-            String ip = strings[1];
-            int port = Integer.parseInt(strings[2]);
+            String ip = strings[0];
+            int port = Integer.parseInt(strings[1]);
 
             try {
                 DatagramSocket clientSocket = new DatagramSocket();
@@ -94,7 +128,7 @@ public class TrackingClient {
                 clientSocket.receive(receivePacket);
                 clientSocket.close();
 
-                Socket socket = new Socket(receivePacket.getAddress().getHostAddress(), port);
+                socket = new Socket(receivePacket.getAddress().getHostAddress(), port);
                 socket.setTcpNoDelay(true);
 
                 PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
@@ -106,13 +140,15 @@ public class TrackingClient {
                         writer.println(y + "," + breakClicked + "," + gasClicked + ","
                                 + turnSignalLeft + "," + turnSignalRight);
                         writer.flush();
+                        sleep(20);
                     } else {
                         writer.println("paused");
                         writer.flush();
-                        sleep(500);
+                        sleep(800);
                     }
-                    sleep(20);
                 }
+                writer.close();
+                socket.close();
                 listener.onConnectionChanged(false);
             } catch (Exception e) {
                 e.printStackTrace();

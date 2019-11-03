@@ -92,10 +92,10 @@ public class MainActivity extends AppCompatActivity implements
         makeFullscreen();
         updatePrefs();
 
-        client = new TrackingClient("Bullshit", 18250, this);
+        client = new TrackingClient("Client", 18250, this);
         dBm = getSignalStrength();
 
-        if (wifi.isWifiEnabled() && !AccelerometerClient.running && !justChangedOr) {
+        if (wifi.isWifiEnabled() && !client.isRunning() && !justChangedOr) {
             showToast(R.string.searching_on_local);
             client.start();
         }
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements
             showToast(getString(R.string.attempting_to_connect_to)
                     + " " + ManualConnectActivity.ipAddress
                     + " " + getString(R.string.on_port) + " " + ManualConnectActivity.port);
-            client.run(true);
+            client.startForced();
             ManualConnectActivity.configured = false;
         }
     }
@@ -229,8 +229,8 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case R.id.pauseButton:
-                if (AccelerometerClient.connected) {
-                    boolean newState = !AccelerometerClient.paused;
+                if (client.isConnected()) {
+                    boolean newState = !client.isPaused();
                     if (newState) {
                         client.pause();
                         mPauseButton.setImageResource(R.drawable.pause_btn_paused);
@@ -253,9 +253,9 @@ public class MainActivity extends AppCompatActivity implements
                         case 0:
                             client.stop();
                             client = null;
-                            client = new TrackingClient("Bullshit", 18250, this);
+                            client = new TrackingClient("Client", 18250, this);
                             if (wifi.isWifiEnabled()) {
-                                client.run(false);
+                                client.start();
                                 showToast(R.string.searching_on_local);
                             } else {
                                 showToast(R.string.no_wifi_conn_detected);
@@ -350,14 +350,14 @@ public class MainActivity extends AppCompatActivity implements
             }
             client.provideAccelerometerY(y);
             // Show connected toast if connected
-            if (!AccelerometerClient.toastShown) {
-                if (AccelerometerClient.connected) {
+            if (!client.toastShown) {
+                if (client.isConnected()) {
                     showToast(getString(R.string.connected_to_server_at)
-                            + " " + client.socket.getInetAddress().getHostAddress());
+                            + " " + client.getSocketInetHostAddress());
                 } else {
                     showToast(R.string.connection_lost);
                 }
-                AccelerometerClient.toastShown = true;
+                client.toastShown = true;
             }
         } catch (Exception ignore) {
         }

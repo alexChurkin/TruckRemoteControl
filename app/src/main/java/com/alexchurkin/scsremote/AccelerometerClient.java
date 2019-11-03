@@ -10,7 +10,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 //Client object
-public class AccelerometerClient {
+/*public class AccelerometerClient {
 
     public static boolean running = false, paused = false;
     public static boolean connected = false;
@@ -138,32 +138,4 @@ public class AccelerometerClient {
         };
         new Thread(r).start();
     }
-
-    private void signalStrengthUpdate() {
-        Runnable r = () -> {
-            while (running) {
-                if (!paused) {
-                    MainActivity.dBm = MainActivity.wifi.getConnectionInfo().getRssi();
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (Exception ignore) {
-                }
-            }
-        };
-        new Thread(r).start();
-    }
-
-
-
-    public void stop() {
-        connected = false;
-        listener.onConnectionChanged(false);
-        running = false;
-    }
-
-    public void setPaused(boolean b) {
-        AccelerometerClient.paused = b;
-        AccelerometerClient.toastShown = true;
-    }
-}
+}*/
