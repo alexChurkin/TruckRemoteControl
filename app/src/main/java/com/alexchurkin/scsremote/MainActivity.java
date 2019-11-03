@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements
         makeFullscreen();
         updatePrefs();
 
-        client = new TrackingClient("Client", 18250, this);
+        client = new TrackingClient(null, 18250, this);
         dBm = getSignalStrength();
 
         if (wifi.isWifiEnabled() && !client.isRunning()) {
@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements
                         case 0:
                             client.stop();
                             client = null;
-                            client = new TrackingClient("Client", 18250, this);
+                            client = new TrackingClient(null, 18250, this);
                             if (wifi.isWifiEnabled()) {
                                 client.start();
                                 showToast(R.string.searching_on_local);
