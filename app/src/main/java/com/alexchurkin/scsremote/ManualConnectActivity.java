@@ -1,6 +1,5 @@
 package com.alexchurkin.scsremote;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -12,7 +11,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class ManualConnectActivity extends Activity implements OnClickListener {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class ManualConnectActivity extends AppCompatActivity implements OnClickListener {
 
     public static boolean configured = false;
     public static String ipAddress;

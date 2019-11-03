@@ -6,12 +6,6 @@
     <string name="serverPortString">Порт сервера (1 – 65535)</string>
     <string name="period">.</string>
     <string name="manualConnectString">Ручное подключение</string>
-    <string name="sendString">Отправить</string>
-    <string name="preferencesString">Настройки</string>
-    <string name="serverHelp">Для правильной работы этого приложения необходимо приложение-сервер. Оно должно быть запущено на компьютере. Загрузите его ниже и запустите на своём компьютере. После загрузки используйте меню для поиска и автоматического подключения к серверу по IP-адресу и порту, на котором сервер работает.\n</string>
-    <string name="downloadServer">Скачать приложение-сервер</string>
-    <string name="okayString">Готово</string>
-    <string name="showHelp">Для отображения этого диалога при старте установите галочку в настройках через контекстное меню.</string>
     <string name="setServerIP">Установить стандартный IP</string>
     <string name="setServerPort">Установить стандартный порт</string>
     <string name="defaultServerIP">Стандартный адрес сервера</string>
@@ -24,13 +18,49 @@
     </string-array>
     <string name="settings">Настройки</string>
     <string name="searching_on_local">Поиск серверов в локальной сети…</string>
-    <string name="failed_default_connect">Не удалось подключиться к стандартному серверу. Он не указан.</string>
     <string name="attempting_to_connect_to">Попытка подключения к</string>
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
     <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
     <string name="connected_to_server_at">Подключен к серверу</string>
-    <string name="not_connected_long_msg">Не подключен к серверу. Попробуйте нажать "Подключиться автоматически" в меню или подключиться вручную через "Ручное подключение".</string>
     <string name="disconnected_msg">Отключен от сервера.</string>
     <string name="on_port">порт</string>
     <string name="connection_lost">Соединение с сервером прервано</string>
+
+    <string name="connect_to_default_on_startup_title">Подключаться к стандартному серверу при запуске</string>
+    <string name="connect_to_default_on_startup_summary">Указать стандартный сервер для подключения при запуске</string>
+    <string name="connect_to_default_on_startup_summary_off">Попытка подключения к стандартному серверу не производится при запуске</string>
+    <string name="connect_to_default_on_startup_summary_on">Попытка подключения к стандартному серверу производится при запуске</string>
+
+    <string name="def_server_ip_title">IP-адрес сервера</string>
+    <string name="def_server_ip_summary">IP-адрес стандартного сервера</string>
+
+    <string name="def_server_port_title">Порт стандартного сервера</string>
+    <string name="def_server_port_summary">Порт стандартного сервера</string>
+    <string name="def_server_port_dialog_title">Порт сервера</string>
+
+    <string name="y_invert_title">Инвертировать ось Y</string>
+    <string name="y_invert_summary">Инвертирование показаний акселерометра по оси Y</string>
+
+    <string name="deadzone_title">Включить мёртвую зону акселерометра</string>
+    <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
+
+    <string name="tablet_mode_title">Режим планшета</string>
+    <string name="tablet_mode_summary">Включите эту опцию для устройствс широкими экранами (HTC Status, планшеты и др.)</string>
+
+    <string name="zero_pos_title">Начальное положение (калибровка)</string>
+    <string name="zero_pos_dialog_title">Начальное положение</string>
+    <string name="zero_pos_summary">Устанавливает угол оси Y, на котором курсор не движется</string>
+
+    <string-array name="listAngle">
+        <item>0 градусов</item>
+        <item>22.5 градуса</item>
+        <item>45 градусов</item>
+    </string-array>
+
+    <string-array name="listAngleReturn">
+        <item>0</item>
+        <item>22</item>
+        <item>45</item>
+    </string-array>
+
 </resources>

@@ -1,10 +1,10 @@
 package com.alexchurkin.scsremote;
 
-public class ControllerButton {
+public class GameButton {
 
     private boolean state = false;
 
-    public ControllerButton() {
+    public GameButton() {
     }
 
     public void setPressed(boolean state) {

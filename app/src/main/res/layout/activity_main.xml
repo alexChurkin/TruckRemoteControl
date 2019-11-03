@@ -9,7 +9,6 @@
     android:orientation="horizontal">
 
     <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/linearLayoutCompat"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
@@ -38,7 +37,6 @@
                 app:srcCompat="@drawable/connection_indicator_red" />
 
             <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/breakImageView"
                 android:layout_width="wrap_content"
                 android:layout_height="200dp"
                 android:layout_marginStart="60dp"
@@ -84,7 +82,6 @@
                 app:srcCompat="@drawable/ic_settings" />
 
             <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/gasImageView"
                 android:layout_width="wrap_content"
                 android:layout_height="200dp"
                 android:layout_marginEnd="60dp"

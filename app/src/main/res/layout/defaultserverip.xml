@@ -6,7 +6,6 @@
     android:orientation="vertical">
 
     <TableRow
-        android:id="@+id/tableRow1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center">
@@ -28,7 +27,6 @@
 
 
         <TextView
-            android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/period" />
@@ -42,7 +40,6 @@
             android:nextFocusDown="@+id/dip3" />
 
         <TextView
-            android:id="@+id/TextView01"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/period" />
@@ -56,7 +53,6 @@
             android:nextFocusDown="@+id/dip4" />
 
         <TextView
-            android:id="@+id/TextView02"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/period" />

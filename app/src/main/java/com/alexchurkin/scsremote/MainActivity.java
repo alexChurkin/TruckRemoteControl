@@ -33,8 +33,8 @@ public class MainActivity extends AppCompatActivity implements
         TrackingClient.ConnectionListener {
 
     public static WifiManager wifi;
-    public static ControllerButton breakButton = new ControllerButton();
-    public static ControllerButton gasButton = new ControllerButton();
+    public static GameButton breakButton = new GameButton();
+    public static GameButton gasButton = new GameButton();
     public static int dBm = -200;
 
     private SensorManager mSensorManager;
@@ -47,9 +47,8 @@ public class MainActivity extends AppCompatActivity implements
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private TrackingClient client;
-    private boolean defaultServer = false, invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
-    private int defaultServerPort = 18250, zero = 22;
-    private String defaultServerIp = "shit";
+    private boolean invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
+    private int zero = 22;
 
     private boolean isConnected;
 
@@ -180,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         client.stop();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        SharedPreferences prefs = Prefs.get();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("justChangedOr", changingOr);
         if (!changingOr)
@@ -362,13 +361,6 @@ public class MainActivity extends AppCompatActivity implements
     public void onAccuracyChanged(Sensor sensor, int i) {
     }
 
-    /*public float applyDeadZoneX(float x) {
-        if (x < 5.8 && x > 3.2) {
-            x = 4.90f;
-        }
-        return x;
-    }*/
-
     public float applyDeadZoneY(float y) {
         if (y > -.98 && y < .98) {
             y = 0f;
@@ -378,15 +370,12 @@ public class MainActivity extends AppCompatActivity implements
 
     private void updatePrefs() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        defaultServer = prefs.getBoolean("defaultServer", false);
         invertX = prefs.getBoolean("invertX", false);
         invertY = prefs.getBoolean("invertY", false);
         deadZone = prefs.getBoolean("deadZone", false);
         tablet = prefs.getBoolean("tablet", false);
         justChangedOr = prefs.getBoolean("justChangedOr", false);
-        defaultServerIp = prefs.getString("serverIP", "shit");
         zero = Integer.parseInt(prefs.getString("zeroPosition", "22"));
-        defaultServerPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
     }
 
     private void makeFullscreen() {
