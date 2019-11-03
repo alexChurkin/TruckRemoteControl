@@ -272,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements
                             } else {
                                 showToast(R.string.no_wifi_conn_detected);
                             }
+                            mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             break;
                         case 1:
                             Intent toManual = new Intent(
