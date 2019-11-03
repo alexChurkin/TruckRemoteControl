@@ -292,7 +292,6 @@ public class MainActivity extends AppCompatActivity implements
                             break;
                         case 2:
                             client.stop();
-                            showToast(R.string.disconnected_msg);
                             break;
                         case 3:
                             Intent toSettings = new Intent(MainActivity.this, SettingsActivity.class);

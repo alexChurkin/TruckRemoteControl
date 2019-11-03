@@ -10,6 +10,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class TrackingClient {
 
@@ -85,8 +86,7 @@ public class TrackingClient {
 
     public void start() {
         running = true;
-        TCPMessagesSender sender = new TCPMessagesSender();
-        sender.execute(ip, port + "");
+        new TCPMessagesSender().execute(ip, port + "");
     }
 
     public void start(String ip, int port) {
@@ -118,13 +118,19 @@ public class TrackingClient {
 
         @Override
         protected Void doInBackground(String... strings) {
+            Log.d("TAG", "Execution started");
             String ip = strings[0];
             int port = Integer.parseInt(strings[1]);
 
             try {
                 if (ip == null) {
                     Log.d("TAG", "Autoconnect");
-                    attemptAutoConnect();
+                    try {
+                        attemptAutoConnect();
+                    } catch (SocketTimeoutException e) {
+                        running = false;
+                        return null;
+                    }
                 } else {
                     Log.d("TAG", "Connect ip = " + ip + "; port = " + port);
                     socket = new Socket(ip, port);
@@ -158,13 +164,13 @@ public class TrackingClient {
                 e.printStackTrace();
                 running = false;
                 listener.onConnectionChanged(false);
-                Log.d("TAG", e.toString());
             }
             return null;
         }
 
         private void attemptAutoConnect() throws Exception {
             DatagramSocket clientSocket = new DatagramSocket();
+            clientSocket.setSoTimeout(2000);
             InetAddress ipAddress = InetAddress.getByName("255.255.255.255");
             // Sending HELLO
             byte[] sendData = "HELLO".getBytes();
