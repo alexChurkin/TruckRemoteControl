@@ -24,7 +24,7 @@ public class TrackingClient {
     private String ip;
     private int port;
     private boolean running;
-    private boolean isConnected, isPaused;
+    private boolean isPaused;
 
     private float y;
     private boolean breakClicked, gasClicked;
@@ -38,10 +38,6 @@ public class TrackingClient {
 
     public boolean isRunning() {
         return running;
-    }
-
-    public boolean isConnected() {
-        return isConnected;
     }
 
     public boolean isPaused() {
@@ -99,8 +95,7 @@ public class TrackingClient {
     }
 
     public void stop() {
-        this.isConnected = false;
-        this.isPaused = false;
+        this.running = false;
         listener.onConnectionChanged(false);
     }
 
@@ -127,12 +122,11 @@ public class TrackingClient {
                     socket.setTcpNoDelay(true);
                 }
 
-                isConnected = true;
                 listener.onConnectionChanged(true);
 
                 PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 
-                while (running && isConnected) {
+                while (running) {
                     if (!isPaused) {
                         writer.println(y + "," + breakClicked + "," + gasClicked + ","
                                 + turnSignalLeft + "," + turnSignalRight);
@@ -148,9 +142,11 @@ public class TrackingClient {
                 writer.flush();
                 writer.close();
                 socket.close();
+                running = false;
                 listener.onConnectionChanged(false);
             } catch (Exception e) {
                 e.printStackTrace();
+                running = false;
                 listener.onConnectionChanged(false);
                 Log.d("TAG", e.toString());
             }

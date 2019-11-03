@@ -26,8 +26,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import java.util.regex.Pattern;
-
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
         View.OnClickListener,
@@ -145,13 +143,13 @@ public class MainActivity extends AppCompatActivity implements
         client = new TrackingClient(null, 18250, this);
         dBm = getSignalStrength();
 
-        if (wifi.isWifiEnabled() && !client.isRunning()) {
+        if (wifi.isWifiEnabled()) {
             showToast(R.string.searching_on_local);
             if (prefs.getBoolean("defaultServer", false)) {
                 String serverIp = prefs.getString("serverIP", "");
                 try {
                     int serverPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
-                    if(Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
+                    if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
                         client.start(serverIp, serverPort);
                     } else {
                         client.start();
@@ -241,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case R.id.pauseButton:
-                if (client.isConnected()) {
+                if (isConnected) {
                     boolean newState = !client.isPaused();
                     if (newState) {
                         client.pause();
@@ -263,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements
                 .setItems(R.array.menu_items, (dialogInterface, i) -> {
                     switch (i) {
                         case 0:
-                            client.stop();
+                            if (client.isRunning()) client.stop();
                             client = null;
                             client = new TrackingClient(null, 18250, this);
                             if (wifi.isWifiEnabled()) {
