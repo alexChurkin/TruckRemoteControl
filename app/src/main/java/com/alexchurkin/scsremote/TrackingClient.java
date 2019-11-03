@@ -24,7 +24,6 @@ public class TrackingClient {
     private int port;
     private boolean running;
     private boolean isConnected, isPaused;
-    public boolean toastShown;
 
     private float y;
     private boolean breakClicked, gasClicked;
@@ -123,7 +122,7 @@ public class TrackingClient {
                 byte[] sendData = "HELLO".getBytes();
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 18250);
                 clientSocket.send(sendPacket);
-                // Receiving ACK
+                // Receiving host address
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 clientSocket.receive(receivePacket);
                 clientSocket.close();
@@ -131,11 +130,12 @@ public class TrackingClient {
                 socket = new Socket(receivePacket.getAddress().getHostAddress(), port);
                 socket.setTcpNoDelay(true);
 
-                PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
                 isConnected = true;
                 listener.onConnectionChanged(true);
 
-                while (isConnected) {
+                PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+
+                while (running && isConnected) {
                     if (!isPaused) {
                         writer.println(y + "," + breakClicked + "," + gasClicked + ","
                                 + turnSignalLeft + "," + turnSignalRight);
@@ -147,11 +147,14 @@ public class TrackingClient {
                         sleep(800);
                     }
                 }
+                writer.write("disconnected");
+                writer.flush();
                 writer.close();
                 socket.close();
                 listener.onConnectionChanged(false);
             } catch (Exception e) {
                 e.printStackTrace();
+                listener.onConnectionChanged(false);
             }
             return null;
         }

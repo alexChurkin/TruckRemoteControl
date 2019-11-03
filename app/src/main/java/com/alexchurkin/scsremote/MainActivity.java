@@ -306,12 +306,17 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onConnectionChanged(boolean isConnected) {
-        this.isConnected = isConnected;
-        if (isConnected) {
-            mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
-        } else {
-            mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
-        }
+        runOnUiThread(() -> {
+            this.isConnected = isConnected;
+            if (isConnected) {
+                mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
+                showToast(getString(R.string.connected_to_server_at)
+                        + " " + client.getSocketInetHostAddress());
+            } else {
+                mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
+                showToast(R.string.connection_lost);
+            }
+        });
     }
 
     @Override
@@ -326,7 +331,6 @@ public class MainActivity extends AppCompatActivity implements
         try {
             float x = invertX ? (-event.values[0] + 9.81f) : event.values[0];
             float y = invertY ? (-event.values[1]) : event.values[1];
-            float z = event.values[2];
             // Screen flipping and whatnot
             {
                 if (tablet) {
@@ -345,20 +349,9 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
             if (deadZone) {
-                x = applyDeadZoneX(x);
                 y = applyDeadZoneY(y);
             }
             client.provideAccelerometerY(y);
-            // Show connected toast if connected
-            if (!client.toastShown) {
-                if (client.isConnected()) {
-                    showToast(getString(R.string.connected_to_server_at)
-                            + " " + client.getSocketInetHostAddress());
-                } else {
-                    showToast(R.string.connection_lost);
-                }
-                client.toastShown = true;
-            }
         } catch (Exception ignore) {
         }
     }
@@ -367,12 +360,12 @@ public class MainActivity extends AppCompatActivity implements
     public void onAccuracyChanged(Sensor sensor, int i) {
     }
 
-    public float applyDeadZoneX(float x) {
+    /*public float applyDeadZoneX(float x) {
         if (x < 5.8 && x > 3.2) {
             x = 4.90f;
         }
         return x;
-    }
+    }*/
 
     public float applyDeadZoneY(float y) {
         if (y > -.98 && y < .98) {
