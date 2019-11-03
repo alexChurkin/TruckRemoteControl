@@ -55,52 +55,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean previousSignalGreen;
 
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mHandler = new Handler();
-
-        setContentView(R.layout.activity_main);
-        rootView = findViewById(R.id.rootView);
-
-        mConnectionIndicator = findViewById(R.id.connectionIndicator);
-        mPauseButton = findViewById(R.id.pauseButton);
-        mSettingsButton = findViewById(R.id.settingsButton);
-
-        mLeftSignalButton = findViewById(R.id.buttonLeftSignal);
-        mRightSignalButton = findViewById(R.id.buttonRightSignal);
-        mAllSignalsButton = findViewById(R.id.buttonAllSignals);
-
-        mBreakLayout = findViewById(R.id.breakLayout);
-        mGasLayout = findViewById(R.id.gasLayout);
-
-        mBreakLayout.setOnTouchListener(this);
-        mGasLayout.setOnTouchListener(this);
-
-        mConnectionIndicator.setOnClickListener(this);
-        mPauseButton.setOnClickListener(this);
-        mSettingsButton.setOnClickListener(this);
-
-        mLeftSignalButton.setOnClickListener(this);
-        mRightSignalButton.setOnClickListener(this);
-        mAllSignalsButton.setOnClickListener(this);
-
-        makeFullscreen();
-        updatePrefs();
-
-        client = new TrackingClient("Client", 18250, this);
-        dBm = getSignalStrength();
-
-        if (wifi.isWifiEnabled() && !client.isRunning() && !justChangedOr) {
-            showToast(R.string.searching_on_local);
-            client.start();
-        }
-    }
-
     Runnable turnSignalsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -148,6 +102,52 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
 
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mHandler = new Handler();
+
+        setContentView(R.layout.activity_main);
+        rootView = findViewById(R.id.rootView);
+
+        mConnectionIndicator = findViewById(R.id.connectionIndicator);
+        mPauseButton = findViewById(R.id.pauseButton);
+        mSettingsButton = findViewById(R.id.settingsButton);
+
+        mLeftSignalButton = findViewById(R.id.buttonLeftSignal);
+        mRightSignalButton = findViewById(R.id.buttonRightSignal);
+        mAllSignalsButton = findViewById(R.id.buttonAllSignals);
+
+        mBreakLayout = findViewById(R.id.breakLayout);
+        mGasLayout = findViewById(R.id.gasLayout);
+
+        mBreakLayout.setOnTouchListener(this);
+        mGasLayout.setOnTouchListener(this);
+
+        mConnectionIndicator.setOnClickListener(this);
+        mPauseButton.setOnClickListener(this);
+        mSettingsButton.setOnClickListener(this);
+
+        mLeftSignalButton.setOnClickListener(this);
+        mRightSignalButton.setOnClickListener(this);
+        mAllSignalsButton.setOnClickListener(this);
+
+        makeFullscreen();
+        updatePrefs();
+
+        client = new TrackingClient("Client", 18250, this);
+        dBm = getSignalStrength();
+
+        if (wifi.isWifiEnabled() && !client.isRunning() && !justChangedOr) {
+            showToast(R.string.searching_on_local);
+            client.start();
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements
             client.startForced();
             ManualConnectActivity.configured = false;
         }
+        mHandler.post(turnSignalsRunnable);
     }
 
     @Override
@@ -172,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
         mSensorManager.unregisterListener(this, mSensor);
         client.pause();
+        mHandler.removeCallbacks(turnSignalsRunnable);
     }
 
     @Override
