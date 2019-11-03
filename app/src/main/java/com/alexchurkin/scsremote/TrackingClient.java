@@ -79,16 +79,22 @@ public class TrackingClient {
 
     public void start() {
         running = true;
-        TCPSessionSender sender = new TCPSessionSender();
+        TCPMessagesSender sender = new TCPMessagesSender();
         sender.execute(ip, port + "");
     }
 
-    public void startForced() {
-
+    public void start(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
+        start();
     }
 
     public void pause() {
         this.isPaused = true;
+    }
+
+    public void resume() {
+        this.isPaused = false;
     }
 
     public void stop() {
@@ -97,17 +103,13 @@ public class TrackingClient {
         listener.onConnectionChanged(false);
     }
 
-    public void resume() {
-        this.isPaused = false;
-    }
-
     public void forceUpdate(String ip, int port) {
         this.ip = ip;
         this.port = port;
     }
 
 
-    public class TCPSessionSender extends AsyncTask<String, Void, Void> {
+    public class TCPMessagesSender extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(String... strings) {
@@ -115,20 +117,12 @@ public class TrackingClient {
             int port = Integer.parseInt(strings[1]);
 
             try {
-                DatagramSocket clientSocket = new DatagramSocket();
-                InetAddress IPAddress = InetAddress.getByName("255.255.255.255");
-                byte[] receiveData = new byte[1024];
-                // Sending HELLO
-                byte[] sendData = "HELLO".getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 18250);
-                clientSocket.send(sendPacket);
-                // Receiving host address
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                clientSocket.receive(receivePacket);
-                clientSocket.close();
-
-                socket = new Socket(receivePacket.getAddress().getHostAddress(), port);
-                socket.setTcpNoDelay(true);
+                if (ip == null) {
+                    attemptAutoConnect();
+                } else {
+                    socket = new Socket(ip, port);
+                    socket.setTcpNoDelay(true);
+                }
 
                 isConnected = true;
                 listener.onConnectionChanged(true);
@@ -157,6 +151,24 @@ public class TrackingClient {
                 listener.onConnectionChanged(false);
             }
             return null;
+        }
+
+        private void attemptAutoConnect() throws Exception {
+            DatagramSocket clientSocket = new DatagramSocket();
+            InetAddress ipAddress = InetAddress.getByName("255.255.255.255");
+            // Sending HELLO
+            byte[] sendData = "HELLO".getBytes();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ipAddress, 18250);
+            clientSocket.send(sendPacket);
+            // Receiving host address
+            byte[] receiveData = new byte[1024];
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            clientSocket.receive(receivePacket);
+            clientSocket.close();
+
+            ip = receivePacket.getAddress().getHostAddress();
+            socket = new Socket(ip, port);
+            socket.setTcpNoDelay(true);
         }
     }
 

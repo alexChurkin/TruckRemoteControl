@@ -12,8 +12,8 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,6 +25,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements
     private SensorManager mSensorManager;
     private Sensor mSensor;
     private Handler mHandler;
+    SharedPreferences prefs;
 
     private ConstraintLayout rootView;
     private AppCompatImageButton mConnectionIndicator, mPauseButton, mSettingsButton;
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private TrackingClient client;
-    private boolean invertX = false, invertY = false, deadZone = false, tablet = false, changingOr = false, justChangedOr = false;
+    private boolean invertX = false, invertY = false, deadZone = false, tablet = false;
     private int zero = 22;
 
     private boolean isConnected;
@@ -109,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mHandler = new Handler();
+        prefs = Prefs.get();
 
         setContentView(R.layout.activity_main);
         rootView = findViewById(R.id.rootView);
@@ -141,9 +145,23 @@ public class MainActivity extends AppCompatActivity implements
         client = new TrackingClient("Client", 18250, this);
         dBm = getSignalStrength();
 
-        if (wifi.isWifiEnabled() && !client.isRunning() && !justChangedOr) {
+        if (wifi.isWifiEnabled() && !client.isRunning()) {
             showToast(R.string.searching_on_local);
-            client.start();
+            if (prefs.getBoolean("defaultServer", false)) {
+                String serverIp = prefs.getString("serverIP", "");
+                try {
+                    int serverPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
+                    if(Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
+                        client.start(serverIp, serverPort);
+                    } else {
+                        client.start();
+                    }
+                } catch (Exception e) {
+                    client.start();
+                }
+            } else {
+                client.start();
+            }
         }
     }
 
@@ -155,15 +173,14 @@ public class MainActivity extends AppCompatActivity implements
         updatePrefs();
         client.resume();
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        if (ManualConnectActivity.configured) {
+        /*if (ManualConnectActivity.configured) {
             client.stop();
             client.forceUpdate(ManualConnectActivity.ipAddress, ManualConnectActivity.port);
             showToast(getString(R.string.attempting_to_connect_to)
                     + " " + ManualConnectActivity.ipAddress
                     + " " + getString(R.string.on_port) + " " + ManualConnectActivity.port);
-            client.startForced();
             ManualConnectActivity.configured = false;
-        }
+        }*/
         mHandler.post(turnSignalsRunnable);
     }
 
@@ -179,12 +196,6 @@ public class MainActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         client.stop();
-        SharedPreferences prefs = Prefs.get();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("justChangedOr", changingOr);
-        if (!changingOr)
-            editor.putString("lastServer", "");
-        editor.apply();
     }
 
     @Override
@@ -369,12 +380,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void updatePrefs() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         invertX = prefs.getBoolean("invertX", false);
         invertY = prefs.getBoolean("invertY", false);
         deadZone = prefs.getBoolean("deadZone", false);
         tablet = prefs.getBoolean("tablet", false);
-        justChangedOr = prefs.getBoolean("justChangedOr", false);
         zero = Integer.parseInt(prefs.getString("zeroPosition", "22"));
     }
 
