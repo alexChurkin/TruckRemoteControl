@@ -26,6 +26,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
         View.OnClickListener,
@@ -233,10 +235,10 @@ public class MainActivity extends AppCompatActivity implements
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonParking:
-                if(!isConnected) return;
+                if (!isConnected) return;
                 boolean newValue = !client.isParkingBreakEnabled();
                 client.setParkingBreakEnabled(newValue);
-                if(newValue) {
+                if (newValue) {
                     mButtonParking.setImageResource(R.drawable.parking_break_on);
                 } else {
                     mButtonParking.setImageResource(R.drawable.parking_break_off);
@@ -299,7 +301,12 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 })
                 .create();
+        dialog.getWindow().setFlags(FLAG_NOT_FOCUSABLE, FLAG_NOT_FOCUSABLE);
         dialog.show();
+        dialog.getWindow().getDecorView().setSystemUiVisibility(
+                getWindow().getDecorView().getSystemUiVisibility()
+        );
+        dialog.getWindow().clearFlags(FLAG_NOT_FOCUSABLE);
     }
 
     @SuppressLint("ClickableViewAccessibility")
