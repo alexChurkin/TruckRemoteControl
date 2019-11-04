@@ -23,15 +23,15 @@
     <string name="connected_to_server_at">Подключен к серверу</string>
     <string name="connection_lost">Соединение с сервером прервано</string>
 
-    <string name="connect_to_default_on_startup_title">Подключаться к стандартному серверу при запуске</string>
-    <string name="connect_to_default_on_startup_summary">Указать стандартный сервер для подключения при запуске</string>
-    <string name="connect_to_default_on_startup_summary_off">Попытка подключения к стандартному серверу не производится при запуске</string>
-    <string name="connect_to_default_on_startup_summary_on">Попытка подключения к стандартному серверу производится при запуске</string>
+    <string name="connect_to_default_on_startup_title">Использовать стандартный сервер</string>
+    <string name="connect_to_default_on_startup_summary">Подключение к указанному серверу при запуске</string>
+    <string name="connect_to_default_on_startup_summary_off">Подключение к серверу при запуске отключено</string>
+    <string name="connect_to_default_on_startup_summary_on">Подключение к указанному серверу производится при запуске</string>
 
     <string name="def_server_ip_title">IP-адрес сервера</string>
     <string name="def_server_ip_summary">IP-адрес стандартного сервера</string>
 
-    <string name="def_server_port_title">Порт стандартного сервера</string>
+    <string name="def_server_port_title">Порт сервера</string>
     <string name="def_server_port_summary">Порт стандартного сервера</string>
     <string name="def_server_port_dialog_title">Порт сервера</string>
 
@@ -42,7 +42,7 @@
     <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
 
     <string name="tablet_mode_title">Режим планшета</string>
-    <string name="tablet_mode_summary">Включите эту опцию для устройствс широкими экранами (HTC Status, планшеты и др.)</string>
+    <string name="tablet_mode_summary">Включите эту опцию для устройств с широкими экранами (HTC Status, планшеты и др.)</string>
 
     <string name="zero_pos_title">Начальное положение (калибровка)</string>
     <string name="zero_pos_dialog_title">Начальное положение</string>

@@ -28,21 +28,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ManualConnectActivity"
-            android:label="@string/manualConnectString"
-            android:screenOrientation="landscape"
-            android:theme="@style/DialogTheme" />
-        <activity
-            android:name=".DefaultServerIPActivity"
-            android:label="@string/defaultServerIP"
-            android:screenOrientation="landscape"
-            android:theme="@style/DialogTheme" />
-        <activity
-            android:name=".DefaultServerPortActivity"
-            android:label="@string/defaultServerPort"
-            android:screenOrientation="landscape"
-            android:theme="@style/DialogTheme" />
 
         <activity
             android:name=".SettingsActivity"

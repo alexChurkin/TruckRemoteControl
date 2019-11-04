@@ -176,14 +176,6 @@ public class MainActivity extends AppCompatActivity implements
         updatePrefs();
         client.resumeSending();
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        /*if (ManualConnectActivity.configured) {
-            client.stop();
-            client.forceUpdate(ManualConnectActivity.ipAddress, ManualConnectActivity.port);
-            showToast(getString(R.string.attempting_to_connect_to)
-                    + " " + ManualConnectActivity.ipAddress
-                    + " " + getString(R.string.on_port) + " " + ManualConnectActivity.port);
-            ManualConnectActivity.configured = false;
-        }*/
         mHandler.post(turnSignalsRunnable);
     }
 
@@ -287,9 +279,7 @@ public class MainActivity extends AppCompatActivity implements
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             break;
                         case 1:
-                            Intent toManual = new Intent(
-                                    MainActivity.this, ManualConnectActivity.class);
-                            startActivity(toManual);
+                            //TODO Show manual connect dialog
                             break;
                         case 2:
                             client.stop();
