@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements
         breakButton.setPressed(false);
         gasButton.setPressed(false);
         updatePrefs();
-        client.resume();
+        client.resumeSending();
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
         /*if (ManualConnectActivity.configured) {
             client.stop();
@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this, mSensor);
-        client.pause();
+        client.pauseSending();
         mHandler.removeCallbacks(turnSignalsRunnable);
     }
 
@@ -255,10 +255,10 @@ public class MainActivity extends AppCompatActivity implements
                 if (isConnected) {
                     boolean newState = !client.isPaused();
                     if (newState) {
-                        client.pause();
+                        client.pauseSending();
                         mPauseButton.setImageResource(R.drawable.pause_btn_paused);
                     } else {
-                        client.resume();
+                        client.resumeSending();
                         mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                     }
                 }
@@ -274,13 +274,12 @@ public class MainActivity extends AppCompatActivity implements
                 .setItems(R.array.menu_items, (dialogInterface, i) -> {
                     switch (i) {
                         case 0:
-                            if (client.isRunning()) client.stop();
-                            client = null;
-                            client = new TrackingClient(null, 18250, this);
                             if (wifi.isWifiEnabled()) {
-                                client.start();
+                                client.forceUpdate(null, 18250);
+                                client.restart();
                                 showToast(R.string.searching_on_local);
                             } else {
+                                client.stop();
                                 showToast(R.string.no_wifi_conn_detected);
                             }
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);

@@ -18,6 +18,7 @@ public class TrackingClient {
         void onConnectionChanged(boolean isConnected);
     }
 
+    private TCPMessagesSender sender;
     private Socket socket;
     @NonNull
     private ConnectionListener listener;
@@ -36,10 +37,6 @@ public class TrackingClient {
         this.ip = ip;
         this.port = port;
         this.listener = listener;
-    }
-
-    public boolean isRunning() {
-        return running;
     }
 
     public boolean isPaused() {
@@ -85,27 +82,33 @@ public class TrackingClient {
     }
 
     public void start() {
-        running = true;
-        new TCPMessagesSender().execute(ip, port + "");
+        startSender();
     }
 
     public void start(String ip, int port) {
         this.ip = ip;
         this.port = port;
-        start();
+        startSender();
     }
 
-    public void pause() {
+    public void pauseSending() {
         this.isPaused = true;
     }
 
-    public void resume() {
+    public void resumeSending() {
         this.isPaused = false;
     }
 
+    public void restart() {
+        stop();
+        isPaused = false;
+        sender = new TCPMessagesSender();
+        sender.execute(ip, port + "");
+    }
+
     public void stop() {
-        this.running = false;
-        listener.onConnectionChanged(false);
+        running = false;
+        sender = null;
     }
 
     public void forceUpdate(String ip, int port) {
@@ -113,8 +116,18 @@ public class TrackingClient {
         this.port = port;
     }
 
+    private void startSender() {
+        sender = new TCPMessagesSender();
+        sender.execute(ip, port + "");
+    }
 
     public class TCPMessagesSender extends AsyncTask<String, Void, Void> {
+
+
+        @Override
+        protected void onPreExecute() {
+            running = true;
+        }
 
         @Override
         protected Void doInBackground(String... strings) {
@@ -151,7 +164,7 @@ public class TrackingClient {
                     } else {
                         writer.println("paused");
                         writer.flush();
-                        sleep(800);
+                        sleep(1000);
                     }
                 }
                 writer.write("disconnected");
@@ -161,7 +174,7 @@ public class TrackingClient {
                 running = false;
                 listener.onConnectionChanged(false);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.d("TAG", "Exception: " + e.getMessage());
                 running = false;
                 listener.onConnectionChanged(false);
             }
