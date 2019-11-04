@@ -149,20 +149,21 @@ public class MainActivity extends AppCompatActivity implements
         dBm = getSignalStrength();
 
         if (wifi.isWifiEnabled()) {
-            showToast(R.string.searching_on_local);
             if (prefs.getBoolean("defaultServer", false)) {
                 String serverIp = prefs.getString("serverIP", "");
                 try {
                     int serverPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
                     if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
+                        showToast(R.string.trying_to_connect);
                         client.start(serverIp, serverPort);
                     } else {
-                        client.start();
+                        showToast(R.string.def_server_not_correct);
                     }
                 } catch (Exception e) {
-                    client.start();
+                    showToast(R.string.def_server_not_correct);
                 }
             } else {
+                showToast(R.string.searching_on_local);
                 client.start();
             }
         }
@@ -268,6 +269,7 @@ public class MainActivity extends AppCompatActivity implements
                 .setItems(R.array.menu_items, (dialogInterface, i) -> {
                     switch (i) {
                         case 0:
+                            mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             if (wifi.isWifiEnabled()) {
                                 client.forceUpdate(null, 18250);
                                 client.restart();
@@ -279,9 +281,28 @@ public class MainActivity extends AppCompatActivity implements
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             break;
                         case 1:
-                            //TODO Show manual connect dialog
+                            mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
+                            if (wifi.isWifiEnabled()) {
+                                String serverIp = prefs.getString("serverIP", "");
+                                try {
+                                    int serverPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
+                                    if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
+                                        showToast(R.string.trying_to_connect);
+                                        client.forceUpdate(serverIp, serverPort);
+                                        client.restart();
+                                    } else {
+                                        showToast(R.string.def_server_not_correct);
+                                    }
+                                } catch (Exception e) {
+                                    showToast(R.string.def_server_not_correct);
+                                }
+                            } else {
+                                client.stop();
+                                showToast(R.string.no_wifi_conn_detected);
+                            }
                             break;
                         case 2:
+                            mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             client.stop();
                             break;
                         case 3:

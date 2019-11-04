@@ -12,7 +12,7 @@
     <string name="defaultServerPort">Default server port</string>
     <string-array name="menu_items">
         <item>Auto connect</item>
-        <item>Manually connect</item>
+        <item>Connect to default server</item>
         <item>Disconnect</item>
         <item>Settings</item>
     </string-array>
@@ -22,6 +22,8 @@
     <string name="no_wifi_conn_detected">No Wi-Fi connection detected!</string>
     <string name="connected_to_server_at">Connected to server at</string>
     <string name="connection_lost">Lost connection to server!</string>
+    <string name="def_server_not_correct">Default server isn\'t specified correctly!</string>
+    <string name="trying_to_connect">Trying to connect…</string>
 
     <string name="connect_to_default_on_startup_title">Connect to default server on startup</string>
     <string name="connect_to_default_on_startup_summary">Set up a default server to connect to on startup</string>
