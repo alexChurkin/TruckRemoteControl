@@ -1,8 +1,8 @@
-package com.alexchurkin.scsremote;
+package com.alexchurkin.truckremote;
 
 import android.app.Application;
 
-public class SCSRemote extends Application {
+public class TruckRemote extends Application {
 
     @Override
     public void onCreate() {

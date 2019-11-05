@@ -1,4 +1,4 @@
-package com.alexchurkin.scsremote;
+package com.alexchurkin.truckremote;
 
 import android.content.Context;
 import android.content.SharedPreferences;

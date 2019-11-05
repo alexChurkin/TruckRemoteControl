@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SCSRemote</string>
     <string name="connectString">Подключиться</string>
     <string name="serverIpString">IP-адрес сервера</string>
     <string name="serverPortString">Порт сервера (1 – 65535)</string>

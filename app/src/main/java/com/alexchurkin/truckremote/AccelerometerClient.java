@@ -1,13 +1,4 @@
-package com.alexchurkin.scsremote;
-
-import android.util.Log;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.Socket;
+package com.alexchurkin.truckremote;
 
 //Client object
 /*public class AccelerometerClient {

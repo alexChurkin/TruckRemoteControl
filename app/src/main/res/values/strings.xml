@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SCSRemote</string>
+    <string name="app_name" translatable="false">Truck Remote</string>
     <string name="connectString">Connect</string>
     <string name="serverIpString">Server IP Address</string>
     <string name="serverPortString">Server Port (1 – 65535)</string>

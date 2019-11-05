@@ -1,4 +1,4 @@
-package com.alexchurkin.scsremote;
+package com.alexchurkin.truckremote;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
