@@ -5,11 +5,11 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 public class TrackingClient {
@@ -19,7 +19,7 @@ public class TrackingClient {
     }
 
     private TCPMessagesSender sender;
-    private DatagramSocket socket;
+    private DatagramSocket clientSocket;
     @NonNull
     private ConnectionListener listener;
 
@@ -78,7 +78,7 @@ public class TrackingClient {
     }
 
     public String getSocketInetHostAddress() {
-        return socket.getInetAddress().getHostAddress();
+        return clientSocket.getInetAddress().getHostAddress();
     }
 
     public void start() {
@@ -121,8 +121,7 @@ public class TrackingClient {
         sender.execute(ip, port + "");
     }
 
-    public class TCPMessagesSender extends AsyncTask<String, Void, Void> {
-
+    public class TCPMessagesSender extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected void onPreExecute() {
@@ -130,25 +129,26 @@ public class TrackingClient {
         }
 
         @Override
-        protected Void doInBackground(String... strings) {
+        protected Void doInBackground(Void... voids) {
             Log.d("TAG", "Execution started");
-            String ip = strings[0];
-            int port = Integer.parseInt(strings[1]);
 
             try {
-                if (ip == null) {
-                    Log.d("TAG", "Autoconnect");
-                    try {
-                        attemptAutoConnect();
-                    } catch (SocketTimeoutException e) {
-                        running = false;
-                        return null;
+                clientSocket = new DatagramSocket();
+                clientSocket.setSoTimeout(2000);
+
+                try {
+                    if (ip == null) {
+                        Log.d("TAG", "Sending BROADCAST hello");
+                        sendHello(clientSocket);
+                    } else {
+                        Log.d("TAG", "Sending hello to CONCRETE server");
+                        sendHello(clientSocket, InetAddress.getByName(ip));
                     }
-                } else {
-                    Log.d("TAG", "Connect ip = " + ip + "; port = " + port);
-                    socket = new DatagramSocket(port, InetAddress.getByName(ip));
-                    socket.setSoTimeout(2000);
+                } catch (SocketTimeoutException e) {
+                    running = false;
+                    return null;
                 }
+
 
                 listener.onConnectionChanged(true);
 
@@ -163,9 +163,9 @@ public class TrackingClient {
                         sleep(1000);
                         bytes = "paused".getBytes();
                     }
-                    socket.send(new DatagramPacket(bytes, bytes.length));
+                    clientSocket.send(new DatagramPacket(bytes, bytes.length));
                 }
-                socket.close();
+                clientSocket.close();
                 running = false;
                 listener.onConnectionChanged(false);
             } catch (Exception e) {
@@ -176,25 +176,27 @@ public class TrackingClient {
             return null;
         }
 
-        private void attemptAutoConnect() throws Exception {
-            DatagramSocket tempSocket = new DatagramSocket();
-            tempSocket.setBroadcast(true);
-            tempSocket.setSoTimeout(2000);
-            InetAddress ipAddress = InetAddress.getByName("255.255.255.255");
+        private void sendHello(DatagramSocket socket) throws SocketException, IOException {
+            sendHello(socket, InetAddress.getByName("255.255.255.255"));
+        }
+
+        private void sendHello(DatagramSocket socket, InetAddress ipAddress)
+                throws SocketException, IOException {
+
+            socket.setBroadcast(true);
             // Sending HELLO
-            byte[] sendData = "HELLO".getBytes();
-            tempSocket.send(
+            byte[] sendData = "TruckRemoteHello".getBytes();
+            socket.send(
                     new DatagramPacket(sendData, sendData.length, ipAddress, 18250));
 
             // Receiving host address
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-            tempSocket.receive(receivePacket);
-            tempSocket.close();
+            socket.receive(receivePacket);
+
+            socket.setBroadcast(false);
 
             ip = receivePacket.getAddress().getHostAddress();
-            socket = new DatagramSocket(port, InetAddress.getByName(ip));
-            socket.setSoTimeout(2000);
         }
     }
 
