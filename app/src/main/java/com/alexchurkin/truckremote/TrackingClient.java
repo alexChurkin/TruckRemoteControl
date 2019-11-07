@@ -19,7 +19,7 @@ public class TrackingClient {
     }
 
     private TCPMessagesSender sender;
-    private Socket socket;
+    private DatagramSocket socket;
     @NonNull
     private ConnectionListener listener;
 
@@ -146,30 +146,25 @@ public class TrackingClient {
                     }
                 } else {
                     Log.d("TAG", "Connect ip = " + ip + "; port = " + port);
-                    socket = new Socket(ip, port);
-                    socket.setTcpNoDelay(true);
+                    socket = new DatagramSocket(port, InetAddress.getByName(ip));
+                    socket.setSoTimeout(2000);
                 }
 
                 listener.onConnectionChanged(true);
 
-                PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-
                 while (running) {
+                    byte[] bytes;
                     if (!isPaused) {
-                        writer.println(y + "," + breakClicked + "," + gasClicked + ","
-                                + turnSignalLeft + "," + turnSignalRight + ","
-                                + isParkingBreakEnabled);
-                        writer.flush();
                         sleep(20);
+                        bytes = (y + "," + breakClicked + "," + gasClicked + ","
+                                + turnSignalLeft + "," + turnSignalRight + ","
+                                + isParkingBreakEnabled).getBytes();
                     } else {
-                        writer.println("paused");
-                        writer.flush();
                         sleep(1000);
+                        bytes = "paused".getBytes();
                     }
+                    socket.send(new DatagramPacket(bytes, bytes.length));
                 }
-                writer.write("disconnected");
-                writer.flush();
-                writer.close();
                 socket.close();
                 running = false;
                 listener.onConnectionChanged(false);
@@ -182,22 +177,24 @@ public class TrackingClient {
         }
 
         private void attemptAutoConnect() throws Exception {
-            DatagramSocket clientSocket = new DatagramSocket();
-            clientSocket.setSoTimeout(2000);
+            DatagramSocket tempSocket = new DatagramSocket();
+            tempSocket.setBroadcast(true);
+            tempSocket.setSoTimeout(2000);
             InetAddress ipAddress = InetAddress.getByName("255.255.255.255");
             // Sending HELLO
             byte[] sendData = "HELLO".getBytes();
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ipAddress, 18250);
-            clientSocket.send(sendPacket);
+            tempSocket.send(
+                    new DatagramPacket(sendData, sendData.length, ipAddress, 18250));
+
             // Receiving host address
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-            clientSocket.receive(receivePacket);
-            clientSocket.close();
+            tempSocket.receive(receivePacket);
+            tempSocket.close();
 
             ip = receivePacket.getAddress().getHostAddress();
-            socket = new Socket(ip, port);
-            socket.setTcpNoDelay(true);
+            socket = new DatagramSocket(port, InetAddress.getByName(ip));
+            socket.setSoTimeout(2000);
         }
     }
 
