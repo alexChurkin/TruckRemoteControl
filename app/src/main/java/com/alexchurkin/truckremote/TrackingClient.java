@@ -78,7 +78,7 @@ public class TrackingClient {
     }
 
     public String getSocketInetHostAddress() {
-        return clientSocket.getInetAddress().getHostAddress();
+        return ip;
     }
 
     public void start() {
@@ -139,10 +139,10 @@ public class TrackingClient {
                 try {
                     if (ip == null) {
                         Log.d("TAG", "Sending BROADCAST hello");
-                        sendHello(clientSocket);
+                        sendHello();
                     } else {
                         Log.d("TAG", "Sending hello to CONCRETE server");
-                        sendHello(clientSocket, InetAddress.getByName(ip), port);
+                        sendHello(InetAddress.getByName(ip), port, false);
                     }
                 } catch (SocketTimeoutException e) {
                     running = false;
@@ -162,7 +162,10 @@ public class TrackingClient {
                         sleep(1000);
                         bytes = "paused".getBytes();
                     }
-                    clientSocket.send(new DatagramPacket(bytes, bytes.length));
+                    clientSocket.send(new DatagramPacket(bytes, bytes.length,
+                            InetAddress.getByName(ip), port)
+                    );
+                    Log.d("TAG", "was sent");
                 }
                 clientSocket.close();
                 running = false;
@@ -175,27 +178,32 @@ public class TrackingClient {
             return null;
         }
 
-        private void sendHello(DatagramSocket socket) throws SocketException, IOException {
-            sendHello(socket, InetAddress.getByName("255.255.255.255"), 18250);
+        private void sendHello() throws SocketException, IOException {
+            sendHello(InetAddress.getByName("255.255.255.255"), 18250, true);
         }
 
-        private void sendHello(DatagramSocket socket, InetAddress ipAddress, int port)
+        private void sendHello(InetAddress ipAddress, int port,
+                               boolean needDefineIp)
                 throws SocketException, IOException {
 
-            socket.setBroadcast(true);
+            clientSocket.setBroadcast(true);
             // Sending HELLO
             byte[] sendData = "TruckRemoteHello".getBytes();
-            socket.send(
+            clientSocket.send(
                     new DatagramPacket(sendData, sendData.length, ipAddress, port));
 
             // Receiving host address
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-            socket.receive(receivePacket);
+            clientSocket.receive(receivePacket);
 
-            socket.setBroadcast(false);
+            Log.d("TAG", "Answer received");
 
-            ip = receivePacket.getAddress().getHostAddress();
+            clientSocket.setBroadcast(false);
+
+            if (needDefineIp) {
+                ip = receivePacket.getAddress().getHostAddress();
+            }
         }
     }
 
