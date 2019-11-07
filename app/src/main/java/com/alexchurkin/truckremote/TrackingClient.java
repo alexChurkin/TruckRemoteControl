@@ -103,7 +103,7 @@ public class TrackingClient {
         stop();
         isPaused = false;
         sender = new TCPMessagesSender();
-        sender.execute(ip, port + "");
+        sender.execute();
     }
 
     public void stop() {
@@ -118,7 +118,7 @@ public class TrackingClient {
 
     private void startSender() {
         sender = new TCPMessagesSender();
-        sender.execute(ip, port + "");
+        sender.execute();
     }
 
     public class TCPMessagesSender extends AsyncTask<Void, Void, Void> {
@@ -142,13 +142,12 @@ public class TrackingClient {
                         sendHello(clientSocket);
                     } else {
                         Log.d("TAG", "Sending hello to CONCRETE server");
-                        sendHello(clientSocket, InetAddress.getByName(ip));
+                        sendHello(clientSocket, InetAddress.getByName(ip), port);
                     }
                 } catch (SocketTimeoutException e) {
                     running = false;
                     return null;
                 }
-
 
                 listener.onConnectionChanged(true);
 
@@ -177,17 +176,17 @@ public class TrackingClient {
         }
 
         private void sendHello(DatagramSocket socket) throws SocketException, IOException {
-            sendHello(socket, InetAddress.getByName("255.255.255.255"));
+            sendHello(socket, InetAddress.getByName("255.255.255.255"), 18250);
         }
 
-        private void sendHello(DatagramSocket socket, InetAddress ipAddress)
+        private void sendHello(DatagramSocket socket, InetAddress ipAddress, int port)
                 throws SocketException, IOException {
 
             socket.setBroadcast(true);
             // Sending HELLO
             byte[] sendData = "TruckRemoteHello".getBytes();
             socket.send(
-                    new DatagramPacket(sendData, sendData.length, ipAddress, 18250));
+                    new DatagramPacket(sendData, sendData.length, ipAddress, port));
 
             // Receiving host address
             byte[] receiveData = new byte[1024];
