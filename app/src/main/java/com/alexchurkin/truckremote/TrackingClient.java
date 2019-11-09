@@ -154,17 +154,17 @@ public class TrackingClient {
                 while (running) {
                     byte[] bytes;
                     if (!isPaused) {
-                        sleep(20);
                         bytes = (y + "," + breakClicked + "," + gasClicked + ","
                                 + turnSignalLeft + "," + turnSignalRight + ","
                                 + isParkingBreakEnabled).getBytes();
                     } else {
-                        sleep(1000);
                         bytes = "paused".getBytes();
                     }
                     clientSocket.send(new DatagramPacket(bytes, bytes.length,
                             InetAddress.getByName(ip), port)
                     );
+                    if(!isPaused) sleep(20);
+                    else sleep(2000);
                     Log.d("TAG", "was sent");
                 }
                 clientSocket.close();
