@@ -124,13 +124,9 @@ public class TrackingClient {
     public class TCPMessagesSender extends AsyncTask<Void, Void, Void> {
 
         @Override
-        protected void onPreExecute() {
-            running = true;
-        }
-
-        @Override
         protected Void doInBackground(Void... voids) {
             Log.d("TAG", "Execution started");
+            running = true;
 
             try {
                 clientSocket = new DatagramSocket();
@@ -163,8 +159,11 @@ public class TrackingClient {
                     clientSocket.send(new DatagramPacket(bytes, bytes.length,
                             InetAddress.getByName(ip), port)
                     );
-                    if(!isPaused) sleep(20);
-                    else sleep(2000);
+                    if (!isPaused) {
+                        sleep(20);
+                    } else {
+                        sleep(2000);
+                    }
                     Log.d("TAG", "was sent");
                 }
                 clientSocket.close();
