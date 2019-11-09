@@ -9,7 +9,7 @@ Launch [server app](https://github.com/alexChurkin/TruckRemoteControlServer) on 
 
 ## License
 
-    Copyright 2013 Alex Churkin.
+    Copyright 2019 Alex Churkin.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
