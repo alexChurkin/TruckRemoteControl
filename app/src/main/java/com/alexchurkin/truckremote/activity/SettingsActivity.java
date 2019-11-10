@@ -1,8 +1,11 @@
-package com.alexchurkin.truckremote;
+package com.alexchurkin.truckremote.activity;
 
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.alexchurkin.truckremote.R;
+import com.alexchurkin.truckremote.SettingsFragment;
 
 public class SettingsActivity extends AppCompatActivity {
 

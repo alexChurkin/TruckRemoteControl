@@ -1,4 +1,4 @@
-package com.alexchurkin.truckremote;
+package com.alexchurkin.truckremote.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -25,6 +25,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.view.ViewCompat;
+
+import com.alexchurkin.truckremote.general.Prefs;
+import com.alexchurkin.truckremote.R;
+import com.alexchurkin.truckremote.TrackingClient;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
@@ -35,8 +40,6 @@ public class MainActivity extends AppCompatActivity implements
         TrackingClient.ConnectionListener {
 
     public static WifiManager wifi;
-    public static GameButton breakButton = new GameButton();
-    public static GameButton gasButton = new GameButton();
     public static int dBm = -200;
 
     private SensorManager mSensorManager;
@@ -57,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements
     private boolean isConnected;
 
     private boolean previousSignalGreen;
+    private boolean breakPressed, gasPressed;
+
+    private int toastMargin;
 
     Runnable turnSignalsRunnable = new Runnable() {
         @Override
@@ -143,6 +149,12 @@ public class MainActivity extends AppCompatActivity implements
         mButtonParking.setOnClickListener(this);
 
         makeFullscreen();
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            toastMargin = insets.getSystemWindowInsetRight();
+            return insets.consumeSystemWindowInsets();
+        });
+
+
         updatePrefs();
 
         client = new TrackingClient(null, 18250, this);
@@ -172,8 +184,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        breakButton.setPressed(false);
-        gasButton.setPressed(false);
+        breakPressed = false;
+        gasPressed = false;
         updatePrefs();
         client.resume();
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
@@ -326,20 +338,20 @@ public class MainActivity extends AppCompatActivity implements
         switch (view.getId()) {
             case R.id.breakLayout:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    breakButton.setPressed(true);
+                    breakPressed = true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    breakButton.setPressed(false);
+                    breakPressed = false;
                 }
                 break;
             case R.id.gasLayout:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    gasButton.setPressed(true);
+                    gasPressed = true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    gasButton.setPressed(false);
+                    gasPressed = false;
                 }
                 break;
         }
-        client.provideMotionState(breakButton.isPressed(), gasButton.isPressed());
+        client.provideMotionState(breakPressed, gasPressed);
         return false;
     }
 
@@ -445,7 +457,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showToast(String string) {
         Toast toast = Toast.makeText(this, string, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP, 0, 0);
+        toast.setGravity(Gravity.TOP, toastMargin / 2, 0);
         toast.show();
     }
 }
