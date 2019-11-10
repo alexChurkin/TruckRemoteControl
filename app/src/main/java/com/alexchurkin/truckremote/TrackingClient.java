@@ -26,7 +26,7 @@ public class TrackingClient {
     private String ip;
     private int port;
     private boolean running;
-    private boolean isPaused;
+    private boolean isPaused, isPausedByUser;
 
     private float y;
     private boolean breakClicked, gasClicked;
@@ -40,7 +40,7 @@ public class TrackingClient {
     }
 
     public boolean isPaused() {
-        return isPaused;
+        return isPaused || isPausedByUser;
     }
 
     public void provideAccelerometerY(float y) {
@@ -91,17 +91,28 @@ public class TrackingClient {
         startSender();
     }
 
-    public void pauseSending() {
+    public void pauseByUser() {
+        this.isPausedByUser = true;
+        pause();
+    }
+
+    public void resumeByUser() {
+        this.isPausedByUser = false;
+        resume();
+    }
+
+    public void pause() {
         this.isPaused = true;
     }
 
-    public void resumeSending() {
+    public void resume() {
         this.isPaused = false;
     }
 
     public void restart() {
         stop();
         isPaused = false;
+        isPausedByUser = false;
         sender = new TCPMessagesSender();
         sender.execute();
     }
@@ -149,7 +160,7 @@ public class TrackingClient {
 
                 while (running) {
                     byte[] bytes;
-                    if (!isPaused) {
+                    if (!isPaused && !isPausedByUser) {
                         bytes = (y + "," + breakClicked + "," + gasClicked + ","
                                 + turnSignalLeft + "," + turnSignalRight + ","
                                 + isParkingBreakEnabled).getBytes();
@@ -159,7 +170,7 @@ public class TrackingClient {
                     clientSocket.send(new DatagramPacket(bytes, bytes.length,
                             InetAddress.getByName(ip), port)
                     );
-                    if (!isPaused) {
+                    if (!isPaused || !isPausedByUser) {
                         sleep(20);
                     } else {
                         sleep(2000);

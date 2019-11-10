@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements
         breakButton.setPressed(false);
         gasButton.setPressed(false);
         updatePrefs();
-        client.resumeSending();
+        client.resume();
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
         mHandler.post(turnSignalsRunnable);
     }
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this, mSensor);
-        client.pauseSending();
+        client.pause();
         mHandler.removeCallbacks(turnSignalsRunnable);
     }
 
@@ -250,10 +250,10 @@ public class MainActivity extends AppCompatActivity implements
                 if (isConnected) {
                     boolean newState = !client.isPaused();
                     if (newState) {
-                        client.pauseSending();
+                        client.pauseByUser();
                         mPauseButton.setImageResource(R.drawable.pause_btn_paused);
                     } else {
-                        client.resumeSending();
+                        client.resumeByUser();
                         mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                     }
                 }
