@@ -419,8 +419,7 @@ public class MainActivity extends AppCompatActivity implements
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.KEEP_SCREEN_ON;
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             flags = flags | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;

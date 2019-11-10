@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".TruckRemote"
@@ -22,6 +21,7 @@
             android:hardwareAccelerated="true"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme"
+            android:turnScreenOn="true"
             tools:ignore="UnusedAttribute">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
