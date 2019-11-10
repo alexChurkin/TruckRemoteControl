@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.util.Patterns;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Toast;
 
@@ -30,6 +31,7 @@ import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.TrackingClient;
 import com.alexchurkin.truckremote.general.Prefs;
 
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
 public class MainActivity extends AppCompatActivity implements
@@ -371,7 +373,8 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onSensorChanged(SensorEvent event) {
         try {
-            float y = prefs.getBoolean("invertY", false) ? (-event.values[1]) : event.values[1];
+            float y = getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_270
+                    ? (-event.values[1]) : event.values[1];
             if (prefs.getBoolean("deadZone", false)) {
                 y = applyDeadZoneY(y);
             }
