@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Truck Remote</string>
-    <string-array name="menu_items">
-        <item>Auto connect</item>
-        <item>Connect to default server</item>
-        <item>Disconnect</item>
-        <item>Settings</item>
-    </string-array>
-    <string name="settings">Settings</string>
+
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
     <string name="no_wifi_conn_detected">No Wi-Fi connection detected!</string>
@@ -16,6 +10,15 @@
     <string name="def_server_not_correct">Default server isn\'t specified correctly!</string>
     <string name="trying_to_connect">Trying to connect…</string>
 
+    <string-array name="menu_items">
+        <item>Auto connect</item>
+        <item>Connect to default server</item>
+        <item>Disconnect</item>
+        <item>Settings</item>
+    </string-array>
+    <string name="settings">Settings</string>
+
+    <string name="connection">Connection</string>
     <string name="connect_to_default_on_startup_title">Connect to default server on startup</string>
     <string name="connect_to_default_on_startup_summary">Set up a default server to connect to on startup</string>
     <string name="connect_to_default_on_startup_summary_off">Connecting to a default server will not be attempted on startup</string>
@@ -28,9 +31,7 @@
     <string name="def_server_port_summary">The port of the default server</string>
     <string name="def_server_port_dialog_title">Server port</string>
 
-    <string name="y_invert_title">Enable inverted Y-axis acceleration</string>
-    <string name="y_invert_summary">Inverts the left/right movement of the cursor</string>
-
+    <string name="other">Other</string>
     <string name="deadzone_title">Enable deadzone</string>
     <string name="deadzone_summary">Enabled a deadzone to prevent from moving so slightly</string>
 </resources>
