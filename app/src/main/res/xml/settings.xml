@@ -37,17 +37,4 @@
         android:key="deadzone"
         android:summary="@string/deadzone_summary"
         android:title="@string/deadzone_title" />
-    <androidx.preference.CheckBoxPreference
-        android:defaultValue="false"
-        android:key="tablet"
-        android:summary="@string/tablet_mode_summary"
-        android:title="@string/tablet_mode_title" />
-    <androidx.preference.ListPreference
-        android:defaultValue="22"
-        android:dialogTitle="@string/zero_pos_dialog_title"
-        android:entries="@array/listAngle"
-        android:entryValues="@array/listAngleReturn"
-        android:key="zeroPosition"
-        android:summary="@string/zero_pos_summary"
-        android:title="@string/zero_pos_title" />
 </androidx.preference.PreferenceScreen>

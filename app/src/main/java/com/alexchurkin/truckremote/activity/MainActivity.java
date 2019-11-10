@@ -12,7 +12,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -27,9 +26,9 @@ import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.ViewCompat;
 
-import com.alexchurkin.truckremote.general.Prefs;
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.TrackingClient;
+import com.alexchurkin.truckremote.general.Prefs;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
@@ -54,8 +53,6 @@ public class MainActivity extends AppCompatActivity implements
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private TrackingClient client;
-    private boolean invertX = false, invertY = false, deadZone = false, tablet = false;
-    private int zero = 22;
 
     private boolean isConnected;
 
@@ -94,11 +91,9 @@ public class MainActivity extends AppCompatActivity implements
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                     mRightSignalButton.setImageResource(R.drawable.right_disabled);
-                    Log.d("TAG", "Green");
                 } else {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                     mRightSignalButton.setImageResource(R.drawable.right_enabled);
-                    Log.d("TAG", "NotGreen");
                 }
                 previousSignalGreen = !previousSignalGreen;
                 mHandler.postDelayed(this, 400);
@@ -154,9 +149,6 @@ public class MainActivity extends AppCompatActivity implements
             return insets.consumeSystemWindowInsets();
         });
 
-
-        updatePrefs();
-
         client = new TrackingClient(null, 18250, this);
         dBm = getSignalStrength();
 
@@ -186,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onResume();
         breakPressed = false;
         gasPressed = false;
-        updatePrefs();
         client.resume();
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
         mHandler.post(turnSignalsRunnable);
@@ -380,26 +371,8 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onSensorChanged(SensorEvent event) {
         try {
-            float x = invertX ? (-event.values[0] + 9.81f) : event.values[0];
-            float y = invertY ? (-event.values[1]) : event.values[1];
-            // Screen flipping and whatnot
-            {
-                if (tablet) {
-                    float dummyX = x;
-                    x = y;
-                    y = -dummyX;
-                }
-
-                switch (zero) {
-                    case 0:
-                        x += 4.9;
-                        break;
-                    case 22:
-                        x += 4.9 / 2;
-                        break;
-                }
-            }
-            if (deadZone) {
+            float y = prefs.getBoolean("invertY", false) ? (-event.values[1]) : event.values[1];
+            if (prefs.getBoolean("deadZone", false)) {
                 y = applyDeadZoneY(y);
             }
             client.provideAccelerometerY(y);
@@ -416,14 +389,6 @@ public class MainActivity extends AppCompatActivity implements
             y = 0f;
         }
         return y;
-    }
-
-    private void updatePrefs() {
-        invertX = prefs.getBoolean("invertX", false);
-        invertY = prefs.getBoolean("invertY", false);
-        deadZone = prefs.getBoolean("deadZone", false);
-        tablet = prefs.getBoolean("tablet", false);
-        zero = Integer.parseInt(prefs.getString("zeroPosition", "22"));
     }
 
     private void makeFullscreen() {

@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connectString">Подключиться</string>
-    <string name="serverIpString">IP-адрес сервера</string>
-    <string name="serverPortString">Порт сервера (1 – 65535)</string>
-    <string name="period">.</string>
-    <string name="manualConnectString">Ручное подключение</string>
-    <string name="setServerIP">Установить стандартный IP</string>
-    <string name="setServerPort">Установить стандартный порт</string>
-    <string name="defaultServerIP">Стандартный адрес сервера</string>
-    <string name="defaultServerPort">Стандартный порт сервера</string>
     <string-array name="menu_items">
         <item>Подключиться автоматически</item>
         <item>Подключиться к стандартному серверу</item>
@@ -39,25 +30,6 @@
     <string name="y_invert_title">Инвертировать ось Y</string>
     <string name="y_invert_summary">Инвертирование показаний акселерометра по оси Y</string>
 
-    <string name="deadzone_title">Включить мёртвую зону акселерометра</string>
+    <string name="deadzone_title">Включить мёртвую зону</string>
     <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
-
-    <string name="tablet_mode_title">Режим планшета</string>
-    <string name="tablet_mode_summary">Включите эту опцию для устройств с широкими экранами (HTC Status, планшеты и др.)</string>
-
-    <string name="zero_pos_title">Начальное положение (калибровка)</string>
-    <string name="zero_pos_dialog_title">Начальное положение</string>
-    <string name="zero_pos_summary">Устанавливает угол оси Y, на котором курсор не движется</string>
-
-    <string-array name="listAngle">
-        <item>0 градусов</item>
-        <item>22.5 градуса</item>
-        <item>45 градусов</item>
-    </string-array>
-
-    <string-array name="listAngleReturn">
-        <item>0</item>
-        <item>22</item>
-        <item>45</item>
-    </string-array>
 </resources>

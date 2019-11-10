@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Truck Remote</string>
-    <string name="connectString">Connect</string>
-    <string name="serverIpString">Server IP Address</string>
-    <string name="serverPortString">Server Port (1 – 65535)</string>
-    <string name="period">.</string>
-    <string name="manualConnectString">Manually Connect</string>
-    <string name="setServerIP">Set default server IP</string>
-    <string name="setServerPort">Set default server port</string>
-    <string name="defaultServerIP">Default server address</string>
-    <string name="defaultServerPort">Default server port</string>
     <string-array name="menu_items">
         <item>Auto connect</item>
         <item>Connect to default server</item>
@@ -40,25 +31,6 @@
     <string name="y_invert_title">Enable inverted Y-axis acceleration</string>
     <string name="y_invert_summary">Inverts the left/right movement of the cursor</string>
 
-    <string name="deadzone_title">Enable accelerometer deadzone</string>
-    <string name="deadzone_summary">Puts a deadzone on the cursor to prevent it from moving ever so slightly</string>
-
-    <string name="tablet_mode_title">Tablet mode</string>
-    <string name="tablet_mode_summary">Select this option for phones with lanscape screens (i.e HTC Status, Tablets)</string>
-
-    <string name="zero_pos_title">Zero position (calibration)</string>
-    <string name="zero_pos_dialog_title">Zero position</string>
-    <string name="zero_pos_summary">Specifies the incline (on Y-axis) at which the mouse will remain stationary</string>
-
-    <string-array name="listAngle">
-        <item>0 degrees</item>
-        <item>22.5 degrees</item>
-        <item>45 degrees</item>
-    </string-array>
-
-    <string-array name="listAngleReturn">
-        <item>0</item>
-        <item>22</item>
-        <item>45</item>
-    </string-array>
+    <string name="deadzone_title">Enable deadzone</string>
+    <string name="deadzone_summary">Enabled a deadzone to prevent from moving so slightly</string>
 </resources>

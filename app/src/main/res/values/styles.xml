@@ -3,7 +3,4 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
     </style>
 
-    <style name="DialogTheme" parent="Theme.AppCompat.Dialog">
-        <item name="android:windowBackground">#00000000</item>
-    </style>
 </resources>

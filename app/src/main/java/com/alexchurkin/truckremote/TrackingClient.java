@@ -175,7 +175,6 @@ public class TrackingClient {
                     } else {
                         sleep(2000);
                     }
-                    Log.d("TAG", "was sent");
                 }
                 clientSocket.close();
                 running = false;
@@ -206,8 +205,6 @@ public class TrackingClient {
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             clientSocket.receive(receivePacket);
-
-            Log.d("TAG", "Answer received");
 
             clientSocket.setBroadcast(false);
 
