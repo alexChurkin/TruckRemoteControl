@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Truck Remote</string>
+    <string name="github_link" translatable="false">https://github.com/alexChurkin/TruckRemoteControl</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -31,7 +32,10 @@
     <string name="def_server_port_summary">The port of the default server</string>
     <string name="def_server_port_dialog_title">Server port</string>
 
-    <string name="other">Other</string>
+    <string name="control">Control</string>
+    <string name="additionally">Additionally</string>
     <string name="deadzone_title">Enable deadzone</string>
     <string name="deadzone_summary">Enabled a deadzone to prevent from moving so slightly</string>
+    <string name="github_page">Source code on GitHub</string>
+    <string name="about_app">About app</string>
 </resources>

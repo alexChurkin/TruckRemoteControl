@@ -1,39 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.preference.PreferenceCategory android:title="@string/connection">
+    <androidx.preference.PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/connection">
         <androidx.preference.CheckBoxPreference
-            android:defaultValue="false"
-            android:enabled="true"
-            android:key="defaultServer"
-            android:summary="@string/connect_to_default_on_startup_summary"
-            android:summaryOff="@string/connect_to_default_on_startup_summary_off"
-            android:summaryOn="@string/connect_to_default_on_startup_summary_on"
-            android:title="@string/connect_to_default_on_startup_title" />
+            app:defaultValue="false"
+            app:enabled="true"
+            app:iconSpaceReserved="false"
+            app:key="defaultServer"
+            app:summary="@string/connect_to_default_on_startup_summary"
+            app:summaryOff="@string/connect_to_default_on_startup_summary_off"
+            app:summaryOn="@string/connect_to_default_on_startup_summary_on"
+            app:title="@string/connect_to_default_on_startup_title" />
 
         <androidx.preference.EditTextPreference
-            android:dependency="defaultServer"
-            android:dialogTitle="@string/def_server_ip_title"
-            android:enabled="true"
-            android:key="serverIP"
-            android:summary="@string/def_server_ip_summary"
-            android:title="@string/def_server_ip_title" />
+            app:dependency="defaultServer"
+            app:dialogTitle="@string/def_server_ip_title"
+            app:enabled="true"
+            app:iconSpaceReserved="false"
+            app:key="serverIP"
+            app:summary="@string/def_server_ip_summary"
+            app:title="@string/def_server_ip_title" />
 
         <androidx.preference.EditTextPreference
-            android:defaultValue="18250"
-            android:dependency="defaultServer"
-            android:dialogTitle="@string/def_server_port_dialog_title"
-            android:enabled="true"
-            android:key="serverPort"
-            android:summary="@string/def_server_port_summary"
-            android:title="@string/def_server_port_title" />
+            app:defaultValue="18250"
+            app:dependency="defaultServer"
+            app:dialogTitle="@string/def_server_port_dialog_title"
+            app:enabled="true"
+            app:iconSpaceReserved="false"
+            app:key="serverPort"
+            app:summary="@string/def_server_port_summary"
+            app:title="@string/def_server_port_title" />
     </androidx.preference.PreferenceCategory>
 
-    <androidx.preference.PreferenceCategory android:title="@string/other">
+    <androidx.preference.PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/control">
         <androidx.preference.CheckBoxPreference
-            android:defaultValue="false"
-            android:key="deadzone"
-            android:summary="@string/deadzone_summary"
-            android:title="@string/deadzone_title" />
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:key="deadzone"
+            app:summary="@string/deadzone_summary"
+            app:title="@string/deadzone_title" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/additionally">
+
+        <androidx.preference.Preference
+            app:iconSpaceReserved="false"
+            app:key="github"
+            app:summary=""
+            app:title="@string/github_page" />
+
+        <androidx.preference.Preference
+            app:iconSpaceReserved="false"
+            app:key="about"
+            app:summary=""
+            app:title="@string/about_app" />
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>
