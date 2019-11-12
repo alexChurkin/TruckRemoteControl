@@ -36,6 +36,7 @@
     <string name="additionally">Additionally</string>
     <string name="deadzone_title">Enable deadzone</string>
     <string name="deadzone_summary">Enabled a deadzone to prevent from moving so slightly</string>
+    <string name="remove_ads">Remove Ads</string>
     <string name="github_page">Source code on GitHub</string>
     <string name="about_app">About app</string>
     <string name="about_app_text">This app is designed to be used as a steering wheel in some popular truck simulators.\n\nDeveloper: Alex Churkin\n\nContact:\nchurkindev@gmail.com\n\nThe application uses icons from here:\nhttp://icons8.com</string>

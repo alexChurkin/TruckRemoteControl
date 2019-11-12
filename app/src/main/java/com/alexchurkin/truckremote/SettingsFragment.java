@@ -45,6 +45,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             showedAbout = true;
             return true;
         });
+        preferenceManager.findPreference("support").setOnPreferenceClickListener(preference -> {
+
+            return true;
+        });
     }
 
     @Override

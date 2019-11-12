@@ -51,14 +51,17 @@
 
         <androidx.preference.Preference
             app:iconSpaceReserved="false"
+            app:key="support"
+            app:title="@string/remove_ads" />
+
+        <androidx.preference.Preference
+            app:iconSpaceReserved="false"
             app:key="github"
-            app:summary=""
             app:title="@string/github_page" />
 
         <androidx.preference.Preference
             app:iconSpaceReserved="false"
             app:key="about"
-            app:summary=""
             app:title="@string/about_app" />
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>
