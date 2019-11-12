@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+def props = new Properties()
+file("ad.properties").withInputStream { props.load(it) }
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -10,18 +13,24 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField('String', 'ADMOB_APP_ID', "\"" + props.getProperty("admobAppId") + "\"")
+        manifestPlaceholders = [admobAppId:props.getProperty("admobAppId")]
     }
     buildTypes {
+
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
+            buildConfigField('String', 'INTERSTITIAL_AD_ID', "\"ca-app-pub-3940256099942544/1033173712\"")
         }
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
+            buildConfigField('String', 'INTERSTITIAL_AD_ID', "\"" + props.getProperty("interstitialAdId") + "\"")
         }
     }
     compileOptions {
@@ -41,4 +50,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    implementation 'com.google.android.gms:play-services-ads:18.3.0'
+    implementation 'com.android.billingclient:billing:2.0.3'
 }

@@ -27,9 +27,14 @@ import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.ViewCompat;
 
+import com.alexchurkin.truckremote.BuildConfig;
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.TrackingClient;
 import com.alexchurkin.truckremote.general.Prefs;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
@@ -173,6 +178,23 @@ public class MainActivity extends AppCompatActivity implements
                 client.start();
             }
         }
+
+        if (savedInstanceState == null) {
+            MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
+            showInterstitialAd();
+        }
+    }
+
+    private void showInterstitialAd() {
+        InterstitialAd ad = new InterstitialAd(this);
+        ad.setAdUnitId(BuildConfig.INTERSTITIAL_AD_ID);
+        ad.loadAd(new AdRequest.Builder().build());
+        ad.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                ad.show();
+            }
+        });
     }
 
     @Override

@@ -33,6 +33,10 @@
             android:name=".activity.SettingsActivity"
             android:label="@string/settings"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
     </application>
 
 </manifest>
