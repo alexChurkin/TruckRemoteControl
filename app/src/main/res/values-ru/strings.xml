@@ -35,6 +35,11 @@
     <string name="deadzone_title">Включить мёртвую зону</string>
     <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
     <string name="remove_ads">Отключить рекламу</string>
+    <string name="purchase_success">Покупка успешно завершена</string>
+    <string name="purchase_restored">Покупка успешно восстановлена</string>
+    <string name="purchase_cancelled">Покупка отклонена</string>
+
+
     <string name="github_page">Исходный код на GitHub</string>
     <string name="about_app">О приложении</string>
     <string name="about_app_text">Это приложение предназначено для использования в качестве руля в некоторых популярных симуляторах грузовиков.\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkindev@gmail.com\n\nВ приложении использованы иконки с ресурса\nhttp://icons8.com</string>
