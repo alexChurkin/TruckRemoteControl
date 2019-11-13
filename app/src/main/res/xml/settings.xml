@@ -51,7 +51,7 @@
 
         <androidx.preference.Preference
             app:iconSpaceReserved="false"
-            app:key="support"
+            app:key="removeAds"
             app:title="@string/remove_ads" />
 
         <androidx.preference.Preference

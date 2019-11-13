@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
+import com.alexchurkin.truckremote.general.Prefs;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
@@ -31,7 +32,8 @@ import java.util.Objects;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements PurchasesUpdatedListener, BillingClientStateListener {
 
-    private static final String SKU_SUPPORT_AUTHOR_ID = "support_the_author";
+    public static final String PREF_KEY_ADDOFF = "prefadsetting";
+    private static final String SKU_AD_OFF_ID = "add_off";
 
     private static final String KEY_SHOWED_ABOUT = "ShowedAbout";
     private boolean showedAbout;
@@ -51,12 +53,20 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
         mBillingClient = BillingClient.newBuilder(getContext())
                 .enablePendingPurchases().setListener(this).build();
         mBillingClient.startConnection(this);
+
+        if (Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+            getPreferenceManager().findPreference("removeAds").setVisible(false);
+        }
     }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);
         PreferenceManager preferenceManager = getPreferenceManager();
+        preferenceManager.findPreference("removeAds").setOnPreferenceClickListener(preference -> {
+            launchBilling();
+            return true;
+        });
         preferenceManager.findPreference("github").setOnPreferenceClickListener(preference -> {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse(getString(R.string.github_link)));
@@ -66,10 +76,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
         preferenceManager.findPreference("about").setOnPreferenceClickListener(preference -> {
             showDialogAbout();
             showedAbout = true;
-            return true;
-        });
-        preferenceManager.findPreference("support").setOnPreferenceClickListener(preference -> {
-            launchBilling();
             return true;
         });
     }
@@ -97,7 +103,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
 
     private void launchBilling() {
         BillingFlowParams flowParams = BillingFlowParams.newBuilder()
-                .setSkuDetails(mSkuDetailsMap.get(SKU_SUPPORT_AUTHOR_ID))
+                .setSkuDetails(mSkuDetailsMap.get(SKU_AD_OFF_ID))
                 .build();
         mBillingClient.launchBillingFlow(getActivity(), flowParams);
     }
@@ -108,11 +114,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
             querySkuDetails();
             List<Purchase> purchases = queryPurchases();
             for (Purchase purchase : purchases) {
-                //and not purchased value (in prefs)
-                if (purchase.getSku().equals(SKU_SUPPORT_AUTHOR_ID)) {
+                if (purchase.getSku().equals(SKU_AD_OFF_ID)
+                        && !Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+                    Prefs.putBoolean(PREF_KEY_ADDOFF, true);
                     showToast(R.string.purchase_restored);
-                    getPreferenceManager().findPreference("support").setVisible(false);
-                    //TODO Restore purchase
+                    getPreferenceManager().findPreference("removeAds").setVisible(false);
                 }
             }
         }
@@ -127,14 +133,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
         switch (billingResult.getResponseCode()) {
             case BillingClient.BillingResponseCode.OK:
                 for (Purchase purchase : purchases) {
-                    if (purchase.getSku().equals(SKU_SUPPORT_AUTHOR_ID)) {
+                    if (purchase.getSku().equals(SKU_AD_OFF_ID)) {
                         ConsumeParams consParams = ConsumeParams.newBuilder()
                                 .setPurchaseToken(purchase.getPurchaseToken())
                                 .build();
                         mBillingClient.consumeAsync(consParams, (billResult, purchaseToken) -> {
+                            Prefs.putBoolean(PREF_KEY_ADDOFF, true);
                             showToast(R.string.purchase_success);
-                            getPreferenceManager().findPreference("support").setVisible(false);
-                            //TODO remove ad in prefs and remove item from settings
+                            getPreferenceManager().findPreference("removeAds").setVisible(false);
                         });
                     }
                 }
@@ -147,7 +153,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
 
     private void querySkuDetails() {
         ArrayList<String> skuList = new ArrayList<>();
-        skuList.add(SKU_SUPPORT_AUTHOR_ID);
+        skuList.add(SKU_AD_OFF_ID);
 
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder()
                 .setSkusList(skuList)
