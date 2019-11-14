@@ -38,6 +38,7 @@ import com.google.android.gms.ads.MobileAds;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+import static com.alexchurkin.truckremote.SettingsFragment.PREF_KEY_ADDOFF;
 
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
@@ -179,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
             MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
             showInterstitialAd();
         }
