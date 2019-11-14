@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements
     private ConstraintLayout rootView;
     private AppCompatImageButton mConnectionIndicator, mPauseButton, mSettingsButton;
     private AppCompatImageButton mLeftSignalButton, mRightSignalButton, mAllSignalsButton;
-    private AppCompatImageButton mButtonParking;
+    private AppCompatImageButton mButtonParking, mButtonLights;
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private TrackingClient client;
@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements
         mAllSignalsButton = findViewById(R.id.buttonAllSignals);
 
         mButtonParking = findViewById(R.id.buttonParking);
+        mButtonLights = findViewById(R.id.buttonLights);
 
         mBreakLayout = findViewById(R.id.breakLayout);
         mGasLayout = findViewById(R.id.gasLayout);
@@ -150,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements
         mRightSignalButton.setOnClickListener(this);
         mAllSignalsButton.setOnClickListener(this);
         mButtonParking.setOnClickListener(this);
+        mButtonLights.setOnClickListener(this);
 
         makeFullscreen();
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
@@ -265,7 +267,9 @@ public class MainActivity extends AppCompatActivity implements
                     mButtonParking.setImageResource(R.drawable.parking_break_off);
                 }
                 break;
-
+            case R.id.buttonLights:
+                //TODO
+                break;
             case R.id.connectionIndicator:
                 if (wifi.isWifiEnabled()) {
                     showToast(getString(R.string.signal_strength) + " "
