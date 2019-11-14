@@ -3,6 +3,7 @@ package com.alexchurkin.truckremote;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -42,24 +43,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
     private HashMap<String, SkuDetails> mSkuDetailsMap = new HashMap<>();
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        if (savedInstanceState != null) {
-            showedAbout = savedInstanceState.getBoolean(KEY_SHOWED_ABOUT, false);
-            if (showedAbout) {
-                showDialogAbout();
-            }
-        }
-        mBillingClient = BillingClient.newBuilder(getContext())
-                .enablePendingPurchases().setListener(this).build();
-        mBillingClient.startConnection(this);
-
-        if (Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
-            getPreferenceManager().findPreference("removeAds").setVisible(false);
-        }
-    }
-
-    @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);
         PreferenceManager preferenceManager = getPreferenceManager();
@@ -78,6 +61,24 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
             showedAbout = true;
             return true;
         });
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (savedInstanceState != null) {
+            showedAbout = savedInstanceState.getBoolean(KEY_SHOWED_ABOUT, false);
+            if (showedAbout) {
+                showDialogAbout();
+            }
+        }
+        mBillingClient = BillingClient.newBuilder(getContext())
+                .enablePendingPurchases().setListener(this).build();
+        mBillingClient.startConnection(this);
+
+        if (Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+            getPreferenceManager().findPreference("removeAds").setVisible(false);
+        }
     }
 
     @Override
