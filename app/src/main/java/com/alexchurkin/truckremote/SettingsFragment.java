@@ -5,11 +5,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -29,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+
+import static com.alexchurkin.truckremote.Toaster.showToast;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements PurchasesUpdatedListener, BillingClientStateListener {
 
@@ -172,10 +172,5 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
         Purchase.PurchasesResult purchasesResult =
                 mBillingClient.queryPurchases(BillingClient.SkuType.INAPP);
         return purchasesResult.getPurchasesList();
-    }
-
-    private void showToast(@StringRes int resId) {
-        Toast toast = Toast.makeText(getContext(), resId, Toast.LENGTH_SHORT);
-        toast.show();
     }
 }
