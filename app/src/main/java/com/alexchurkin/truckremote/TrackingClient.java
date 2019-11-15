@@ -62,7 +62,7 @@ public class TrackingClient {
         this.isParkingBreakEnabled = isEnabled;
     }
 
-    public void setLightsMode(int mode) {
+    public void setLightsState(int mode) {
         this.buttonLightsState = mode;
     }
 

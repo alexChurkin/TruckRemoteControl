@@ -36,7 +36,6 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static com.alexchurkin.truckremote.SettingsFragment.PREF_KEY_ADDOFF;
 
@@ -66,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean previousSignalGreen;
     private boolean breakPressed, gasPressed;
+
+    private int prevLightsState;
 
     private int toastMargin;
 
@@ -268,7 +269,24 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case R.id.buttonLights:
-                //TODO
+                if (!isConnected) return;
+                switch (prevLightsState) {
+                    case 0:
+                        mButtonLights.setImageResource(R.drawable.lights_gab);
+                        break;
+                    case 1:
+                        mButtonLights.setImageResource(R.drawable.lights_low);
+                        break;
+                    case 2:
+                        mButtonLights.setImageResource(R.drawable.lights_high);
+                        break;
+                    case 3:
+                        mButtonLights.setImageResource(R.drawable.lights_off);
+                        break;
+                }
+                if (prevLightsState == 3) prevLightsState = 0;
+                else prevLightsState++;
+                client.setLightsState(prevLightsState);
                 break;
             case R.id.connectionIndicator:
                 if (wifi.isWifiEnabled()) {
