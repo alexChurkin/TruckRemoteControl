@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements
                     breakPressed = true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     breakPressed = false;
-                }] kwww
+                }
                 break;
             case R.id.gasLayout:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
