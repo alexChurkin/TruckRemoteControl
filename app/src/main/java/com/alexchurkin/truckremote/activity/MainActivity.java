@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements
     private ConstraintLayout rootView;
     private AppCompatImageButton mConnectionIndicator, mPauseButton, mSettingsButton;
     private AppCompatImageButton mLeftSignalButton, mRightSignalButton, mAllSignalsButton;
-    private AppCompatImageButton mButtonParking, mButtonLights;
+    private AppCompatImageButton mButtonParking, mButtonLights, mButtonHorn;
     private ConstraintLayout mBreakLayout, mGasLayout;
 
     private TrackingClient client;
@@ -138,12 +138,14 @@ public class MainActivity extends AppCompatActivity implements
 
         mButtonParking = findViewById(R.id.buttonParking);
         mButtonLights = findViewById(R.id.buttonLights);
+        mButtonHorn = findViewById(R.id.buttonHorn);
 
         mBreakLayout = findViewById(R.id.breakLayout);
         mGasLayout = findViewById(R.id.gasLayout);
 
         mBreakLayout.setOnTouchListener(this);
         mGasLayout.setOnTouchListener(this);
+        mButtonHorn.setOnTouchListener(this);
 
         mConnectionIndicator.setOnClickListener(this);
         mPauseButton.setOnClickListener(this);
@@ -386,6 +388,13 @@ public class MainActivity extends AppCompatActivity implements
                     gasPressed = true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     gasPressed = false;
+                }
+                break;
+            case R.id.buttonHorn:
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    client.setHornState(true);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    client.setHornState(false);
                 }
                 break;
         }

@@ -32,7 +32,8 @@ public class TrackingClient {
     private boolean breakClicked, gasClicked;
     private boolean turnSignalLeft, turnSignalRight;
     private boolean isParkingBreakEnabled;
-    private int buttonLightsState;
+    private int lightsState;
+    private boolean isHorn;
 
     public TrackingClient(String ip, int port, @NonNull ConnectionListener listener) {
         this.ip = ip;
@@ -62,8 +63,12 @@ public class TrackingClient {
         this.isParkingBreakEnabled = isEnabled;
     }
 
-    public void setLightsState(int mode) {
-        this.buttonLightsState = mode;
+    public void setLightsState(int lightsState) {
+        this.lightsState = lightsState;
+    }
+
+    public void setHornState(boolean isHorn) {
+        this.isHorn = isHorn;
     }
 
     public boolean isTwoTurnSignals() {
@@ -168,7 +173,8 @@ public class TrackingClient {
                     if (!isPaused && !isPausedByUser) {
                         bytes = (y + "," + breakClicked + "," + gasClicked + ","
                                 + turnSignalLeft + "," + turnSignalRight + ","
-                                + isParkingBreakEnabled + "," + buttonLightsState).getBytes();
+                                + isParkingBreakEnabled + "," + lightsState + ","
+                                + isHorn).getBytes();
                     } else {
                         bytes = "paused".getBytes();
                     }
