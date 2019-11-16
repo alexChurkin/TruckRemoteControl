@@ -9,6 +9,7 @@
     <string name="trying_to_connect">Попытка подключения…</string>
 
     <string-array name="menu_items">
+        <item>Инструкция</item>
         <item>Подключиться автоматически</item>
         <item>Подключиться к стандартному серверу</item>
         <item>Отключиться</item>
@@ -45,7 +46,7 @@
     <string name="about_app_text">Это приложение предназначено для использования в качестве руля в некоторых популярных симуляторах грузовиков.\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkindev@gmail.com\n\nВ приложении использованы иконки с ресурса\nhttp://icons8.com</string>
     <string name="close">Закрыть</string>
 
-    <string name="guide">Инструкция по запуску</string>
+    <string name="guide">Инструкция</string>
     <string name="how_to_run">• Как запустить?</string>
     <string name="how_to_run_text">Первым шагом необходимо загрузить Truck Remote Control Server и запустить его на ПК, на котором установлена игра. Вы можете сделать это по следующей ссылке: https://github.com/alexChurkin/TruckRemoteControlServer . </string>
     <string name="how_to_run_text_2">В программе вы можете настроить порт и чувствительность движения так, как вам удобно. Затем необходимо запустить игру и включить управление мышью. Также можно немного увеличить \"Нелинейность управления\" (как на этом скриншоте):</string>

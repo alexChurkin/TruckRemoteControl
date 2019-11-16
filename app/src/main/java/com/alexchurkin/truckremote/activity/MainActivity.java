@@ -325,6 +325,10 @@ public class MainActivity extends AppCompatActivity implements
                 .setItems(R.array.menu_items, (dialogInterface, i) -> {
                     switch (i) {
                         case 0:
+                            Intent toInstruction = new Intent(this, GuideActivity.class);
+                            startActivity(toInstruction);
+                            break;
+                        case 1:
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             if (wifi.isWifiEnabled()) {
                                 client.forceUpdate(null, 18250);
@@ -336,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements
                             }
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             break;
-                        case 1:
+                        case 2:
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             if (wifi.isWifiEnabled()) {
                                 String serverIp = prefs.getString("serverIP", "");
@@ -357,11 +361,11 @@ public class MainActivity extends AppCompatActivity implements
                                 showToast(R.string.no_wifi_conn_detected);
                             }
                             break;
-                        case 2:
+                        case 3:
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             client.stop();
                             break;
-                        case 3:
+                        case 4:
                             Intent toSettings = new Intent(MainActivity.this, SettingsActivity.class);
                             startActivity(toSettings);
                             break;
