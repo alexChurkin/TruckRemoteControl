@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.alexchurkin.truckremote.R;
+
 public class GuideFragment extends Fragment {
 
     public static final String GUIDE_NUMBER = "GuideNumber";
@@ -16,7 +18,12 @@ public class GuideFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
+        int guideNumber = getArguments().getInt(GUIDE_NUMBER);
+        if(guideNumber == 0) {
+            return inflater.inflate(R.layout.guide_0, container, false);
+        } else if(guideNumber == 1) {
+            return inflater.inflate(R.layout.guide_1, container, false);
+        } else return null;
     }
 
     public static GuideFragment createWithGuide(int guideNumber) {

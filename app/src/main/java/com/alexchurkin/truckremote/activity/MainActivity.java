@@ -185,7 +185,11 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
-        if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+        if(!prefs.getBoolean("guideShowed", false)) {
+            Intent toGuide = new Intent(this, GuideActivity.class);
+            startActivity(toGuide);
+            prefs.edit().putBoolean("guideShowed", true).apply();
+        } else if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
             MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
             showInterstitialAd();
         }
