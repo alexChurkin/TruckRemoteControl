@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.alexchurkin.truckremote.R;
-import com.alexchurkin.truckremote.SettingsFragment;
+import com.alexchurkin.truckremote.fragment.SettingsFragment;
 
 public class SettingsActivity extends AppCompatActivity {
 

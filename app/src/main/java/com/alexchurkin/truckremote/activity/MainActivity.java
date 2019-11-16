@@ -37,7 +37,7 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-import static com.alexchurkin.truckremote.SettingsFragment.PREF_KEY_ADDOFF;
+import static com.alexchurkin.truckremote.fragment.SettingsFragment.PREF_KEY_ADDOFF;
 
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,

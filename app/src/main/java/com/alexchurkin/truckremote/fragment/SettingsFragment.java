@@ -1,9 +1,8 @@
-package com.alexchurkin.truckremote;
+package com.alexchurkin.truckremote.fragment;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -13,6 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
+import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.general.Prefs;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
