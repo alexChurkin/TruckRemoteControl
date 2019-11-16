@@ -58,5 +58,5 @@
     <string name="how_to_use">• How to use?</string>
     <string name="how_to_use_text_1">Center wheel by your mouse if it wasn\'t centered before:</string>
     <string name="how_to_use_text_2">Turn off truck turn signals, disable parking break and all headlights (do not leave the high beam enabled when low beam is disabled). Ensure that your phone/tablet is connected to the same network as the PC. Connect your Truck Remote Control app to server app on your PC. This can be done automatically or manually. You can configure a standard ip/server in the settings.</string>
-    <string name="how_to_use_text_3">P.S. Truck Remote Control Server is still in development. Therefore, we apologize for the displacement of the steering wheel and some another wrong work. Pleasant use!</string>
+    <string name="how_to_use_text_3">P.S. Truck Remote Control Server is still in development. Therefore, we apologize for the displacement of the steering wheel (it can be fixed manually by mouse) and some another wrong work. Pleasant use!</string>
 </resources>
