@@ -47,5 +47,10 @@
     <string name="about_app_text">This app is designed to be used as a steering wheel in some popular truck simulators.\n\nDeveloper: Alex Churkin\n\nContact:\nchurkindev@gmail.com\n\nThe application uses icons from here:\nhttp://icons8.com</string>
     <string name="close">Close</string>
 
-    <string name="guide">Launch guide</string>
+    <string name="guide">Guide</string>
+
+    <string name="how_to_run">• How to run?</string>
+    <string name="how_to_run_text">First, you need to download Truck Remote Control Server and run it on your PC. You can do it by this link: https://github.com/alexChurkin/TruckRemoteControlServer . </string>
+    <string name="how_to_run_text_2">As you can see, you can specify connection port and movement sensitivity as you want. Then you need to start the game and enable mouse control. You can also slightly increase \"Steering non-linearity\" as in this screenshot:</string>
+    <string name="how_to_run_text_3">Make sure all keys in the control settings are set as standard and proceed to the next step.</string>
 </resources>
