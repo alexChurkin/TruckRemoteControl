@@ -1,55 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Truck Remote</string>
-    <string name="github_link" translatable="false">https://github.com/alexChurkin/TruckRemoteControl</string>
-
-    <string name="searching_on_local">Searching for servers on the local network…</string>
-    <string name="signal_strength">Wi-Fi signal strength:</string>
-    <string name="no_wifi_conn_detected">No Wi-Fi connection detected!</string>
-    <string name="connected_to_server_at">Connected to server at</string>
-    <string name="connection_lost">Lost connection to server!</string>
-    <string name="def_server_not_correct">Default server isn\'t specified correctly!</string>
-    <string name="trying_to_connect">Trying to connect…</string>
+    <string name="searching_on_local">Поиск серверов в локальной сети…</string>
+    <string name="signal_strength">Сила Wi-Fi сигнала:</string>
+    <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
+    <string name="connected_to_server_at">Подключен к серверу</string>
+    <string name="connection_lost">Соединение с сервером прервано</string>
+    <string name="def_server_not_correct">Стандартный сервер указан некорректно!</string>
+    <string name="trying_to_connect">Попытка подключения…</string>
 
     <string-array name="menu_items">
-        <item>Auto connect</item>
-        <item>Connect to default server</item>
-        <item>Disconnect</item>
-        <item>Settings</item>
+        <item>Подключиться автоматически</item>
+        <item>Подключиться к стандартному серверу</item>
+        <item>Отключиться</item>
+        <item>Настройки</item>
     </string-array>
-    <string name="settings">Settings</string>
 
-    <string name="connection">Connection</string>
-    <string name="connect_to_default_on_startup_title">Connect to default server on startup</string>
-    <string name="connect_to_default_on_startup_summary">Set up a default server to connect to on startup</string>
-    <string name="connect_to_default_on_startup_summary_off">Connecting to a default server will not be attempted on startup</string>
-    <string name="connect_to_default_on_startup_summary_on">Connecting to the default server will be attempted on startup</string>
+    <string name="settings">Настройки</string>
 
-    <string name="def_server_ip_title">Server host address</string>
-    <string name="def_server_ip_summary">The host address of the default server</string>
+    <string name="connection">Подключение</string>
+    <string name="connect_to_default_on_startup_title">Использовать стандартный сервер</string>
+    <string name="connect_to_default_on_startup_summary">Подключение к указанному серверу при запуске</string>
+    <string name="connect_to_default_on_startup_summary_off">Подключение к серверу при запуске отключено</string>
+    <string name="connect_to_default_on_startup_summary_on">Подключение к указанному серверу производится при запуске</string>
 
-    <string name="def_server_port_title">Default server port</string>
-    <string name="def_server_port_summary">The port of the default server</string>
-    <string name="def_server_port_dialog_title">Server port</string>
+    <string name="def_server_ip_title">IP-адрес сервера</string>
+    <string name="def_server_ip_summary">IP-адрес стандартного сервера</string>
 
-    <string name="control">Control</string>
-    <string name="additionally">Additionally</string>
-    <string name="deadzone_title">Enable deadzone</string>
-    <string name="deadzone_summary">Enabled a deadzone to prevent from moving so slightly</string>
-    <string name="remove_ads">Remove Ads</string>
-    <string name="purchase_success">The purchase is successfully completed</string>
-    <string name="purchase_restored">The purchase was successfully restored</string>
-    <string name="purchase_cancelled">The purchase was cancelled</string>
+    <string name="def_server_port_title">Порт сервера</string>
+    <string name="def_server_port_summary">Порт стандартного сервера</string>
+    <string name="def_server_port_dialog_title">Порт сервера</string>
+
+    <string name="control">Управление</string>
+    <string name="additionally">Дополнительно</string>
+    <string name="deadzone_title">Включить мёртвую зону</string>
+    <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
+    <string name="remove_ads">Отключить рекламу</string>
+    <string name="purchase_success">Покупка успешно завершена</string>
+    <string name="purchase_restored">Покупка успешно восстановлена</string>
+    <string name="purchase_cancelled">Покупка отклонена</string>
 
 
-    <string name="github_page">Source code on GitHub</string>
-    <string name="about_app">About app</string>
-    <string name="about_app_text">This app is designed to be used as a steering wheel in some popular truck simulators.\n\nDeveloper: Alex Churkin\n\nContact:\nchurkindev@gmail.com\n\nThe application uses icons from here:\nhttp://icons8.com</string>
-    <string name="close">Close</string>
+    <string name="github_page">Исходный код на GitHub</string>
+    <string name="about_app">О приложении</string>
+    <string name="about_app_text">Это приложение предназначено для использования в качестве руля в некоторых популярных симуляторах грузовиков.\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkindev@gmail.com\n\nВ приложении использованы иконки с ресурса\nhttp://icons8.com</string>
+    <string name="close">Закрыть</string>
 
     <string name="guide">Инструкция по запуску</string>
     <string name="how_to_run">• Как запустить?</string>
     <string name="how_to_run_text">Первым шагом необходимо загрузить Truck Remote Control Server и запустить его на ПК, на котором установлена игра. Вы можете сделать это по следующей ссылке: https://github.com/alexChurkin/TruckRemoteControlServer . </string>
     <string name="how_to_run_text_2">В программе вы можете настроить порт и чувствительность движения так, как вам удобно. Затем необходимо запустить игру и включить управление мышью. Также можно немного увеличить \"Нелинейность управления\" (как на этом скриншоте):</string>
-    <string name="how_to_run_text_3">Убедитесь, что все клавиши в настройках управления установлены стандартно и проследуйте к следующему шагу инструкции.</string>
+    <string name="how_to_run_text_3">Убедитесь, что все клавиши в настройках управления установлены стандартно, начните игру и проследуйте к следующему шагу инструкции.</string>
+
+    <string name="how_to_use">• Как использовать?</string>
+
 </resources>

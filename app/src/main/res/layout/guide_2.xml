@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/backgroundMain">
 
     <LinearLayout
@@ -18,7 +17,7 @@
             android:layout_marginTop="16dp"
             android:paddingStart="12dp"
             android:paddingEnd="0dp"
-            android:text="@string/how_to_run"
+            android:text="@string/how_to_use"
             android:textColor="@android:color/white"
             android:textSize="30sp" />
 
@@ -30,20 +29,19 @@
             android:linksClickable="true"
             android:paddingStart="30dp"
             android:paddingEnd="8dp"
-            android:text="@string/how_to_run_text"
+            android:text="@string/how_to_use_text_1"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="160dp"
             android:layout_marginTop="16dp"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/server_screen"
+            app:srcCompat="@drawable/center_wheen_screenshot"
             tools:ignore="ContentDescription" />
 
         <TextView
-            android:id="@+id/textView4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -51,19 +49,11 @@
             android:linksClickable="true"
             android:paddingStart="30dp"
             android:paddingEnd="8dp"
-            android:text="@string/how_to_run_text_2"
+            android:text="@string/how_to_use_text_2"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:layout_marginTop="16dp"
-            app:srcCompat="@drawable/game_settings_screen"
-            tools:ignore="ContentDescription" />
-
         <TextView
-            android:id="@+id/textView4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -71,10 +61,8 @@
             android:linksClickable="true"
             android:paddingStart="30dp"
             android:paddingEnd="8dp"
-            android:text="@string/how_to_run_text_3"
+            android:text="@string/how_to_use_text_3"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
     </LinearLayout>
-
-
 </ScrollView>
