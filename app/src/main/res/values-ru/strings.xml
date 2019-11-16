@@ -44,4 +44,6 @@
     <string name="about_app">О приложении</string>
     <string name="about_app_text">Это приложение предназначено для использования в качестве руля в некоторых популярных симуляторах грузовиков.\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkindev@gmail.com\n\nВ приложении использованы иконки с ресурса\nhttp://icons8.com</string>
     <string name="close">Закрыть</string>
+
+    <string name="guide">Инструкция по запуску</string>
 </resources>
