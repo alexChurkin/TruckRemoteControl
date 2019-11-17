@@ -87,6 +87,10 @@ public class TrackingClient {
         return isParkingBreakEnabled;
     }
 
+    public int getLightsState() {
+        return lightsState;
+    }
+
     public String getSocketInetHostAddress() {
         return ip;
     }

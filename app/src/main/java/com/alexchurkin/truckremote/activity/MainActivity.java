@@ -45,6 +45,11 @@ public class MainActivity extends AppCompatActivity implements
         View.OnTouchListener,
         TrackingClient.ConnectionListener {
 
+    public static final String TURN_SIGNAL_RIGHT = "turnRight";
+    public static final String TURN_SIGNAL_LEFT = "turnLeft";
+    public static final String IS_PARKING = "isParking";
+    public static final String LIGHTS_STATE = "lightsState";
+
     public static WifiManager wifi;
     public static int dBm = -200;
 
@@ -163,6 +168,12 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         client = new TrackingClient(null, 18250, this);
+        client.provideSignalsInfo(prefs.getBoolean(TURN_SIGNAL_LEFT, false),
+                prefs.getBoolean(TURN_SIGNAL_RIGHT, false));
+        client.setParkingBreakEnabled(prefs.getBoolean(IS_PARKING, false));
+        client.setLightsState(prefs.getInt(LIGHTS_STATE, 0));
+
+
         dBm = getSignalStrength();
 
         if (wifi.isWifiEnabled()) {
@@ -221,8 +232,14 @@ public class MainActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this, mSensor);
-        client.pause();
         mHandler.removeCallbacks(turnSignalsRunnable);
+        client.pause();
+        prefs.edit()
+                .putBoolean(TURN_SIGNAL_LEFT, client.isTurnSignalLeft())
+                .putBoolean(TURN_SIGNAL_RIGHT, client.isTurnSignalRight())
+                .putBoolean(IS_PARKING, client.isParkingBreakEnabled())
+                .putInt(LIGHTS_STATE, client.getLightsState())
+                .apply();
     }
 
     @Override
