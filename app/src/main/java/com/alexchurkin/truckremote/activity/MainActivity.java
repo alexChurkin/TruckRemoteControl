@@ -75,10 +75,14 @@ public class MainActivity extends AppCompatActivity implements
 
     private int toastMargin;
 
+    private boolean runnableRunning;
+
     Runnable turnSignalsRunnable = new Runnable() {
         @Override
         public void run() {
+            runnableRunning = true;
             if (!isConnected) {
+                runnableRunning = false;
                 mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                 mRightSignalButton.setImageResource(R.drawable.right_disabled);
             } else if (client.isTwoTurnSignals()) {
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements
                 mHandler.postDelayed(this, 400);
             } else {
                 mHandler.removeCallbacksAndMessages(null);
+                runnableRunning = false;
                 mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                 mRightSignalButton.setImageResource(R.drawable.right_disabled);
                 previousSignalGreen = false;
@@ -171,7 +176,14 @@ public class MainActivity extends AppCompatActivity implements
         client.provideSignalsInfo(prefs.getBoolean(TURN_SIGNAL_LEFT, false),
                 prefs.getBoolean(TURN_SIGNAL_RIGHT, false));
         client.setParkingBreakEnabled(prefs.getBoolean(IS_PARKING, false));
-        client.setLightsState(prefs.getInt(LIGHTS_STATE, 0));
+
+        prevLightsState = prefs.getInt(LIGHTS_STATE, 0);
+        client.setLightsState(prevLightsState);
+
+        if (client.isParkingBreakEnabled()) {
+            mButtonParking.setImageResource(R.drawable.parking_break_on);
+        }
+        setUiLightsByState(prevLightsState);
 
 
         dBm = getSignalStrength();
@@ -196,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
-        if(!prefs.getBoolean("guideShowed", false)) {
+        if (!prefs.getBoolean("guideShowed", false)) {
             Intent toGuide = new Intent(this, GuideActivity.class);
             startActivity(toGuide);
             prefs.edit().putBoolean("guideShowed", true).apply();
@@ -225,7 +237,9 @@ public class MainActivity extends AppCompatActivity implements
         gasPressed = false;
         client.resume();
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        mHandler.post(turnSignalsRunnable);
+        if (!runnableRunning) {
+            mHandler.post(turnSignalsRunnable);
+        }
     }
 
     @Override
@@ -233,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
         mSensorManager.unregisterListener(this, mSensor);
         mHandler.removeCallbacks(turnSignalsRunnable);
+        runnableRunning = false;
         client.pause();
         prefs.edit()
                 .putBoolean(TURN_SIGNAL_LEFT, client.isTurnSignalLeft())
@@ -256,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (client.isTurnSignalRight() || client.isTurnSignalLeft()) {
                     mHandler.removeCallbacksAndMessages(null);
+                    runnableRunning = false;
                 }
 
                 client.provideSignalsInfo(!client.isTurnSignalLeft(), false);
@@ -266,6 +282,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (client.isTurnSignalRight() || client.isTurnSignalLeft()) {
                     mHandler.removeCallbacksAndMessages(null);
+                    runnableRunning = false;
                 }
 
                 client.provideSignalsInfo(false, !client.isTurnSignalRight());
@@ -278,6 +295,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (client.isTurnSignalLeft() || client.isTurnSignalRight()) {
                     mHandler.removeCallbacksAndMessages(null);
+                    runnableRunning = false;
                 }
                 mHandler.post(turnSignalsRunnable);
                 break;
@@ -293,23 +311,12 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.buttonLights:
                 if (!isConnected) return;
-                switch (prevLightsState) {
-                    case 0:
-                        mButtonLights.setImageResource(R.drawable.lights_gab);
-                        break;
-                    case 1:
-                        mButtonLights.setImageResource(R.drawable.lights_low);
-                        break;
-                    case 2:
-                        mButtonLights.setImageResource(R.drawable.lights_high);
-                        break;
-                    case 3:
-                        mButtonLights.setImageResource(R.drawable.lights_off);
-                        break;
-                }
-                if (prevLightsState == 3) prevLightsState = 0;
-                else prevLightsState++;
-                client.setLightsState(prevLightsState);
+
+                int newLightsState = ++prevLightsState;
+                if(newLightsState > 3) newLightsState = 0;
+                client.setLightsState(newLightsState);
+                setUiLightsByState(newLightsState);
+                prevLightsState = newLightsState;
                 break;
             case R.id.connectionIndicator:
                 if (wifi.isWifiEnabled()) {
@@ -333,6 +340,23 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.settingsButton:
                 showSettingsDialog();
+                break;
+        }
+    }
+
+    private void setUiLightsByState(int state) {
+        switch (state) {
+            case 0:
+                mButtonLights.setImageResource(R.drawable.lights_off);
+                break;
+            case 1:
+                mButtonLights.setImageResource(R.drawable.lights_gab);
+                break;
+            case 2:
+                mButtonLights.setImageResource(R.drawable.lights_low);
+                break;
+            case 3:
+                mButtonLights.setImageResource(R.drawable.lights_high);
                 break;
         }
     }
@@ -435,6 +459,9 @@ public class MainActivity extends AppCompatActivity implements
                 mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
                 showToast(getString(R.string.connected_to_server_at)
                         + " " + client.getSocketInetHostAddress());
+                if (!runnableRunning) {
+                    mHandler.post(turnSignalsRunnable);
+                }
             } else {
                 mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
                 showToast(R.string.connection_lost);

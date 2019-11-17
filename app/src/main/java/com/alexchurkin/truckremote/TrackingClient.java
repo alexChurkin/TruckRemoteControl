@@ -212,7 +212,7 @@ public class TrackingClient {
 
             clientSocket.setBroadcast(true);
             // Sending HELLO
-            byte[] sendData = "TruckRemoteHello".getBytes();
+            byte[] sendData = ("TruckRemoteHello\n" + getStateInfoString()).getBytes();
             clientSocket.send(
                     new DatagramPacket(sendData, sendData.length, ipAddress, port));
 
@@ -227,6 +227,11 @@ public class TrackingClient {
                 ip = receivePacket.getAddress().getHostAddress();
             }
         }
+    }
+
+    private String getStateInfoString() {
+        return turnSignalLeft + "," + turnSignalRight + ","
+                + isParkingBreakEnabled + "," + lightsState;
     }
 
     private void sleep(int ms) {
