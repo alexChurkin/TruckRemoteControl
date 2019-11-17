@@ -43,6 +43,13 @@
             app:key="deadzone"
             app:summary="@string/deadzone_summary"
             app:title="@string/deadzone_title" />
+        <androidx.preference.ListPreference
+            app:entries="@array/profile_variants"
+            app:entryValues="@array/profile_values"
+            app:iconSpaceReserved="false"
+            app:key="defaultProfile"
+            app:defaultValue="0"
+            app:title="@string/profile_title" />
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory

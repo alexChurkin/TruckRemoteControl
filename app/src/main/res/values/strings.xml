@@ -37,6 +37,19 @@
     <string name="additionally">Additionally</string>
     <string name="deadzone_title">Enable deadzone</string>
     <string name="deadzone_summary">Enabled a deadzone to prevent from moving so slightly</string>
+
+    <string name="profile_title">Default profile</string>
+    <string-array name="profile_variants">
+        <item>First profile</item>
+        <item>Second profile</item>
+        <item>Always ask</item>
+    </string-array>
+    <string-array name="profile_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
     <string name="remove_ads">Remove Ads</string>
     <string name="purchase_success">The purchase is successfully completed</string>
     <string name="purchase_restored">The purchase was successfully restored</string>
