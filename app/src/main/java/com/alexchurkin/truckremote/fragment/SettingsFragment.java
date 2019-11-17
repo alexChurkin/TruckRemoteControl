@@ -110,16 +110,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
     }
 
     @Override
-    public void onBillingSetupFinished(BillingResult billingResult) {
-        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+    public void onBillingSetupFinished(BillingResult result) {
+        if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
             querySkuDetails();
             List<Purchase> purchases = queryPurchases();
-            for (Purchase purchase : purchases) {
-                if (purchase.getSku().equals(SKU_AD_OFF_ID)
-                        && !Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
-                    Prefs.putBoolean(PREF_KEY_ADDOFF, true);
-                    showToast(R.string.purchase_restored);
-                    getPreferenceManager().findPreference("removeAds").setVisible(false);
+            if (purchases != null) {
+                for (Purchase purchase : purchases) {
+                    if (purchase.getSku().equals(SKU_AD_OFF_ID)
+                            && !Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+                        Prefs.putBoolean(PREF_KEY_ADDOFF, true);
+                        showToast(R.string.purchase_restored);
+                        getPreferenceManager().findPreference("removeAds").setVisible(false);
+                    }
                 }
             }
         }
