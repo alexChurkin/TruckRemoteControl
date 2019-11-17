@@ -49,6 +49,7 @@
             app:iconSpaceReserved="false"
             app:key="defaultProfile"
             app:defaultValue="0"
+            app:summary="@string/profile_summary"
             app:title="@string/profile_title" />
     </androidx.preference.PreferenceCategory>
 

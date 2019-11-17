@@ -63,20 +63,17 @@ public class MainActivity extends AppCompatActivity implements
     private AppCompatImageButton mLeftSignalButton, mRightSignalButton, mAllSignalsButton;
     private AppCompatImageButton mButtonParking, mButtonLights, mButtonHorn;
     private ConstraintLayout mBreakLayout, mGasLayout;
-
-    private TrackingClient client;
-
-    private boolean isConnected;
-
-    private boolean previousSignalGreen;
-    private boolean breakPressed, gasPressed;
-
-    private int prevLightsState;
-
     private int toastMargin;
 
-    private boolean runnableRunning;
+    private TrackingClient client;
+    private boolean isConnected;
+    private boolean previousSignalGreen;
+    private boolean breakPressed, gasPressed;
+    private int prevLightsState;
 
+    private int activeProfileNumber = -1;
+
+    private boolean runnableRunning;
     Runnable turnSignalsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -124,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
     };
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -173,11 +171,32 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         client = new TrackingClient(null, 18250, this);
-        client.provideSignalsInfo(prefs.getBoolean(TURN_SIGNAL_LEFT, false),
-                prefs.getBoolean(TURN_SIGNAL_RIGHT, false));
-        client.setParkingBreakEnabled(prefs.getBoolean(IS_PARKING, false));
 
-        prevLightsState = prefs.getInt(LIGHTS_STATE, 0);
+        activeProfileNumber = getProfileNumber();
+
+        if (activeProfileNumber != -1) {
+            startClient();
+
+        } else {
+            showProfileChooseDialog();
+        }
+
+        if (!prefs.getBoolean("guideShowed", false)) {
+            Intent toGuide = new Intent(this, GuideActivity.class);
+            startActivity(toGuide);
+            prefs.edit().putBoolean("guideShowed", true).apply();
+        } else if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+            MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
+            showInterstitialAd();
+        }
+    }
+
+    private void startClient() {
+        client.provideSignalsInfo(prefs.getBoolean(TURN_SIGNAL_LEFT + activeProfileNumber, false),
+                prefs.getBoolean(TURN_SIGNAL_RIGHT + activeProfileNumber, false));
+        client.setParkingBreakEnabled(prefs.getBoolean(IS_PARKING + activeProfileNumber, false));
+
+        prevLightsState = prefs.getInt(LIGHTS_STATE + activeProfileNumber, 0);
         client.setLightsState(prevLightsState);
 
         if (client.isParkingBreakEnabled()) {
@@ -206,15 +225,6 @@ public class MainActivity extends AppCompatActivity implements
                 showToast(R.string.searching_on_local);
                 client.start();
             }
-        }
-
-        if (!prefs.getBoolean("guideShowed", false)) {
-            Intent toGuide = new Intent(this, GuideActivity.class);
-            startActivity(toGuide);
-            prefs.edit().putBoolean("guideShowed", true).apply();
-        } else if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
-            MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
-            showInterstitialAd();
         }
     }
 
@@ -250,10 +260,10 @@ public class MainActivity extends AppCompatActivity implements
         runnableRunning = false;
         client.pause();
         prefs.edit()
-                .putBoolean(TURN_SIGNAL_LEFT, client.isTurnSignalLeft())
-                .putBoolean(TURN_SIGNAL_RIGHT, client.isTurnSignalRight())
-                .putBoolean(IS_PARKING, client.isParkingBreakEnabled())
-                .putInt(LIGHTS_STATE, client.getLightsState())
+                .putBoolean(TURN_SIGNAL_LEFT + activeProfileNumber, client.isTurnSignalLeft())
+                .putBoolean(TURN_SIGNAL_RIGHT + activeProfileNumber, client.isTurnSignalRight())
+                .putBoolean(IS_PARKING + activeProfileNumber, client.isParkingBreakEnabled())
+                .putInt(LIGHTS_STATE + activeProfileNumber, client.getLightsState())
                 .apply();
     }
 
@@ -313,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (!isConnected) return;
 
                 int newLightsState = ++prevLightsState;
-                if(newLightsState > 3) newLightsState = 0;
+                if (newLightsState > 3) newLightsState = 0;
                 client.setLightsState(newLightsState);
                 setUiLightsByState(newLightsState);
                 prevLightsState = newLightsState;
@@ -359,6 +369,29 @@ public class MainActivity extends AppCompatActivity implements
                 mButtonLights.setImageResource(R.drawable.lights_high);
                 break;
         }
+    }
+
+    private void showProfileChooseDialog() {
+        String[] variants3 = getResources().getStringArray(R.array.profile_variants);
+        String[] variants = new String[2];
+        variants[0] = variants3[0];
+        variants[1] = variants3[1];
+
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.what_profile_title)
+                .setItems(variants, (dialogInterface, i) -> {
+                    switch (i) {
+                        case 0:
+                            activeProfileNumber = 1;
+                            break;
+                        case 1:
+                            activeProfileNumber = 2;
+                            break;
+                    }
+                    startClient();
+                }).setCancelable(false).create();
+        showAlert(dialog);
     }
 
     private void showSettingsDialog() {
@@ -413,6 +446,10 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 })
                 .create();
+        showAlert(dialog);
+    }
+
+    private void showAlert(AlertDialog dialog) {
         dialog.getWindow().setFlags(FLAG_NOT_FOCUSABLE, FLAG_NOT_FOCUSABLE);
         dialog.show();
         dialog.getWindow().getDecorView().setSystemUiVisibility(
@@ -523,6 +560,16 @@ public class MainActivity extends AppCompatActivity implements
         } catch (Exception ignore) {
         }
         return -50;
+    }
+
+    private int getProfileNumber() {
+        int defProfile = Integer.parseInt(prefs.getString("defaultProfile", "0"));
+        switch (defProfile) {
+            case 0: return 1;
+            case 1: return 2;
+            case 2: return -1;
+        }
+        return 1;
     }
 
     private void showToast(@StringRes int resId) {
