@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void run() {
             runnableRunning = true;
-            if (!isConnected || client.isPausedByUser()) {
+            if (!isConnected) {
                 runnableRunning = false;
                 mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                 mRightSignalButton.setImageResource(R.drawable.right_disabled);
