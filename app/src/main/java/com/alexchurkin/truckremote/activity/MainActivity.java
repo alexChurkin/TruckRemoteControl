@@ -277,6 +277,8 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.buttonLeftSignal:
+                if(client.isPausedByUser()) return;
+
                 if (client.isTurnSignalLeft() && client.isTurnSignalRight()) return;
 
                 if (client.isTurnSignalRight() || client.isTurnSignalLeft()) {
@@ -288,6 +290,8 @@ public class MainActivity extends AppCompatActivity implements
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonRightSignal:
+                if(client.isPausedByUser()) return;
+
                 if (client.isTurnSignalLeft() && client.isTurnSignalRight()) return;
 
                 if (client.isTurnSignalRight() || client.isTurnSignalLeft()) {
@@ -299,6 +303,7 @@ public class MainActivity extends AppCompatActivity implements
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonAllSignals:
+                if(client.isPausedByUser()) return;
 
                 boolean allEnabled = client.isTurnSignalLeft() && client.isTurnSignalRight();
                 client.provideSignalsInfo(!allEnabled, !allEnabled);
@@ -478,8 +483,6 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case R.id.buttonHorn:
-                if(!isConnected || client.isPausedByUser()) return false;
-
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     client.setHornState(true);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
