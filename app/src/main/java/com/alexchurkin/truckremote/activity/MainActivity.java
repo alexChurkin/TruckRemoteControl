@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void run() {
             runnableRunning = true;
-            if (!isConnected) {
+            if (!isConnected || client.isPausedByUser()) {
                 runnableRunning = false;
                 mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                 mRightSignalButton.setImageResource(R.drawable.right_disabled);
@@ -310,7 +310,8 @@ public class MainActivity extends AppCompatActivity implements
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonParking:
-                if (!isConnected) return;
+                if (!isConnected || client.isPausedByUser()) return;
+
                 boolean newValue = !client.isParkingBreakEnabled();
                 client.setParkingBreakEnabled(newValue);
                 if (newValue) {
@@ -320,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case R.id.buttonLights:
-                if (!isConnected) return;
+                if (!isConnected || client.isPausedByUser()) return;
 
                 int newLightsState = ++prevLightsState;
                 if (newLightsState > 3) newLightsState = 0;
@@ -477,6 +478,8 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case R.id.buttonHorn:
+                if(!isConnected || client.isPausedByUser()) return false;
+
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     client.setHornState(true);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {

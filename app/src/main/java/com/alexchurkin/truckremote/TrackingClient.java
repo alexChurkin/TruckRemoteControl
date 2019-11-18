@@ -45,6 +45,10 @@ public class TrackingClient {
         return isPaused || isPausedByUser;
     }
 
+    public boolean isPausedByUser() {
+        return isPausedByUser;
+    }
+
     public void provideAccelerometerY(float y) {
         this.y = y;
     }
