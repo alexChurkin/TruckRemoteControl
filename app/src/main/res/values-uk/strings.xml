@@ -39,8 +39,8 @@
     <string name="profile_title">Профиль по умолчанию</string>
     <string name="profile_summary">Позволяет сохранять состояние кнопок в нескольких игровых профилях / играх</string>
     <string-array name="profile_variants">
-        <item>Первый профиль</item>
-        <item>Второй профиль</item>
+        <item>Профиль 1</item>
+        <item>Профиль 2</item>
         <item>Всегда спрашивать</item>
     </string-array>
     <string-array name="profile_values">
@@ -53,12 +53,12 @@
     <string name="remove_ads">Отключить рекламу</string>
     <string name="purchase_success">Покупка успешно завершена</string>
     <string name="purchase_restored">Покупка успешно восстановлена</string>
-    <string name="purchase_cancelled">Покупка отклонена</string>
+    <string name="purchase_cancelled">Действие отклонено</string>
 
 
     <string name="github_page">Исходный код на GitHub</string>
     <string name="about_app">О приложении</string>
-    <string name="about_app_text">Это приложение предназначено для использования в качестве руля в некоторых популярных симуляторах грузовиков.\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkindev@gmail.com\n\nВ приложении использованы иконки с ресурса\nhttp://icons8.com</string>
+    <string name="about_app_text">Это приложение предназначено для использования в качестве руля в симуляторах грузовиков (например, Euro Truck Simulator 2, American Truck Simulator).\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkindev@gmail.com\n\nВ приложении использованы иконки с ресурса\nhttp://icons8.com</string>
     <string name="close">Закрыть</string>
 
     <string name="guide">Инструкция</string>

@@ -41,8 +41,8 @@
     <string name="profile_title">Default profile</string>
     <string name="profile_summary">Allows you to save state of buttons for several game profiles / games</string>
     <string-array name="profile_variants">
-        <item>First profile</item>
-        <item>Second profile</item>
+        <item>Profile 1</item>
+        <item>Profile 2</item>
         <item>Always ask</item>
     </string-array>
     <string-array name="profile_values">
@@ -60,7 +60,7 @@
 
     <string name="github_page">Source code on GitHub</string>
     <string name="about_app">About app</string>
-    <string name="about_app_text">This app is designed to be used as a steering wheel in some popular truck simulators.\n\nDeveloper: Alex Churkin\n\nContact:\nchurkindev@gmail.com\n\nThe application uses icons from here:\nhttp://icons8.com</string>
+    <string name="about_app_text">This app is designed to be used as a steering wheel in some popular truck simulators like Euro Truck Simulator 2 and American Truck Simulator.\n\nDeveloper: Alex Churkin\n\nContact:\nchurkindev@gmail.com\n\nThe application uses icons from here:\nhttp://icons8.com</string>
     <string name="close">Close</string>
 
     <string name="guide">Instruction</string>
