@@ -8,17 +8,18 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.general.Prefs;
+import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
@@ -61,6 +62,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
             showedAbout = true;
             return true;
         });
+        if (Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+            getPreferenceManager().findPreference("removeAds").setVisible(false);
+        }
     }
 
     @Override
@@ -72,13 +76,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
                 showDialogAbout();
             }
         }
-        mBillingClient = BillingClient.newBuilder(getContext())
+        mBillingClient = BillingClient.newBuilder(getActivity())
                 .enablePendingPurchases().setListener(this).build();
         mBillingClient.startConnection(this);
-
-        if (Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
-            getPreferenceManager().findPreference("removeAds").setVisible(false);
-        }
     }
 
     @Override
@@ -114,13 +114,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
         if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
             querySkuDetails();
             List<Purchase> purchases = queryPurchases();
+
             if (purchases != null) {
                 for (Purchase purchase : purchases) {
-                    if (purchase.getSku().equals(SKU_AD_OFF_ID)
-                            && !Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
-                        Prefs.putBoolean(PREF_KEY_ADDOFF, true);
-                        showToast(R.string.purchase_restored);
-                        getPreferenceManager().findPreference("removeAds").setVisible(false);
+
+                    if (purchase.getSku().equals(SKU_AD_OFF_ID)) {
+                        if (!purchase.isAcknowledged()) {
+                            acknowledgePurchase(purchase, R.string.purchase_success);
+                        } else if(!Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+                            acknowledgePurchase(purchase, R.string.purchase_restored);
+                        }
                     }
                 }
             }
@@ -136,15 +139,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
         switch (billingResult.getResponseCode()) {
             case BillingClient.BillingResponseCode.OK:
                 for (Purchase purchase : purchases) {
-                    if (purchase.getSku().equals(SKU_AD_OFF_ID)) {
-                        ConsumeParams consParams = ConsumeParams.newBuilder()
-                                .setPurchaseToken(purchase.getPurchaseToken())
-                                .build();
-                        mBillingClient.consumeAsync(consParams, (billResult, purchaseToken) -> {
-                            Prefs.putBoolean(PREF_KEY_ADDOFF, true);
-                            showToast(R.string.purchase_success);
-                            getPreferenceManager().findPreference("removeAds").setVisible(false);
-                        });
+                    if (purchase.getSku().equals(SKU_AD_OFF_ID) && !purchase.isAcknowledged()) {
+                        acknowledgePurchase(purchase, R.string.purchase_success);
                     }
                 }
                 break;
@@ -152,6 +148,17 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
                 showToast(R.string.purchase_cancelled);
                 break;
         }
+    }
+
+    private void acknowledgePurchase(Purchase purchase, @StringRes int msgRes) {
+        AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(purchase.getPurchaseToken())
+                .build();
+        mBillingClient.acknowledgePurchase(params, billingResult -> {
+            Prefs.putBoolean(PREF_KEY_ADDOFF, true);
+            showToast(msgRes);
+            getPreferenceManager().findPreference("removeAds").setVisible(false);
+        });
     }
 
     private void querySkuDetails() {
