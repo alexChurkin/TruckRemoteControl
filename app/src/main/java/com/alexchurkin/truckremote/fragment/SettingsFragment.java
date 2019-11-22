@@ -122,7 +122,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
                         if (!purchase.isAcknowledged()) {
                             acknowledgePurchase(purchase, R.string.purchase_success);
                         } else if(!Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
-                            acknowledgePurchase(purchase, R.string.purchase_restored);
+                            Prefs.putBoolean(PREF_KEY_ADDOFF, true);
+                            showToast(R.string.purchase_restored);
+                            getPreferenceManager().findPreference("removeAds").setVisible(false);
                         }
                     }
                 }
