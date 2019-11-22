@@ -5,7 +5,6 @@ file("ad.properties").withInputStream { props.load(it) }
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.alexchurkin.truckremote"
         minSdkVersion 17
@@ -16,20 +15,20 @@ android {
 
         buildConfigField('String', 'ADMOB_APP_ID', "\"" + props.getProperty("admobAppId") + "\"")
         manifestPlaceholders = [admobAppId:props.getProperty("admobAppId")]
+
+        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                'proguard-rules.pro'
     }
     buildTypes {
 
         debug {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                    'proguard-rules.pro'
+            applicationIdSuffix '.debug'
             buildConfigField('String', 'INTERSTITIAL_AD_ID', "\"ca-app-pub-3940256099942544/1033173712\"")
         }
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                    'proguard-rules.pro'
             buildConfigField('String', 'INTERSTITIAL_AD_ID', "\"" + props.getProperty("interstitialAdId") + "\"")
         }
     }
