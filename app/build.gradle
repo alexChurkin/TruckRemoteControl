@@ -9,7 +9,7 @@ android {
         applicationId "com.alexchurkin.truckremote"
         minSdkVersion 17
         targetSdkVersion 29
-        versionCode 14
+        versionCode 15
         versionName "1.02"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
