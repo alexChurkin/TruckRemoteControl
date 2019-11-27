@@ -14,7 +14,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.alexchurkin.truckremote.R;
-import com.alexchurkin.truckremote.general.Prefs;
+import com.alexchurkin.truckremote.helpers.Prefs;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import static com.alexchurkin.truckremote.Toaster.showToast;
+import static com.alexchurkin.truckremote.helpers.Toaster.showToast;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements PurchasesUpdatedListener, BillingClientStateListener {
 

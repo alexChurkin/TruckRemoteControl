@@ -1,8 +1,9 @@
-package com.alexchurkin.truckremote.general;
+package com.alexchurkin.truckremote;
 
 import android.app.Application;
 
-import com.alexchurkin.truckremote.Toaster;
+import com.alexchurkin.truckremote.helpers.Prefs;
+import com.alexchurkin.truckremote.helpers.Toaster;
 
 public class TruckRemote extends Application {
 
