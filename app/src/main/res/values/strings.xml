@@ -35,7 +35,7 @@
     <string name="control">Control</string>
     <string name="additionally">Additionally</string>
     <string name="deadzone_title">Enable deadzone</string>
-    <string name="deadzone_summary">Enabled a deadzone to prevent from moving so slightly</string>
+    <string name="deadzone_summary">Enables a deadzone to prevent from moving so slightly</string>
 
     <string name="profile_title">Default profile</string>
     <string name="profile_summary">Allows you to save state of buttons for several game profiles / games</string>
