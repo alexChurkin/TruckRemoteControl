@@ -213,17 +213,7 @@ public class MainActivity extends AppCompatActivity implements
 
         if (wifi.isWifiEnabled()) {
             //Receiving port number
-            int port;
-            try {
-                port = Integer.parseInt(prefs.getString(PORT, "18250"));
-                if (port < 10000 || port > 65535) {
-                    port = 18250;
-                    prefs.edit().putString(PORT, "18250").apply();
-                }
-            } catch (Exception e) {
-                port = 18250;
-                prefs.edit().putString(PORT, "18250").apply();
-            }
+            int port = getServerPort();
 
             //Auto-connect
             if (!prefs.getBoolean(USE_SPECIFIED_SERVER, false)) {
@@ -430,7 +420,7 @@ public class MainActivity extends AppCompatActivity implements
                         case 1:
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             if (wifi.isWifiEnabled()) {
-                                client.forceUpdate(null, 18250);
+                                client.forceUpdate(null, getServerPort());
                                 client.restart();
                                 showToastWithOffset(R.string.searching_on_local);
                             } else {
@@ -444,7 +434,7 @@ public class MainActivity extends AppCompatActivity implements
                             if (wifi.isWifiEnabled()) {
                                 String serverIp = prefs.getString(SPECIFIED_IP, "");
                                 try {
-                                    int serverPort = Integer.parseInt(prefs.getString(PORT, "18250"));
+                                    int serverPort = getServerPort();
                                     if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
                                         showToastWithOffset(R.string.trying_to_connect);
                                         client.forceUpdate(serverIp, serverPort);
@@ -584,4 +574,20 @@ public class MainActivity extends AppCompatActivity implements
         }
         return 1;
     }
+
+    private int getServerPort() {
+        int port;
+        try {
+            port = Integer.parseInt(prefs.getString(PORT, "18250"));
+            if (port < 10000 || port > 65535) {
+                port = 18250;
+                prefs.edit().putString(PORT, "18250").apply();
+            }
+        } catch (Exception e) {
+            port = 18250;
+            prefs.edit().putString(PORT, "18250").apply();
+        }
+        return port;
+    }
+
 }

@@ -206,7 +206,7 @@ public class TrackingClient {
         }
 
         private void sendHello() throws SocketException, IOException {
-            sendHello(InetAddress.getByName("255.255.255.255"), 18250, true);
+            sendHello(InetAddress.getByName("255.255.255.255"), port, true);
         }
 
         private void sendHello(InetAddress ipAddress, int port,
