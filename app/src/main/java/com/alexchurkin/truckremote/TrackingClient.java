@@ -99,9 +99,6 @@ public class TrackingClient {
         return ip;
     }
 
-    public void start() {
-        startSender();
-    }
 
     public void start(String ip, int port) {
         forceUpdate(ip, port);

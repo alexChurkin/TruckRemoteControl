@@ -65,7 +65,7 @@
     <string name="guide">Instruction</string>
 
     <string name="how_to_run">• How to run?</string>
-    <string name="how_to_run_text">First, you need to download Truck Remote Server and run it on your PC. You can do it by this link: https://github.com/alexChurkin/TruckRemoteServer . </string>
+    <string name="how_to_run_text">First, you need to download Truck Remote Server and run it on your PC. You can do it by this link: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">As you can see, you can specify connection port and movement sensitivity as you want. Then you need to start the game and enable mouse control. You can also slightly increase \"Steering non-linearity\" as in this screenshot:</string>
     <string name="how_to_run_text_3">Make sure all keys in the control settings are set as standard and "Automatic blinker turn off" option is disabled. Enter the game and proceed to the next step.</string>
 
