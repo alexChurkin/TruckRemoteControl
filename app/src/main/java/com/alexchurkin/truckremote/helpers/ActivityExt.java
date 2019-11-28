@@ -1,6 +1,7 @@
 package com.alexchurkin.truckremote.helpers;
 
 import android.os.Build;
+import android.view.Surface;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,5 +19,9 @@ public class ActivityExt {
             flags = flags | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
         activity.getWindow().getDecorView().setSystemUiVisibility(flags);
+    }
+
+    public static boolean isReverseLandscape(AppCompatActivity activity) {
+        return activity.getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_270;
     }
 }

@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Patterns;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -36,7 +35,8 @@ import com.google.android.gms.ads.MobileAds;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static com.alexchurkin.truckremote.fragment.SettingsFragment.PREF_KEY_ADDOFF;
-import static com.alexchurkin.truckremote.helpers.Toaster.showToastWithMargin;
+import static com.alexchurkin.truckremote.helpers.ActivityExt.isReverseLandscape;
+import static com.alexchurkin.truckremote.helpers.Toaster.showToastWithOffset;
 
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
@@ -164,7 +164,8 @@ public class MainActivity extends AppCompatActivity implements
 
         ActivityExt.enterFullscreen(this);
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
-            Toaster.toastMargin = insets.getSystemWindowInsetRight();
+            Toaster.toastOffset = isReverseLandscape(this) ?
+                    insets.getSystemWindowInsetLeft() / 2 : insets.getSystemWindowInsetRight() / 2;
             return insets.consumeSystemWindowInsets();
         });
 
@@ -211,16 +212,16 @@ public class MainActivity extends AppCompatActivity implements
                 try {
                     int serverPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
                     if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
-                        showToastWithMargin(R.string.trying_to_connect);
+                        showToastWithOffset(R.string.trying_to_connect);
                         client.start(serverIp, serverPort);
                     } else {
-                        showToastWithMargin(R.string.def_server_not_correct);
+                        showToastWithOffset(R.string.def_server_not_correct);
                     }
                 } catch (Exception e) {
-                    showToastWithMargin(R.string.def_server_not_correct);
+                    showToastWithOffset(R.string.def_server_not_correct);
                 }
             } else {
-                showToastWithMargin(R.string.searching_on_local);
+                showToastWithOffset(R.string.searching_on_local);
                 client.start();
             }
         }
@@ -275,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.buttonLeftSignal:
-                if(client.isPausedByUser()) return;
+                if (client.isPausedByUser()) return;
 
                 if (client.isTurnSignalLeft() && client.isTurnSignalRight()) return;
 
@@ -288,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonRightSignal:
-                if(client.isPausedByUser()) return;
+                if (client.isPausedByUser()) return;
 
                 if (client.isTurnSignalLeft() && client.isTurnSignalRight()) return;
 
@@ -301,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonAllSignals:
-                if(client.isPausedByUser()) return;
+                if (client.isPausedByUser()) return;
 
                 boolean allEnabled = client.isTurnSignalLeft() && client.isTurnSignalRight();
                 client.provideSignalsInfo(!allEnabled, !allEnabled);
@@ -334,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.connectionIndicator:
                 if (wifi.isWifiEnabled()) {
-                    showToastWithMargin(getString(R.string.signal_strength) + " "
+                    showToastWithOffset(getString(R.string.signal_strength) + " "
                             + getSignalStrength() + "dBm");
                 } else {
                     getSignalStrength();
@@ -411,10 +412,10 @@ public class MainActivity extends AppCompatActivity implements
                             if (wifi.isWifiEnabled()) {
                                 client.forceUpdate(null, 18250);
                                 client.restart();
-                                showToastWithMargin(R.string.searching_on_local);
+                                showToastWithOffset(R.string.searching_on_local);
                             } else {
                                 client.stop();
-                                showToastWithMargin(R.string.no_wifi_conn_detected);
+                                showToastWithOffset(R.string.no_wifi_conn_detected);
                             }
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             break;
@@ -425,18 +426,18 @@ public class MainActivity extends AppCompatActivity implements
                                 try {
                                     int serverPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
                                     if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
-                                        showToastWithMargin(R.string.trying_to_connect);
+                                        showToastWithOffset(R.string.trying_to_connect);
                                         client.forceUpdate(serverIp, serverPort);
                                         client.restart();
                                     } else {
-                                        showToastWithMargin(R.string.def_server_not_correct);
+                                        showToastWithOffset(R.string.def_server_not_correct);
                                     }
                                 } catch (Exception e) {
-                                    showToastWithMargin(R.string.def_server_not_correct);
+                                    showToastWithOffset(R.string.def_server_not_correct);
                                 }
                             } else {
                                 client.stop();
-                                showToastWithMargin(R.string.no_wifi_conn_detected);
+                                showToastWithOffset(R.string.no_wifi_conn_detected);
                             }
                             break;
                         case 3:
@@ -498,14 +499,14 @@ public class MainActivity extends AppCompatActivity implements
             this.isConnected = isConnected;
             if (isConnected) {
                 mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
-                showToastWithMargin(getString(R.string.connected_to_server_at)
+                showToastWithOffset(getString(R.string.connected_to_server_at)
                         + " " + client.getSocketInetHostAddress());
                 if (!runnableRunning) {
                     mHandler.post(turnSignalsRunnable);
                 }
             } else {
                 mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
-                showToastWithMargin(R.string.connection_lost);
+                showToastWithOffset(R.string.connection_lost);
             }
         });
     }
@@ -520,8 +521,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onSensorChanged(SensorEvent event) {
         try {
-            float y = getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_270
-                    ? (-event.values[1]) : event.values[1];
+            float y = isReverseLandscape(this) ? (-event.values[1]) : event.values[1];
             if (prefs.getBoolean("deadZone", false)) {
                 y = applyDeadZoneY(y);
             }
@@ -544,7 +544,7 @@ public class MainActivity extends AppCompatActivity implements
     public int getSignalStrength() {
         try {
             if (!wifi.isWifiEnabled()) {
-                showToastWithMargin(R.string.no_wifi_conn_detected);
+                showToastWithOffset(R.string.no_wifi_conn_detected);
             }
             return wifi.getConnectionInfo().getRssi();
         } catch (Exception ignore) {
@@ -555,9 +555,12 @@ public class MainActivity extends AppCompatActivity implements
     private int getProfileNumber() {
         int defProfile = Integer.parseInt(prefs.getString("defaultProfile", "0"));
         switch (defProfile) {
-            case 0: return 1;
-            case 1: return 2;
-            case 2: return -1;
+            case 0:
+                return 1;
+            case 1:
+                return 2;
+            case 2:
+                return -1;
         }
         return 1;
     }

@@ -5,12 +5,13 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class Toaster {
     private static Context appContext;
     private static Toast lastToast;
 
-    public static int toastMargin;
+    public static int toastOffset;
 
     public static void initialize(Context context) {
         appContext = context;
@@ -26,17 +27,18 @@ public class Toaster {
     }
 
 
-    public static void showToastWithMargin(@StringRes int resId) {
-        showToastWithMargin(appContext.getString(resId));
+    public static void showToastWithOffset(@StringRes int resId) {
+        showToastWithOffset(appContext.getString(resId));
     }
 
-    public static void showToastWithMargin(String text) {
+    public static void showToastWithOffset(String text) {
         if (lastToast != null) {
             lastToast.cancel();
             lastToast = null;
         }
         lastToast = Toast.makeText(appContext, text, Toast.LENGTH_SHORT);
-        lastToast.setGravity(Gravity.TOP, toastMargin / 2, 0);
+
+        lastToast.setGravity(Gravity.TOP, toastOffset, 0);
         lastToast.show();
     }
 }
