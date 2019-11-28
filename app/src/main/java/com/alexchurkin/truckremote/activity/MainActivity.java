@@ -34,6 +34,11 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+import static com.alexchurkin.truckremote.PrefConsts.DEFAULT_PROFILE;
+import static com.alexchurkin.truckremote.PrefConsts.GUIDE_SHOWED;
+import static com.alexchurkin.truckremote.PrefConsts.PORT;
+import static com.alexchurkin.truckremote.PrefConsts.SPECIFIED_IP;
+import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
 import static com.alexchurkin.truckremote.fragment.SettingsFragment.PREF_KEY_ADDOFF;
 import static com.alexchurkin.truckremote.helpers.ActivityExt.isReverseLandscape;
 import static com.alexchurkin.truckremote.helpers.Toaster.showToastWithOffset;
@@ -180,10 +185,10 @@ public class MainActivity extends AppCompatActivity implements
             showProfileChooseDialog();
         }
 
-        if (!prefs.getBoolean("guideShowed", false)) {
+        if (!prefs.getBoolean(GUIDE_SHOWED, false)) {
             Intent toGuide = new Intent(this, GuideActivity.class);
             startActivity(toGuide);
-            prefs.edit().putBoolean("guideShowed", true).apply();
+            prefs.edit().putBoolean(GUIDE_SHOWED, true).apply();
         } else if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
             MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
             showInterstitialAd();
@@ -207,22 +212,37 @@ public class MainActivity extends AppCompatActivity implements
         dBm = getSignalStrength();
 
         if (wifi.isWifiEnabled()) {
-            if (prefs.getBoolean("defaultServer", false)) {
-                String serverIp = prefs.getString("serverIP", "");
+            //Receiving port number
+            int port;
+            try {
+                port = Integer.parseInt(prefs.getString(PORT, "18250"));
+                if (port < 10000 || port > 65535) {
+                    port = 18250;
+                    prefs.edit().putString(PORT, "18250").apply();
+                }
+            } catch (Exception e) {
+                port = 18250;
+                prefs.edit().putString(PORT, "18250").apply();
+            }
+
+            //Auto-connect
+            if (!prefs.getBoolean(USE_SPECIFIED_SERVER, false)) {
+                showToastWithOffset(R.string.searching_on_local);
+                client.start(null, port);
+            }
+            //Connection to default ip
+            else {
+                String serverIp = prefs.getString(SPECIFIED_IP, "");
                 try {
-                    int serverPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
                     if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
                         showToastWithOffset(R.string.trying_to_connect);
-                        client.start(serverIp, serverPort);
+                        client.start(serverIp, port);
                     } else {
-                        showToastWithOffset(R.string.def_server_not_correct);
+                        showToastWithOffset(R.string.def_server_ip_not_correct);
                     }
                 } catch (Exception e) {
-                    showToastWithOffset(R.string.def_server_not_correct);
+                    showToastWithOffset(R.string.def_server_ip_not_correct);
                 }
-            } else {
-                showToastWithOffset(R.string.searching_on_local);
-                client.start();
             }
         }
     }
@@ -422,18 +442,18 @@ public class MainActivity extends AppCompatActivity implements
                         case 2:
                             mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
                             if (wifi.isWifiEnabled()) {
-                                String serverIp = prefs.getString("serverIP", "");
+                                String serverIp = prefs.getString(SPECIFIED_IP, "");
                                 try {
-                                    int serverPort = Integer.parseInt(prefs.getString("serverPort", "18250"));
+                                    int serverPort = Integer.parseInt(prefs.getString(PORT, "18250"));
                                     if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
                                         showToastWithOffset(R.string.trying_to_connect);
                                         client.forceUpdate(serverIp, serverPort);
                                         client.restart();
                                     } else {
-                                        showToastWithOffset(R.string.def_server_not_correct);
+                                        showToastWithOffset(R.string.def_server_ip_not_correct);
                                     }
                                 } catch (Exception e) {
-                                    showToastWithOffset(R.string.def_server_not_correct);
+                                    showToastWithOffset(R.string.def_server_ip_not_correct);
                                 }
                             } else {
                                 client.stop();
@@ -553,7 +573,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private int getProfileNumber() {
-        int defProfile = Integer.parseInt(prefs.getString("defaultProfile", "0"));
+        int defProfile = Integer.parseInt(prefs.getString(DEFAULT_PROFILE, "0"));
         switch (defProfile) {
             case 0:
                 return 1;

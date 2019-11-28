@@ -18,7 +18,7 @@ public class TrackingClient {
         void onConnectionChanged(boolean isConnected);
     }
 
-    private TCPMessagesSender sender;
+    private UDPMessagesSender sender;
     private DatagramSocket clientSocket;
     @NonNull
     private ConnectionListener listener;
@@ -104,8 +104,7 @@ public class TrackingClient {
     }
 
     public void start(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
+        forceUpdate(ip, port);
         startSender();
     }
 
@@ -131,7 +130,7 @@ public class TrackingClient {
         stop();
         isPaused = false;
         isPausedByUser = false;
-        sender = new TCPMessagesSender();
+        sender = new UDPMessagesSender();
         sender.execute();
     }
 
@@ -146,11 +145,11 @@ public class TrackingClient {
     }
 
     private void startSender() {
-        sender = new TCPMessagesSender();
+        sender = new UDPMessagesSender();
         sender.execute();
     }
 
-    public class TCPMessagesSender extends AsyncTask<Void, Void, Void> {
+    public class UDPMessagesSender extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {

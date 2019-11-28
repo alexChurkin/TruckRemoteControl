@@ -5,7 +5,7 @@
     <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
     <string name="connected_to_server_at">Подключен к серверу</string>
     <string name="connection_lost">Соединение с сервером прервано</string>
-    <string name="def_server_not_correct">Стандартный сервер указан некорректно!</string>
+    <string name="def_server_ip_not_correct">Стандартный сервер указан некорректно!</string>
     <string name="trying_to_connect">Попытка подключения…</string>
 
     <string-array name="menu_items">
@@ -19,17 +19,18 @@
     <string name="settings">Настройки</string>
 
     <string name="connection">Подключение</string>
+    <string name="server_port_title">Порт сервера</string>
+    <string name="server_port_summary">Порт, используемый для всех видов подключений</string>
+    <string name="server_port_dialog_title">Порт сервера</string>
+
     <string name="connect_to_default_on_startup_title">Использовать стандартный сервер</string>
-    <string name="connect_to_default_on_startup_summary">Подключение к указанному серверу при запуске</string>
     <string name="connect_to_default_on_startup_summary_off">Подключение к серверу при запуске отключено</string>
     <string name="connect_to_default_on_startup_summary_on">Подключение к указанному серверу производится при запуске</string>
 
     <string name="def_server_ip_title">IP-адрес сервера</string>
     <string name="def_server_ip_summary">IP-адрес стандартного сервера</string>
 
-    <string name="def_server_port_title">Порт сервера</string>
-    <string name="def_server_port_summary">Порт стандартного сервера</string>
-    <string name="def_server_port_dialog_title">Порт сервера</string>
+
 
     <string name="control">Управление</string>
     <string name="additionally">Дополнительно</string>

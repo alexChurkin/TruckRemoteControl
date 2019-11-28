@@ -4,12 +4,21 @@
     <androidx.preference.PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/connection">
+
+        <androidx.preference.EditTextPreference
+            app:defaultValue="18250"
+            app:dialogTitle="@string/server_port_dialog_title"
+            app:enabled="true"
+            app:iconSpaceReserved="false"
+            app:key="serverPort"
+            app:summary="@string/server_port_summary"
+            app:title="@string/server_port_title" />
+
         <androidx.preference.CheckBoxPreference
             app:defaultValue="false"
             app:enabled="true"
             app:iconSpaceReserved="false"
             app:key="defaultServer"
-            app:summary="@string/connect_to_default_on_startup_summary"
             app:summaryOff="@string/connect_to_default_on_startup_summary_off"
             app:summaryOn="@string/connect_to_default_on_startup_summary_on"
             app:title="@string/connect_to_default_on_startup_title" />
@@ -22,16 +31,6 @@
             app:key="serverIP"
             app:summary="@string/def_server_ip_summary"
             app:title="@string/def_server_ip_title" />
-
-        <androidx.preference.EditTextPreference
-            app:defaultValue="18250"
-            app:dependency="defaultServer"
-            app:dialogTitle="@string/def_server_port_dialog_title"
-            app:enabled="true"
-            app:iconSpaceReserved="false"
-            app:key="serverPort"
-            app:summary="@string/def_server_port_summary"
-            app:title="@string/def_server_port_title" />
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory

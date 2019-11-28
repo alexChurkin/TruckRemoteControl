@@ -8,7 +8,7 @@
     <string name="no_wifi_conn_detected">No Wi-Fi connection detected!</string>
     <string name="connected_to_server_at">Connected to server at</string>
     <string name="connection_lost">Lost connection to server!</string>
-    <string name="def_server_not_correct">Default server isn\'t specified correctly!</string>
+    <string name="def_server_ip_not_correct">Default server isn\'t specified correctly!</string>
     <string name="trying_to_connect">Trying to connect…</string>
 
     <string-array name="menu_items">
@@ -21,17 +21,16 @@
     <string name="settings">Settings</string>
 
     <string name="connection">Connection</string>
-    <string name="connect_to_default_on_startup_title">Connect to default server on startup</string>
-    <string name="connect_to_default_on_startup_summary">Set up a default server to connect to on startup</string>
-    <string name="connect_to_default_on_startup_summary_off">Connecting to a default server will not be attempted on startup</string>
-    <string name="connect_to_default_on_startup_summary_on">Connecting to the default server will be attempted on startup</string>
+    <string name="server_port_title">Default server port</string>
+    <string name="server_port_summary">Port used for all kinds of connections</string>
+    <string name="server_port_dialog_title">Server port</string>
 
-    <string name="def_server_ip_title">Server host address</string>
-    <string name="def_server_ip_summary">The host address of the default server</string>
-    
-    <string name="def_server_port_title">Default server port</string>
-    <string name="def_server_port_summary">The port of the default server</string>
-    <string name="def_server_port_dialog_title">Server port</string>
+    <string name="connect_to_default_on_startup_title">Connect to specific server on startup</string>
+    <string name="connect_to_default_on_startup_summary_off">Connecting to a specific server will not be attempted on startup</string>
+    <string name="connect_to_default_on_startup_summary_on">Connecting to the specific server will be attempted on startup</string>
+
+    <string name="def_server_ip_title">Server IP address</string>
+    <string name="def_server_ip_summary">Specified server IP address</string>
 
     <string name="control">Control</string>
     <string name="additionally">Additionally</string>
