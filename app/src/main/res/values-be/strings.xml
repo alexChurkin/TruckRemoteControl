@@ -24,7 +24,7 @@
     <string name="server_port_dialog_title">Порт сервера</string>
 
     <string name="connect_to_default_on_startup_title">Использовать стандартный сервер</string>
-    <string name="connect_to_default_on_startup_summary_off">Подключение к серверу при запуске отключено</string>
+    <string name="connect_to_default_on_startup_summary_off">Подключение к указанному серверу при запуске отключено</string>
     <string name="connect_to_default_on_startup_summary_on">Подключение к указанному серверу производится при запуске</string>
 
     <string name="def_server_ip_title">IP-адрес сервера</string>
