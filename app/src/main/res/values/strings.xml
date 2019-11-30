@@ -66,11 +66,10 @@
 
     <string name="how_to_run">• How to run?</string>
     <string name="how_to_run_text">First, you need to download Truck Remote Server and run it on your PC. You can do it by this link: https://github.com/alexChurkin/TruckRemoteServer .</string>
-    <string name="how_to_run_text_2">As you can see, you can specify connection port and movement sensitivity as you want. Then you need to start the game and enable mouse control. You can also slightly increase \"Steering non-linearity\" as in this screenshot:</string>
-    <string name="how_to_run_text_3">Make sure all keys in the control settings are set as standard and "Automatic blinker turn off" option is disabled. Enter the game and proceed to the next step.</string>
+    <string name="how_to_run_text_2">As you can see, you can specify connection port and steering sensitivity as you want. Then you need to start the game and select Keyboard + vJoy in Controls. You can also increase \"Steering non-linearity\" as you want:</string>
+    <string name="how_to_run_text_3">Make sure all keys in the control settings are set as standard and \"Automatic blinker turn off\" option is disabled. Enter the game and proceed to the next step.</string>
 
     <string name="how_to_use">• How to use?</string>
-    <string name="how_to_use_text_1">Center wheel by your mouse if it wasn\'t centered before:</string>
-    <string name="how_to_use_text_2">Ensure that your phone/tablet is connected to the same network as the PC. Connect your Truck Remote Control app to server app on your PC. This can be done automatically or manually. You can configure a standard ip/server in the settings. If you haven\'t used Truck Remote Control before, please turn off truck turn signals, disable parking break and all headlights by keyboard (do not leave the high beam enabled when low beam is disabled).</string>
-    <string name="how_to_use_text_3">P.S. Truck Remote Server is still in development. Therefore, we apologize for the displacement of the steering wheel (it can be fixed manually by mouse) and some another wrong work. Pleasant use!</string>
+    <string name="how_to_use_text_1">Ensure that your phone/tablet is connected to the same network as the PC. Connect your Truck Remote Control app to Server app on your PC. This can be done automatically or manually. You can configure a standard ip/server in the settings. If you haven\'t used Truck Remote Control before, please turn off truck turn signals, disable parking break and all headlights by keyboard (do not leave the high beam enabled when low beam is disabled).</string>
+    <string name="how_to_use_text_2">P.S. Truck Remote Server is still in development. Therefore, we apologize for some wrong work. Pleasant use!</string>
 </resources>
