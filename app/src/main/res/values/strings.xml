@@ -25,9 +25,9 @@
     <string name="server_port_summary">Port used for all kinds of connections</string>
     <string name="server_port_dialog_title">Server port</string>
 
-    <string name="connect_to_default_on_startup_title">Connect to specific server on startup</string>
-    <string name="connect_to_default_on_startup_summary_off">Connecting to the specific server will not be attempted on startup</string>
-    <string name="connect_to_default_on_startup_summary_on">Connecting to the specific server will be attempted on startup</string>
+    <string name="connect_to_default_on_startup_title">Connect to a specific server on startup</string>
+    <string name="connect_to_default_on_startup_summary_off">Connecting to a specific server will not be attempted on startup</string>
+    <string name="connect_to_default_on_startup_summary_on">Connecting to a specific server will be attempted on startup</string>
 
     <string name="def_server_ip_title">Server IP address</string>
     <string name="def_server_ip_summary">Specified server IP address</string>
