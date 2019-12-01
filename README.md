@@ -1,8 +1,13 @@
 Truck Remote Control
 ====================
-ETS2/ATS truck remote control app for Android based on mouse and keyboard imitation.
+ETS2/ATS truck remote control app for Android based on Joystick and Keyboard emulation.
 ## How to use?
-Launch [server app](https://github.com/alexChurkin/TruckRemoteServer) on your PC. Then run game and after run this Android app. Enjoy it! Don't forget to align in-game steering wheel to center before launch. That's all :)
+Launch [server app](https://github.com/alexChurkin/TruckRemoteServer) on your PC (follow instuction). Then: 
+1) Run game
+2) Run this Android app
+3) Follow in-app instructions. 
+
+That's all :) Enjoy it!
 
 ![Screenshot](https://github.com/alexChurkin/TruckRemoteControl/raw/master/Screenshot.png)
 
