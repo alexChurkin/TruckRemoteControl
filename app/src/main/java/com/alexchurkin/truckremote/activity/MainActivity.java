@@ -34,6 +34,7 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+import static com.alexchurkin.truckremote.PrefConsts.CALIBRATION_OFFSET;
 import static com.alexchurkin.truckremote.PrefConsts.DEFAULT_PROFILE;
 import static com.alexchurkin.truckremote.PrefConsts.GUIDE_SHOWED;
 import static com.alexchurkin.truckremote.PrefConsts.PORT;
@@ -73,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements
     private boolean previousSignalGreen;
     private boolean breakPressed, gasPressed;
     private int prevLightsState;
+
+    private float lastReceivedYValue, calibrationOffset;
 
     private int activeProfileNumber = -1;
 
@@ -184,6 +187,8 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             showProfileChooseDialog();
         }
+
+        calibrationOffset = prefs.getFloat(CALIBRATION_OFFSET, 0f);
 
         if (!prefs.getBoolean(GUIDE_SHOWED, false)) {
             Intent toGuide = new Intent(this, GuideActivity.class);
@@ -346,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.connectionIndicator:
                 if (wifi.isWifiEnabled()) {
                     showToastWithOffset(getString(R.string.signal_strength) + " "
-                            + getSignalStrength() + "dBm");
+                            + Math.abs(getSignalStrength()) + " dBm");
                 } else {
                     getSignalStrength();
                 }
@@ -455,8 +460,36 @@ public class MainActivity extends AppCompatActivity implements
                             client.stop();
                             break;
                         case 4:
+                            dialogInterface.dismiss();
+                            showCalibrationDialog();
+                            break;
+                        case 5:
                             Intent toSettings = new Intent(MainActivity.this, SettingsActivity.class);
                             startActivity(toSettings);
+                            break;
+                    }
+                })
+                .create();
+        showAlert(dialog);
+    }
+
+    private void showCalibrationDialog() {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setItems(R.array.calibration_items, (dialogInterface, i) -> {
+                    switch (i) {
+                        case 0:
+                            calibrationOffset = -lastReceivedYValue;
+                            prefs.edit()
+                                    .putFloat(CALIBRATION_OFFSET, calibrationOffset)
+                                    .apply();
+                            showToastWithOffset(R.string.calibration_completed);
+                            break;
+                        case 1:
+                            calibrationOffset = 0;
+                            prefs.edit()
+                                    .putFloat(CALIBRATION_OFFSET, calibrationOffset)
+                                    .apply();
+                            showToastWithOffset(R.string.calibration_reset);
                             break;
                     }
                 })
@@ -531,11 +564,13 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onSensorChanged(SensorEvent event) {
         try {
-            float y = isReverseLandscape(this) ? (-event.values[1]) : event.values[1];
+            float receivedYValue = event.values[1] + calibrationOffset;
+            lastReceivedYValue = receivedYValue;
+            float realY = isReverseLandscape(this) ? (-receivedYValue) : receivedYValue;
             if (prefs.getBoolean("deadZone", false)) {
-                y = applyDeadZoneY(y);
+                realY = applyDeadZoneY(realY);
             }
-            client.provideAccelerometerY(y);
+            client.provideAccelerometerY(realY);
         } catch (Exception ignore) {
         }
     }
