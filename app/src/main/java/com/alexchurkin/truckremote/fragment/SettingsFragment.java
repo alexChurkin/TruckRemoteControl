@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
+import com.alexchurkin.truckremote.BuildConfig;
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.helpers.Prefs;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
@@ -47,6 +48,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);
         PreferenceManager preferenceManager = getPreferenceManager();
+        preferenceManager.findPreference("about")
+                .setSummary(getString(R.string.version) + " " + BuildConfig.VERSION_NAME);
         preferenceManager.findPreference("removeAds").setOnPreferenceClickListener(preference -> {
             launchBilling();
             return true;
