@@ -34,6 +34,7 @@ public class TrackingClient {
     private boolean isParkingBreakEnabled;
     private int lightsState;
     private boolean isHorn;
+    private boolean cruiseEnabled;
 
     public TrackingClient(String ip, int port, @NonNull ConnectionListener listener) {
         this.ip = ip;
@@ -89,6 +90,14 @@ public class TrackingClient {
 
     public boolean isParkingBreakEnabled() {
         return isParkingBreakEnabled;
+    }
+
+    public boolean isCruiseEnabled() {
+        return cruiseEnabled;
+    }
+
+    public void toggleCruise() {
+        this.cruiseEnabled = !cruiseEnabled;
     }
 
     public int getLightsState() {
@@ -178,7 +187,7 @@ public class TrackingClient {
                         bytes = (y + "," + breakClicked + "," + gasClicked + ","
                                 + turnSignalLeft + "," + turnSignalRight + ","
                                 + isParkingBreakEnabled + "," + lightsState + ","
-                                + isHorn).getBytes();
+                                + isHorn + "," + cruiseEnabled).getBytes();
                     } else {
                         bytes = "paused".getBytes();
                     }
@@ -202,13 +211,13 @@ public class TrackingClient {
             return null;
         }
 
-        private void sendHello() throws SocketException, IOException {
+        private void sendHello() throws IOException {
             sendHello(InetAddress.getByName("255.255.255.255"), port, true);
         }
 
         private void sendHello(InetAddress ipAddress, int port,
                                boolean needDefineIp)
-                throws SocketException, IOException {
+                throws IOException {
 
             clientSocket.setBroadcast(true);
             // Sending HELLO

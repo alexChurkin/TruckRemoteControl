@@ -11,7 +11,6 @@ import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -145,8 +144,7 @@ public class MainActivity extends AppCompatActivity implements
 
             if (absMovingY > (screenHeight / 6f) &&
                     absVelocityY > 3.5 && absMovingX / absMovingY < 0.5) {
-                Log.d("TAG", "Fling velocity: " + absVelocityY);
-                //TODO Enable cruise
+                client.toggleCruise();
             }
             return super.onFling(e1, e2, velocityX, velocityY);
         }
