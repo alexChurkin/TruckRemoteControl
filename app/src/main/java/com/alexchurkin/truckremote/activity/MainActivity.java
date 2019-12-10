@@ -9,6 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Patterns;
@@ -41,6 +42,7 @@ import static com.alexchurkin.truckremote.PrefConsts.PORT;
 import static com.alexchurkin.truckremote.PrefConsts.SPECIFIED_IP;
 import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
 import static com.alexchurkin.truckremote.fragment.SettingsFragment.PREF_KEY_ADDOFF;
+import static com.alexchurkin.truckremote.helpers.ActivityExt.enterFullscreen;
 import static com.alexchurkin.truckremote.helpers.ActivityExt.isReverseLandscape;
 import static com.alexchurkin.truckremote.helpers.Toaster.showToastWithOffset;
 
@@ -200,6 +202,41 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        breakPressed = false;
+        gasPressed = false;
+        client.resume();
+        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        if (!runnableRunning) {
+            mHandler.post(turnSignalsRunnable);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mSensorManager.unregisterListener(this, mSensor);
+        mHandler.removeCallbacks(turnSignalsRunnable);
+        runnableRunning = false;
+        client.pause();
+        prefs.edit()
+                .putBoolean(TURN_SIGNAL_LEFT + activeProfileNumber, client.isTurnSignalLeft())
+                .putBoolean(TURN_SIGNAL_RIGHT + activeProfileNumber, client.isTurnSignalRight())
+                .putBoolean(IS_PARKING + activeProfileNumber, client.isParkingBreakEnabled())
+                .putInt(LIGHTS_STATE + activeProfileNumber, client.getLightsState())
+                .apply();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        client.stop();
+    }
+
+
+
     private void startClient() {
         client.provideSignalsInfo(prefs.getBoolean(TURN_SIGNAL_LEFT + activeProfileNumber, false),
                 prefs.getBoolean(TURN_SIGNAL_RIGHT + activeProfileNumber, false));
@@ -252,39 +289,6 @@ public class MainActivity extends AppCompatActivity implements
                 ad.show();
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        breakPressed = false;
-        gasPressed = false;
-        client.resume();
-        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        if (!runnableRunning) {
-            mHandler.post(turnSignalsRunnable);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mSensorManager.unregisterListener(this, mSensor);
-        mHandler.removeCallbacks(turnSignalsRunnable);
-        runnableRunning = false;
-        client.pause();
-        prefs.edit()
-                .putBoolean(TURN_SIGNAL_LEFT + activeProfileNumber, client.isTurnSignalLeft())
-                .putBoolean(TURN_SIGNAL_RIGHT + activeProfileNumber, client.isTurnSignalRight())
-                .putBoolean(IS_PARKING + activeProfileNumber, client.isParkingBreakEnabled())
-                .putInt(LIGHTS_STATE + activeProfileNumber, client.getLightsState())
-                .apply();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        client.stop();
     }
 
     @Override
