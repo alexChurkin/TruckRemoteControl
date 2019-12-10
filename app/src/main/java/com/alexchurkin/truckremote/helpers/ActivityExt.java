@@ -1,6 +1,7 @@
 package com.alexchurkin.truckremote.helpers;
 
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.View;
 
@@ -19,6 +20,12 @@ public class ActivityExt {
             flags = flags | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
         activity.getWindow().getDecorView().setSystemUiVisibility(flags);
+    }
+
+    public static int getScreenHeight(AppCompatActivity activity) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        return displayMetrics.heightPixels;
     }
 
     public static boolean isReverseLandscape(AppCompatActivity activity) {

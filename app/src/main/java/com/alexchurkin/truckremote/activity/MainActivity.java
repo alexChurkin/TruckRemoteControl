@@ -9,10 +9,11 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.util.Patterns;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -42,9 +43,9 @@ import static com.alexchurkin.truckremote.PrefConsts.PORT;
 import static com.alexchurkin.truckremote.PrefConsts.SPECIFIED_IP;
 import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
 import static com.alexchurkin.truckremote.fragment.SettingsFragment.PREF_KEY_ADDOFF;
-import static com.alexchurkin.truckremote.helpers.ActivityExt.enterFullscreen;
 import static com.alexchurkin.truckremote.helpers.ActivityExt.isReverseLandscape;
 import static com.alexchurkin.truckremote.helpers.Toaster.showToastWithOffset;
+import static java.lang.Math.abs;
 
 public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements
     private AppCompatImageButton mLeftSignalButton, mRightSignalButton, mAllSignalsButton;
     private AppCompatImageButton mButtonParking, mButtonLights, mButtonHorn;
     private ConstraintLayout mBreakLayout, mGasLayout;
+    private int screenHeight;
 
     private TrackingClient client;
     private boolean isConnected;
@@ -131,6 +133,28 @@ public class MainActivity extends AppCompatActivity implements
     };
 
 
+    private GestureDetector.SimpleOnGestureListener simpleListener = new GestureDetector
+            .SimpleOnGestureListener() {
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            float absVelocityY = abs(velocityY) / 1000;
+
+            float absMovingX = abs(e1.getX() - e2.getX());
+            float absMovingY = abs(e1.getY() - e2.getY());
+
+            if (absMovingY > (screenHeight / 6f) &&
+                    absVelocityY > 3.5 && absMovingX / absMovingY < 0.5) {
+                Log.d("TAG", "Fling velocity: " + absVelocityY);
+                //TODO Enable cruise
+            }
+            return super.onFling(e1, e2, velocityX, velocityY);
+        }
+    };
+
+    private GestureDetector detector;
+
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -140,6 +164,8 @@ public class MainActivity extends AppCompatActivity implements
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mHandler = new Handler();
         prefs = Prefs.get();
+        detector = new GestureDetector(this, simpleListener);
+        screenHeight = ActivityExt.getScreenHeight(this);
 
         setContentView(R.layout.activity_main);
         rootView = findViewById(R.id.rootView);
@@ -234,7 +260,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onDestroy();
         client.stop();
     }
-
 
 
     private void startClient() {
@@ -355,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.connectionIndicator:
                 if (wifi.isWifiEnabled()) {
                     showToastWithOffset(getString(R.string.signal_strength) + " "
-                            + Math.abs(getSignalStrength()) + " dBm");
+                            + abs(getSignalStrength()) + " dBm");
                 } else {
                     getSignalStrength();
                 }
@@ -527,6 +552,7 @@ public class MainActivity extends AppCompatActivity implements
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     gasPressed = false;
                 }
+                detector.onTouchEvent(event);
                 break;
             case R.id.buttonHorn:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
