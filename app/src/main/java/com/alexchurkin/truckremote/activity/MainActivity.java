@@ -77,8 +77,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private Animation gasCruiseAnimation;
 
-    private int screenHeight;
-
     private TrackingClient client;
     private boolean isConnected;
     private boolean previousSignalGreen;
@@ -90,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements
     private int activeProfileNumber = -1;
 
     private boolean runnableRunning;
+
     Runnable turnSignalsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -138,8 +137,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
 
-
-    private GestureDetector.SimpleOnGestureListener simpleListener = new GestureDetector
+    private GestureDetector.SimpleOnGestureListener cruiseGestureListener = new GestureDetector
             .SimpleOnGestureListener() {
 
         @Override
@@ -157,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
 
-    private GestureDetector detector;
+    private GestureDetector cruiseGestureDetector;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -169,8 +167,7 @@ public class MainActivity extends AppCompatActivity implements
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mHandler = new Handler();
         prefs = Prefs.get();
-        detector = new GestureDetector(this, simpleListener);
-        screenHeight = ActivityExt.getScreenHeight(this);
+        cruiseGestureDetector = new GestureDetector(this, cruiseGestureListener);
 
         setContentView(R.layout.activity_main);
         rootView = findViewById(R.id.rootView);
@@ -560,7 +557,7 @@ public class MainActivity extends AppCompatActivity implements
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     gasPressed = false;
                 }
-                detector.onTouchEvent(event);
+                cruiseGestureDetector.onTouchEvent(event);
                 break;
             case R.id.buttonHorn:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
