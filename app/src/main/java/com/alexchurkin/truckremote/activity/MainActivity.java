@@ -15,11 +15,14 @@ import android.util.Patterns;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.ViewCompat;
 
@@ -70,6 +73,10 @@ public class MainActivity extends AppCompatActivity implements
     private AppCompatImageButton mLeftSignalButton, mRightSignalButton, mAllSignalsButton;
     private AppCompatImageButton mButtonParking, mButtonLights, mButtonHorn;
     private ConstraintLayout mBreakLayout, mGasLayout;
+    private AppCompatImageView mGasImage;
+
+    private Animation gasCruiseAnimation;
+
     private int screenHeight;
 
     private TrackingClient client;
@@ -142,9 +149,9 @@ public class MainActivity extends AppCompatActivity implements
             float absMovingX = abs(e1.getX() - e2.getX());
             float absMovingY = abs(e1.getY() - e2.getY());
 
-            if (absMovingY > (screenHeight / 6f) &&
-                    absVelocityY > 3.5 && absMovingX / absMovingY < 0.5) {
+            if (velocityY < 0 && absVelocityY > 1.5 && absMovingX / absMovingY < 0.5) {
                 client.toggleCruise();
+                mGasImage.startAnimation(gasCruiseAnimation);
             }
             return super.onFling(e1, e2, velocityX, velocityY);
         }
@@ -182,6 +189,9 @@ public class MainActivity extends AppCompatActivity implements
 
         mBreakLayout = findViewById(R.id.breakLayout);
         mGasLayout = findViewById(R.id.gasLayout);
+        mGasImage = mGasLayout.findViewById(R.id.gasImage);
+
+        gasCruiseAnimation = AnimationUtils.loadAnimation(this, R.anim.gas_cruise);
 
         mBreakLayout.setOnTouchListener(this);
         mGasLayout.setOnTouchListener(this);
