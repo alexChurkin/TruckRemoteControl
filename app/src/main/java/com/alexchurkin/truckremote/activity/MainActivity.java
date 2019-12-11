@@ -41,6 +41,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static com.alexchurkin.truckremote.PrefConsts.CALIBRATION_OFFSET;
 import static com.alexchurkin.truckremote.PrefConsts.DEFAULT_PROFILE;
 import static com.alexchurkin.truckremote.PrefConsts.GUIDE_SHOWED;
+import static com.alexchurkin.truckremote.PrefConsts.LAST_SHOWED_VERSION_TEXT;
 import static com.alexchurkin.truckremote.PrefConsts.PORT;
 import static com.alexchurkin.truckremote.PrefConsts.SPECIFIED_IP;
 import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
@@ -142,6 +143,9 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            if (!isConnected || client.isPausedByUser())
+                return super.onFling(e1, e2, velocityX, velocityY);
+
             float absVelocityY = abs(velocityY) / 1000;
 
             float absMovingX = abs(e1.getX() - e2.getX());
@@ -226,10 +230,17 @@ public class MainActivity extends AppCompatActivity implements
         if (!prefs.getBoolean(GUIDE_SHOWED, false)) {
             Intent toGuide = new Intent(this, GuideActivity.class);
             startActivity(toGuide);
-            prefs.edit().putBoolean(GUIDE_SHOWED, true).apply();
+            prefs.edit()
+                    .putBoolean(GUIDE_SHOWED, true)
+                    .putInt(LAST_SHOWED_VERSION_TEXT, 8)
+                    .apply();
         } else if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
             MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
             showInterstitialAd();
+        }
+
+        if(prefs.getInt(LAST_SHOWED_VERSION_TEXT, 0) != 8) {
+            showReleaseNewsDialog();
         }
     }
 
@@ -423,6 +434,18 @@ public class MainActivity extends AppCompatActivity implements
                 mButtonLights.setImageResource(R.drawable.lights_high);
                 break;
         }
+    }
+
+    private void showReleaseNewsDialog() {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.version_changes_title)
+                .setMessage(R.string.version_changes_text)
+                .setPositiveButton(R.string.close, (dialogInterface, i) -> {
+                    prefs.edit().putInt(LAST_SHOWED_VERSION_TEXT, 8).apply();
+                })
+                .setCancelable(false)
+                .create();
+        showAlert(dialog);
     }
 
     private void showProfileChooseDialog() {
