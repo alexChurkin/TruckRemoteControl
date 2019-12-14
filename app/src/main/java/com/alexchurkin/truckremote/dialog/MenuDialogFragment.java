@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.alexchurkin.truckremote.R;
@@ -56,13 +57,13 @@ public class MenuDialogFragment extends DialogFragment implements View.OnClickLi
         super.onActivityCreated(savedInstanceState);
         View view = getView();
         view.setFitsSystemWindows(false);
-        view.setOnApplyWindowInsetsListener((v, windowInsets) -> windowInsets);
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> insets);
         ViewParent parent = view.getParent();
 
         while(parent instanceof View) {
             View parentView = ((View) parent);
             parentView.setFitsSystemWindows(false);
-            parentView.setOnApplyWindowInsetsListener((v, windowInsets) -> windowInsets);
+            ViewCompat.setOnApplyWindowInsetsListener(parentView, (v, insets) -> insets);
             parent = parentView.getParent();
         }
     }
