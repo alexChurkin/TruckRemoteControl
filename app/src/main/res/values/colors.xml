@@ -5,5 +5,8 @@
     <color name="backgroundGray">#313131</color>
     <color name="indicatorRed">#DA4343</color>
     <color name="indicatorGreen">#2CC75F</color>
+
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
 </resources>

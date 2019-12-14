@@ -11,22 +11,19 @@
     <string name="def_server_ip_not_correct">Стандартный сервер указан некорректно!</string>
     <string name="trying_to_connect">Попытка подключения…</string>
 
-    <string-array name="menu_items">
-        <item>Инструкция</item>
-        <item>Подключиться автоматически</item>
-        <item>Подключиться к стандартному серверу</item>
-        <item>Отключиться</item>
-        <item>Калибровка</item>
-        <item>Настройки</item>
-    </string-array>
+    <string name="auto_connect">Подключиться автоматически</string>
+    <string name="default_connect">Подключиться к стандартному серверу</string>
+    <string name="disconnect">Отключиться</string>
+    <string name="calibration">Калибровка</string>
+    <string name="settings">Настройки</string>
+    <string name="instruction">Инструкция</string>
+
     <string-array name="calibration_items">
         <item>Калибровать</item>
         <item>Сбросить калибровку</item>
     </string-array>
     <string name="calibration_completed">Калибровка завершена</string>
     <string name="calibration_reset">Калибровка успешно сброшена</string>
-
-    <string name="settings">Настройки</string>
 
     <string name="connection">Подключение</string>
     <string name="server_port_title">Порт сервера</string>

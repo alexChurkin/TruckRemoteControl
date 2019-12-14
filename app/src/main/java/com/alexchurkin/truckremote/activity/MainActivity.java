@@ -29,6 +29,7 @@ import androidx.core.view.ViewCompat;
 import com.alexchurkin.truckremote.BuildConfig;
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.TrackingClient;
+import com.alexchurkin.truckremote.dialog.MenuDialogFragment;
 import com.alexchurkin.truckremote.helpers.ActivityExt;
 import com.alexchurkin.truckremote.helpers.FullScreenActivityExt;
 import com.alexchurkin.truckremote.helpers.Prefs;
@@ -48,6 +49,7 @@ import static com.alexchurkin.truckremote.PrefConsts.USE_PNEUMATIC_SIGNAL;
 import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
 import static com.alexchurkin.truckremote.fragment.SettingsFragment.PREF_KEY_ADDOFF;
 import static com.alexchurkin.truckremote.helpers.ActivityExt.isReverseLandscape;
+import static com.alexchurkin.truckremote.helpers.FullScreenActivityExt.showBottomSheetAlert;
 import static com.alexchurkin.truckremote.helpers.Toaster.showToastWithOffset;
 import static java.lang.Math.abs;
 
@@ -55,7 +57,8 @@ public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
         View.OnClickListener,
         View.OnTouchListener,
-        TrackingClient.ConnectionListener {
+        TrackingClient.ConnectionListener,
+        MenuDialogFragment.ItemClickListener {
 
     public static final String TURN_SIGNAL_RIGHT = "turnRight";
     public static final String TURN_SIGNAL_LEFT = "turnLeft";
@@ -415,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case R.id.settingsButton:
-                showSettingsDialog();
+                showMenuDialog();
                 break;
         }
     }
@@ -472,64 +475,66 @@ public class MainActivity extends AppCompatActivity implements
         FullScreenActivityExt.showAlert(this, dialog);
     }
 
-    private void showSettingsDialog() {
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setItems(R.array.menu_items, (dialogInterface, i) -> {
-                    switch (i) {
-                        case 0:
-                            Intent toInstruction = new Intent(this, GuideActivity.class);
-                            startActivity(toInstruction);
-                            break;
-                        case 1:
-                            mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
-                            if (wifi.isWifiEnabled()) {
-                                client.forceUpdate(null, getServerPort());
-                                client.restart();
-                                showToastWithOffset(R.string.searching_on_local);
-                            } else {
-                                client.stop();
-                                showToastWithOffset(R.string.no_wifi_conn_detected);
-                            }
-                            mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
-                            break;
-                        case 2:
-                            mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
-                            if (wifi.isWifiEnabled()) {
-                                String serverIp = prefs.getString(SPECIFIED_IP, "");
-                                try {
-                                    int serverPort = getServerPort();
-                                    if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
-                                        showToastWithOffset(R.string.trying_to_connect);
-                                        client.forceUpdate(serverIp, serverPort);
-                                        client.restart();
-                                    } else {
-                                        showToastWithOffset(R.string.def_server_ip_not_correct);
-                                    }
-                                } catch (Exception e) {
-                                    showToastWithOffset(R.string.def_server_ip_not_correct);
-                                }
-                            } else {
-                                client.stop();
-                                showToastWithOffset(R.string.no_wifi_conn_detected);
-                            }
-                            break;
-                        case 3:
-                            mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
-                            client.stop();
-                            break;
-                        case 4:
-                            dialogInterface.dismiss();
-                            showCalibrationDialog();
-                            break;
-                        case 5:
-                            Intent toSettings = new Intent(MainActivity.this, SettingsActivity.class);
-                            startActivity(toSettings);
-                            break;
-                    }
-                })
-                .create();
-        FullScreenActivityExt.showAlert(this, dialog);
+    private void showMenuDialog() {
+        MenuDialogFragment fr = new MenuDialogFragment();
+        showBottomSheetAlert(this, fr, "Menu");
+        //fr.show(getSupportFragmentManager(), "Menu");
     }
+
+    @Override
+    public void onItemClick(int position) {
+        switch (position) {
+            case 0:
+                mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
+                if (wifi.isWifiEnabled()) {
+                    client.forceUpdate(null, getServerPort());
+                    client.restart();
+                    showToastWithOffset(R.string.searching_on_local);
+                } else {
+                    client.stop();
+                    showToastWithOffset(R.string.no_wifi_conn_detected);
+                }
+                mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
+                break;
+            case 1:
+                mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
+                if (wifi.isWifiEnabled()) {
+                    String serverIp = prefs.getString(SPECIFIED_IP, "");
+                    try {
+                        int serverPort = getServerPort();
+                        if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
+                            showToastWithOffset(R.string.trying_to_connect);
+                            client.forceUpdate(serverIp, serverPort);
+                            client.restart();
+                        } else {
+                            showToastWithOffset(R.string.def_server_ip_not_correct);
+                        }
+                    } catch (Exception e) {
+                        showToastWithOffset(R.string.def_server_ip_not_correct);
+                    }
+                } else {
+                    client.stop();
+                    showToastWithOffset(R.string.no_wifi_conn_detected);
+                }
+                break;
+            case 2:
+                mPauseButton.setImageResource(R.drawable.pause_btn_resumed);
+                client.stop();
+                break;
+            case 3:
+                Intent toInstruction = new Intent(this, GuideActivity.class);
+                startActivity(toInstruction);
+                break;
+            case 4:
+                showCalibrationDialog();
+                break;
+            case 5:
+                Intent toSettings = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(toSettings);
+                break;
+        }
+    }
+
 
     private void showCalibrationDialog() {
         AlertDialog dialog = new AlertDialog.Builder(this)
