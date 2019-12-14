@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 public class TrackingClient {
@@ -33,7 +32,7 @@ public class TrackingClient {
     private boolean turnSignalLeft, turnSignalRight;
     private boolean isParkingBreakEnabled;
     private int lightsState;
-    private boolean isHorn;
+    private int hornState;
     private boolean cruiseEnabled;
 
     public TrackingClient(String ip, int port, @NonNull ConnectionListener listener) {
@@ -72,8 +71,8 @@ public class TrackingClient {
         this.lightsState = lightsState;
     }
 
-    public void setHornState(boolean isHorn) {
-        this.isHorn = isHorn;
+    public void setHornState(int hornState) {
+        this.hornState = hornState;
     }
 
     public boolean isTwoTurnSignals() {
@@ -187,7 +186,7 @@ public class TrackingClient {
                         bytes = (y + "," + breakClicked + "," + gasClicked + ","
                                 + turnSignalLeft + "," + turnSignalRight + ","
                                 + isParkingBreakEnabled + "," + lightsState + ","
-                                + isHorn + "," + cruiseEnabled).getBytes();
+                                + hornState + "," + cruiseEnabled).getBytes();
                     } else {
                         bytes = "paused".getBytes();
                     }

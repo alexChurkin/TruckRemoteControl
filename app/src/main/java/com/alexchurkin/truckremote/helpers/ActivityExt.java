@@ -22,13 +22,13 @@ public class ActivityExt {
         activity.getWindow().getDecorView().setSystemUiVisibility(flags);
     }
 
+    public static boolean isReverseLandscape(AppCompatActivity activity) {
+        return activity.getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_270;
+    }
+
     public static int getScreenHeight(AppCompatActivity activity) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         activity.getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
         return displayMetrics.heightPixels;
-    }
-
-    public static boolean isReverseLandscape(AppCompatActivity activity) {
-        return activity.getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_270;
     }
 }

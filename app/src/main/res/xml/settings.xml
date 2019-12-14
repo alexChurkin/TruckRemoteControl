@@ -39,15 +39,21 @@
         <androidx.preference.CheckBoxPreference
             app:defaultValue="false"
             app:iconSpaceReserved="false"
+            app:key="pneumaticSignal"
+            app:summary="@string/use_pneumatic_signal_summary"
+            app:title="@string/use_pneumatic_signal_text" />
+        <androidx.preference.CheckBoxPreference
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
             app:key="deadzone"
             app:summary="@string/deadzone_summary"
             app:title="@string/deadzone_title" />
         <androidx.preference.ListPreference
+            app:defaultValue="0"
             app:entries="@array/profile_variants"
             app:entryValues="@array/profile_values"
             app:iconSpaceReserved="false"
             app:key="defaultProfile"
-            app:defaultValue="0"
             app:summary="@string/profile_summary"
             app:title="@string/profile_title" />
     </androidx.preference.PreferenceCategory>

@@ -30,6 +30,7 @@ import com.alexchurkin.truckremote.BuildConfig;
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.TrackingClient;
 import com.alexchurkin.truckremote.helpers.ActivityExt;
+import com.alexchurkin.truckremote.helpers.FullScreenActivityExt;
 import com.alexchurkin.truckremote.helpers.Prefs;
 import com.alexchurkin.truckremote.helpers.Toaster;
 import com.google.android.gms.ads.AdListener;
@@ -37,13 +38,13 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
-import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static com.alexchurkin.truckremote.PrefConsts.CALIBRATION_OFFSET;
 import static com.alexchurkin.truckremote.PrefConsts.DEFAULT_PROFILE;
 import static com.alexchurkin.truckremote.PrefConsts.GUIDE_SHOWED;
 import static com.alexchurkin.truckremote.PrefConsts.LAST_SHOWED_VERSION_TEXT;
 import static com.alexchurkin.truckremote.PrefConsts.PORT;
 import static com.alexchurkin.truckremote.PrefConsts.SPECIFIED_IP;
+import static com.alexchurkin.truckremote.PrefConsts.USE_PNEUMATIC_SIGNAL;
 import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
 import static com.alexchurkin.truckremote.fragment.SettingsFragment.PREF_KEY_ADDOFF;
 import static com.alexchurkin.truckremote.helpers.ActivityExt.isReverseLandscape;
@@ -239,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements
             showInterstitialAd();
         }
 
-        if(prefs.getInt(LAST_SHOWED_VERSION_TEXT, 0) != 8) {
+        if (prefs.getInt(LAST_SHOWED_VERSION_TEXT, 0) != 8) {
             showReleaseNewsDialog();
         }
     }
@@ -445,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements
                 })
                 .setCancelable(false)
                 .create();
-        showAlert(dialog);
+        FullScreenActivityExt.showAlert(this, dialog);
     }
 
     private void showProfileChooseDialog() {
@@ -468,7 +469,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                     startClient();
                 }).setCancelable(false).create();
-        showAlert(dialog);
+        FullScreenActivityExt.showAlert(this, dialog);
     }
 
     private void showSettingsDialog() {
@@ -527,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 })
                 .create();
-        showAlert(dialog);
+        FullScreenActivityExt.showAlert(this, dialog);
     }
 
     private void showCalibrationDialog() {
@@ -551,16 +552,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 })
                 .create();
-        showAlert(dialog);
-    }
-
-    private void showAlert(AlertDialog dialog) {
-        dialog.getWindow().setFlags(FLAG_NOT_FOCUSABLE, FLAG_NOT_FOCUSABLE);
-        dialog.show();
-        dialog.getWindow().getDecorView().setSystemUiVisibility(
-                getWindow().getDecorView().getSystemUiVisibility()
-        );
-        dialog.getWindow().clearFlags(FLAG_NOT_FOCUSABLE);
+        FullScreenActivityExt.showAlert(this, dialog);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -584,9 +576,13 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.buttonHorn:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    client.setHornState(true);
+                    if(prefs.getBoolean(USE_PNEUMATIC_SIGNAL, false)) {
+                        client.setHornState(2);
+                    } else {
+                        client.setHornState(1);
+                    }
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    client.setHornState(false);
+                    client.setHornState(0);
                 }
                 break;
         }

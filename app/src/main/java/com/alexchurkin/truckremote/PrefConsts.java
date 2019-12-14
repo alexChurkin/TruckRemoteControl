@@ -12,5 +12,6 @@ public interface PrefConsts {
     String USE_SPECIFIED_SERVER = "defaultServer";
     String SPECIFIED_IP = "serverIP";
 
+    String USE_PNEUMATIC_SIGNAL = "pneumaticSignal";
     String DEFAULT_PROFILE = "defaultProfile";
 }

@@ -44,7 +44,8 @@
     <string name="def_server_ip_summary">Specified server IP address</string>
 
     <string name="control">Control</string>
-    <string name="additionally">Additionally</string>
+    <string name="use_pneumatic_signal_text">Use the pneumatic signal</string>
+    <string name="use_pneumatic_signal_summary">Using the pneumatic signal instead of a horn</string>
     <string name="deadzone_title">Enable deadzone</string>
     <string name="deadzone_summary">Enables a deadzone to prevent from moving so slightly</string>
 
@@ -62,6 +63,7 @@
     </string-array>
     <string name="what_profile_title">What profile to use?</string>
 
+    <string name="additionally">Additionally</string>
     <string name="remove_ads">Remove Ads</string>
     <string name="purchase_success">The purchase is successfully completed</string>
     <string name="purchase_restored">The purchase was successfully restored</string>
