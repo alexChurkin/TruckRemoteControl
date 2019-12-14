@@ -1,14 +1,18 @@
 package com.alexchurkin.truckremote.dialog;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.alexchurkin.truckremote.R;
@@ -16,6 +20,8 @@ import com.alexchurkin.truckremote.helpers.ActivityExt;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
 public class MenuDialogFragment extends BottomSheetDialogFragment implements View.OnClickListener {
 
@@ -28,6 +34,29 @@ public class MenuDialogFragment extends BottomSheetDialogFragment implements Vie
         setMaxPeekHeight();
         ActivityExt.enterFullscreen((AppCompatActivity) getActivity());
         return dialogView;
+    }
+
+    @Override
+    public void setupDialog(@NonNull Dialog dialog, int style) {
+        super.setupDialog(dialog, style);
+        getDialog().getWindow().setFlags(FLAG_NOT_FOCUSABLE, FLAG_NOT_FOCUSABLE);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        View view = getView();
+        view.setFitsSystemWindows(false);
+        view.setOnApplyWindowInsetsListener((v, windowInsets) -> windowInsets);
+        ViewParent parent = view.getParent();
+
+        while(parent instanceof View) {
+            View parentView = ((View) parent);
+            parentView.setFitsSystemWindows(false);
+            parentView.setOnApplyWindowInsetsListener((v, windowInsets) -> windowInsets);
+            parent = parentView.getParent();
+        }
     }
 
     @Override

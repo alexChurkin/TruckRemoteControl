@@ -49,7 +49,6 @@ import static com.alexchurkin.truckremote.PrefConsts.USE_PNEUMATIC_SIGNAL;
 import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
 import static com.alexchurkin.truckremote.fragment.SettingsFragment.PREF_KEY_ADDOFF;
 import static com.alexchurkin.truckremote.helpers.ActivityExt.isReverseLandscape;
-import static com.alexchurkin.truckremote.helpers.FullScreenActivityExt.showBottomSheetAlert;
 import static com.alexchurkin.truckremote.helpers.Toaster.showToastWithOffset;
 import static java.lang.Math.abs;
 
@@ -477,8 +476,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showMenuDialog() {
         MenuDialogFragment fr = new MenuDialogFragment();
-        showBottomSheetAlert(this, fr, "Menu");
-        //fr.show(getSupportFragmentManager(), "Menu");
+        fr.show(getSupportFragmentManager(), "Menu");
     }
 
     @Override
