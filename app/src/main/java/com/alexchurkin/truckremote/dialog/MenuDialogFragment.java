@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.helpers.ActivityExt;
@@ -23,7 +24,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
-public class MenuDialogFragment extends BottomSheetDialogFragment implements View.OnClickListener {
+public class MenuDialogFragment extends DialogFragment implements View.OnClickListener {
 
     private ItemClickListener mListener;
 
@@ -34,6 +35,12 @@ public class MenuDialogFragment extends BottomSheetDialogFragment implements Vie
         setMaxPeekHeight();
         ActivityExt.enterFullscreen((AppCompatActivity) getActivity());
         return dialogView;
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        return new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
     }
 
     @Override
