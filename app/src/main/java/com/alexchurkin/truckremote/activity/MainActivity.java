@@ -233,14 +233,14 @@ public class MainActivity extends AppCompatActivity implements
             startActivity(toGuide);
             prefs.edit()
                     .putBoolean(GUIDE_SHOWED, true)
-                    .putInt(LAST_SHOWED_VERSION_TEXT, 8)
+                    .putInt(LAST_SHOWED_VERSION_TEXT, 9)
                     .apply();
         } else if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
             MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
             showInterstitialAd();
         }
 
-        if (prefs.getInt(LAST_SHOWED_VERSION_TEXT, 0) != 8) {
+        if (prefs.getInt(LAST_SHOWED_VERSION_TEXT, 0) != 9) {
             showReleaseNewsDialog();
         }
     }
