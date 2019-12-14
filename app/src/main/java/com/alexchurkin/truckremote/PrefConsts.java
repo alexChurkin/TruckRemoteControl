@@ -3,7 +3,7 @@ package com.alexchurkin.truckremote;
 public interface PrefConsts {
     //Inner
     String GUIDE_SHOWED = "guideShowed";
-    String LAST_SHOWED_VERSION_TEXT = "releaseVersionText";
+    String LAST_SHOWED_VERSION_INFO = "releaseVersionText";
     String CALIBRATION_OFFSET = "calibrationOffset";
 
 

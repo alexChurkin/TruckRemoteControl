@@ -41,7 +41,7 @@ import com.google.android.gms.ads.MobileAds;
 import static com.alexchurkin.truckremote.PrefConsts.CALIBRATION_OFFSET;
 import static com.alexchurkin.truckremote.PrefConsts.DEFAULT_PROFILE;
 import static com.alexchurkin.truckremote.PrefConsts.GUIDE_SHOWED;
-import static com.alexchurkin.truckremote.PrefConsts.LAST_SHOWED_VERSION_TEXT;
+import static com.alexchurkin.truckremote.PrefConsts.LAST_SHOWED_VERSION_INFO;
 import static com.alexchurkin.truckremote.PrefConsts.PORT;
 import static com.alexchurkin.truckremote.PrefConsts.SPECIFIED_IP;
 import static com.alexchurkin.truckremote.PrefConsts.USE_PNEUMATIC_SIGNAL;
@@ -233,14 +233,14 @@ public class MainActivity extends AppCompatActivity implements
             startActivity(toGuide);
             prefs.edit()
                     .putBoolean(GUIDE_SHOWED, true)
-                    .putInt(LAST_SHOWED_VERSION_TEXT, 9)
+                    .putInt(LAST_SHOWED_VERSION_INFO, getResources().getInteger(R.integer.version))
                     .apply();
         } else if (savedInstanceState == null && !prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
             MobileAds.initialize(this, BuildConfig.ADMOB_APP_ID);
             showInterstitialAd();
         }
 
-        if (prefs.getInt(LAST_SHOWED_VERSION_TEXT, 0) != 9) {
+        if (prefs.getInt(LAST_SHOWED_VERSION_INFO, 0) != getResources().getInteger(R.integer.version)) {
             showReleaseNewsDialog();
         }
     }
@@ -441,9 +441,9 @@ public class MainActivity extends AppCompatActivity implements
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.version_changes_title)
                 .setMessage(R.string.version_changes_text)
-                .setPositiveButton(R.string.close, (dialogInterface, i) -> {
-                    prefs.edit().putInt(LAST_SHOWED_VERSION_TEXT, 8).apply();
-                })
+                .setPositiveButton(R.string.close, (dialogInterface, i) ->
+                        prefs.edit().putInt(LAST_SHOWED_VERSION_INFO,
+                                getResources().getInteger(R.integer.version)).apply())
                 .setCancelable(false)
                 .create();
         FullScreenActivityExt.showAlert(this, dialog);
@@ -576,7 +576,7 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.buttonHorn:
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    if(prefs.getBoolean(USE_PNEUMATIC_SIGNAL, false)) {
+                    if (prefs.getBoolean(USE_PNEUMATIC_SIGNAL, false)) {
                         client.setHornState(2);
                     } else {
                         client.setHornState(1);

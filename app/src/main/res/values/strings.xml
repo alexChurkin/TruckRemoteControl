@@ -4,6 +4,7 @@
     <string name="github_link" translatable="false">https://github.com/alexChurkin/TruckRemoteControl</string>
 
     <string name="version_changes_title">Changes in version</string>
+    <integer name="version">9</integer>
     <string name="version_changes_text">Added the ability to use the pneumatic signal instead of the usual. You need to download the latest version of Truck Remote Server to your PC / laptop.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
