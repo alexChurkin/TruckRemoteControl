@@ -2,6 +2,7 @@ package com.alexchurkin.truckremote.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -115,6 +116,7 @@ public class MenuDialogFragment extends DialogFragment implements View.OnClickLi
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.onItemClick(-1);
         mListener = null;
     }
 

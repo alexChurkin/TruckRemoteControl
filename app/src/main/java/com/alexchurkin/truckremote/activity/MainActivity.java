@@ -79,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements
     private ConstraintLayout mBreakLayout, mGasLayout;
     private AppCompatImageView mGasImage;
 
+    private static boolean hasMenuShowed;
+
     private Animation gasCruiseAnimation;
 
     private TrackingClient client;
@@ -92,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements
     private int activeProfileNumber = -1;
 
     private boolean runnableRunning;
-
     Runnable turnSignalsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -475,8 +476,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void showMenuDialog() {
-        MenuDialogFragment fr = new MenuDialogFragment();
-        fr.show(getSupportFragmentManager(), "Menu");
+        if (!hasMenuShowed) {
+            MenuDialogFragment fr = new MenuDialogFragment();
+            fr.show(getSupportFragmentManager(), "Menu");
+            hasMenuShowed = true;
+        }
     }
 
     @Override
@@ -529,6 +533,9 @@ public class MainActivity extends AppCompatActivity implements
             case 5:
                 Intent toSettings = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(toSettings);
+                break;
+            case -1:
+                hasMenuShowed = false;
                 break;
         }
     }
