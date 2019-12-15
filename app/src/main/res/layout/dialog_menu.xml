@@ -8,7 +8,7 @@
 
     <View
         android:id="@+id/topView"
-        android:layout_width="200dp"
+        android:layout_width="140dp"
         android:layout_height="4dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/bottom_sheet_top_view"
@@ -20,10 +20,10 @@
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/autoConnectItem"
         style="@style/MenuItem"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="12dp"
         android:text="@string/auto_connect"
         app:drawableStartCompat="@drawable/ic_autoconnect"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/calibrateItem"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/topView" />
 
@@ -32,7 +32,8 @@
         style="@style/MenuItem"
         android:text="@string/default_connect"
         app:drawableStartCompat="@drawable/ic_defaultserver"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/calibrateItem"
+        app:layout_constraintHorizontal_weight="2.8"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/autoConnectItem" />
 
@@ -41,34 +42,43 @@
         style="@style/MenuItem"
         android:text="@string/disconnect"
         app:drawableStartCompat="@drawable/ic_disconnect"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/defaultConnectItem"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/defaultConnectItem" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/instructionItem"
         style="@style/MenuItem"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
         android:text="@string/instruction"
         app:drawableStartCompat="@drawable/ic_instruction"
+        app:layout_constraintBottom_toBottomOf="@+id/autoConnectItem"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/disconnectItem" />
+        app:layout_constraintStart_toEndOf="@+id/defaultConnectItem"
+        app:layout_constraintTop_toBottomOf="@+id/topView" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/calibrateItem"
         style="@style/MenuItem"
+        android:layout_height="0dp"
         android:text="@string/calibration"
         app:drawableStartCompat="@drawable/ic_calibration"
+        app:layout_constraintBottom_toBottomOf="@+id/defaultConnectItem"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_weight="2"
+        app:layout_constraintStart_toEndOf="@+id/defaultConnectItem"
         app:layout_constraintTop_toBottomOf="@+id/instructionItem" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/settingsItem"
         style="@style/MenuItem"
+        android:layout_height="0dp"
         android:text="@string/settings"
         app:drawableStartCompat="@drawable/ic_settings_inmenu"
+        app:layout_constraintBottom_toBottomOf="@+id/disconnectItem"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/defaultConnectItem"
         app:layout_constraintTop_toBottomOf="@+id/calibrateItem" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
