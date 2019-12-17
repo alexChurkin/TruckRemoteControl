@@ -38,6 +38,8 @@
     <string name="def_server_ip_summary">IP-адрес стандартного сервера</string>
 
     <string name="control">Управление</string>
+    <string name="auto_turn_signals_text">Автоотключение поворотников</string>
+    <string name="auto_turn_signals_summary">Использовать автоматическое отключение поворотников</string>
     <string name="use_pneumatic_signal_text">Использовать пневмосигнал</string>
     <string name="use_pneumatic_signal_summary">Использование пневматического сигнала вместо обычного</string>
     <string name="deadzone_title">Включить мёртвую зону</string>

@@ -635,6 +635,13 @@ public class MainActivity extends AppCompatActivity implements
                 realY = applyDeadZoneY(realY);
             }
             client.provideAccelerometerY(realY);
+
+            if(client.isTwoTurnSignals()) {
+                return;
+            } else if(client.isTurnSignalRight()) {
+                //TODO
+            }
+
         } catch (Exception ignore) {
         }
     }

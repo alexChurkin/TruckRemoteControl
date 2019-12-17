@@ -42,6 +42,8 @@
     <string name="def_server_ip_summary">Specified server IP address</string>
 
     <string name="control">Control</string>
+    <string name="auto_turn_signals_text">Enable auto turn signal</string>
+    <string name="auto_turn_signals_summary">Using automatic turn signal to turn signals off</string>
     <string name="use_pneumatic_signal_text">Use the pneumatic signal</string>
     <string name="use_pneumatic_signal_summary">Using the pneumatic signal instead of a horn</string>
     <string name="deadzone_title">Enable deadzone</string>

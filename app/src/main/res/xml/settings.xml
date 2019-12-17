@@ -39,6 +39,12 @@
         <androidx.preference.CheckBoxPreference
             app:defaultValue="false"
             app:iconSpaceReserved="false"
+            app:key="autoTurnSignals"
+            app:summary="@string/auto_turn_signals_summary"
+            app:title="@string/auto_turn_signals_text" />
+        <androidx.preference.CheckBoxPreference
+            app:defaultValue="false"
+            app:iconSpaceReserved="false"
             app:key="pneumaticSignal"
             app:summary="@string/use_pneumatic_signal_summary"
             app:title="@string/use_pneumatic_signal_text" />
