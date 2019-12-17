@@ -39,6 +39,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
+import static com.alexchurkin.truckremote.PrefConsts.AUTO_TURN_SIGNALS;
 import static com.alexchurkin.truckremote.PrefConsts.CALIBRATION_OFFSET;
 import static com.alexchurkin.truckremote.PrefConsts.DEFAULT_PROFILE;
 import static com.alexchurkin.truckremote.PrefConsts.GUIDE_SHOWED;
@@ -90,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements
     private int prevLightsState;
 
     private float lastReceivedYValue, calibrationOffset;
+    private int autoTurnConditionState;
 
     private int activeProfileNumber = -1;
 
@@ -102,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements
                 runnableRunning = false;
                 mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                 mRightSignalButton.setImageResource(R.drawable.right_disabled);
+                autoTurnConditionState = 0;
             } else if (client.isTwoTurnSignals()) {
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
@@ -254,7 +257,9 @@ public class MainActivity extends AppCompatActivity implements
         breakPressed = false;
         gasPressed = false;
         client.resume();
-        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        if (isConnected) {
+            mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        }
         if (!runnableRunning) {
             mHandler.post(turnSignalsRunnable);
         }
@@ -263,7 +268,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        mSensorManager.unregisterListener(this, mSensor);
+        if (isConnected) {
+            mSensorManager.unregisterListener(this, mSensor);
+        }
         mHandler.removeCallbacks(turnSignalsRunnable);
         runnableRunning = false;
         client.pause();
@@ -341,7 +348,6 @@ public class MainActivity extends AppCompatActivity implements
         switch (view.getId()) {
             case R.id.buttonLeftSignal:
                 if (client.isPausedByUser()) return;
-
                 if (client.isTurnSignalLeft() && client.isTurnSignalRight()) return;
 
                 if (client.isTurnSignalRight() || client.isTurnSignalLeft()) {
@@ -350,11 +356,11 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
                 client.provideSignalsInfo(!client.isTurnSignalLeft(), false);
+                autoTurnConditionState = 0;
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonRightSignal:
                 if (client.isPausedByUser()) return;
-
                 if (client.isTurnSignalLeft() && client.isTurnSignalRight()) return;
 
                 if (client.isTurnSignalRight() || client.isTurnSignalLeft()) {
@@ -363,6 +369,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
                 client.provideSignalsInfo(false, !client.isTurnSignalRight());
+                autoTurnConditionState = 0;
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonAllSignals:
@@ -370,6 +377,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 boolean allEnabled = client.isTurnSignalLeft() && client.isTurnSignalRight();
                 client.provideSignalsInfo(!allEnabled, !allEnabled);
+                autoTurnConditionState = 0;
 
                 if (client.isTurnSignalLeft() || client.isTurnSignalRight()) {
                     mHandler.removeCallbacksAndMessages(null);
@@ -611,9 +619,11 @@ public class MainActivity extends AppCompatActivity implements
                 if (!runnableRunning) {
                     mHandler.post(turnSignalsRunnable);
                 }
+                mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
             } else {
                 mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
                 showToastWithOffset(R.string.connection_lost);
+                mSensorManager.unregisterListener(this, mSensor);
             }
         });
     }
@@ -630,18 +640,31 @@ public class MainActivity extends AppCompatActivity implements
         try {
             float receivedYValue = event.values[1] + calibrationOffset;
             lastReceivedYValue = receivedYValue;
-            float realY = isReverseLandscape(this) ? (-receivedYValue) : receivedYValue;
+            float finalYValue = isReverseLandscape(this) ? (-receivedYValue) : receivedYValue;
             if (prefs.getBoolean("deadZone", false)) {
-                realY = applyDeadZoneY(realY);
+                finalYValue = applyDeadZoneY(finalYValue);
             }
-            client.provideAccelerometerY(realY);
+            client.provideAccelerometerY(finalYValue);
 
-            if(client.isTwoTurnSignals()) {
-                return;
-            } else if(client.isTurnSignalRight()) {
-                //TODO
+            if (prefs.getBoolean(AUTO_TURN_SIGNALS, false)) {
+                if (client.isTwoTurnSignals()) return;
+
+                if (client.isTurnSignalRight()) {
+                    if (autoTurnConditionState == 1 && finalYValue < 0.0) {
+                        autoTurnConditionState = 0;
+                        client.provideSignalsInfo(false, false);
+                    } else if (finalYValue > 3.0) {
+                        autoTurnConditionState = 1;
+                    }
+                } else if (client.isTurnSignalLeft()) {
+                    if (autoTurnConditionState == 1 && finalYValue > 0.0) {
+                        autoTurnConditionState = 0;
+                        client.provideSignalsInfo(false, false);
+                    } else if (finalYValue < -3.0) {
+                        autoTurnConditionState = 1;
+                    }
+                }
             }
-
         } catch (Exception ignore) {
         }
     }
