@@ -646,7 +646,7 @@ public class MainActivity extends AppCompatActivity implements
             }
             client.provideAccelerometerY(finalYValue);
 
-            if (prefs.getBoolean(AUTO_TURN_SIGNALS, false)) {
+            if (prefs.getBoolean(AUTO_TURN_SIGNALS, true)) {
                 if (client.isTwoTurnSignals()) return;
 
                 if (client.isTurnSignalRight()) {

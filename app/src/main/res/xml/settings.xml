@@ -37,7 +37,7 @@
         app:iconSpaceReserved="false"
         app:title="@string/control">
         <androidx.preference.CheckBoxPreference
-            app:defaultValue="false"
+            app:defaultValue="true"
             app:iconSpaceReserved="false"
             app:key="autoTurnSignals"
             app:summary="@string/auto_turn_signals_summary"
