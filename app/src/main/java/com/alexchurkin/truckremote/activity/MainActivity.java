@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements
     private int prevLightsState;
 
     private float lastReceivedYValue, calibrationOffset;
-    private int autoTurnConditionState;
+    private boolean autoTurnCondition;
 
     private int activeProfileNumber = -1;
 
@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements
                 runnableRunning = false;
                 mLeftSignalButton.setImageResource(R.drawable.left_disabled);
                 mRightSignalButton.setImageResource(R.drawable.right_disabled);
-                autoTurnConditionState = 0;
+                autoTurnCondition = false;
             } else if (client.isTwoTurnSignals()) {
                 if (previousSignalGreen) {
                     mLeftSignalButton.setImageResource(R.drawable.left_disabled);
@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
                 client.provideSignalsInfo(!client.isTurnSignalLeft(), false);
-                autoTurnConditionState = 0;
+                autoTurnCondition = false;
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonRightSignal:
@@ -369,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
                 client.provideSignalsInfo(false, !client.isTurnSignalRight());
-                autoTurnConditionState = 0;
+                autoTurnCondition = false;
                 mHandler.post(turnSignalsRunnable);
                 break;
             case R.id.buttonAllSignals:
@@ -377,7 +377,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 boolean allEnabled = client.isTurnSignalLeft() && client.isTurnSignalRight();
                 client.provideSignalsInfo(!allEnabled, !allEnabled);
-                autoTurnConditionState = 0;
+                autoTurnCondition = false;
 
                 if (client.isTurnSignalLeft() || client.isTurnSignalRight()) {
                     mHandler.removeCallbacksAndMessages(null);
@@ -650,18 +650,18 @@ public class MainActivity extends AppCompatActivity implements
                 if (client.isTwoTurnSignals()) return;
 
                 if (client.isTurnSignalRight()) {
-                    if (autoTurnConditionState == 1 && finalYValue < 0.0) {
-                        autoTurnConditionState = 0;
+                    if (autoTurnCondition && finalYValue < 0.0) {
+                        autoTurnCondition = false;
                         client.provideSignalsInfo(false, false);
                     } else if (finalYValue > 3.0) {
-                        autoTurnConditionState = 1;
+                        autoTurnCondition = true;
                     }
                 } else if (client.isTurnSignalLeft()) {
-                    if (autoTurnConditionState == 1 && finalYValue > 0.0) {
-                        autoTurnConditionState = 0;
+                    if (autoTurnCondition && finalYValue > 0.0) {
+                        autoTurnCondition = false;
                         client.provideSignalsInfo(false, false);
                     } else if (finalYValue < -3.0) {
-                        autoTurnConditionState = 1;
+                        autoTurnCondition = true;
                     }
                 }
             }
