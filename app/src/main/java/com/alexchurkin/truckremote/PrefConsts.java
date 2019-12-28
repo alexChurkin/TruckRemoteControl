@@ -12,6 +12,7 @@ public interface PrefConsts {
     String USE_SPECIFIED_SERVER = "defaultServer";
     String SPECIFIED_IP = "serverIP";
 
+    String FORCE_FEEDBACK = "useFFB";
     String AUTO_TURN_SIGNALS = "autoTurnSignals";
     String USE_PNEUMATIC_SIGNAL = "pneumaticSignal";
     String DEFAULT_PROFILE = "defaultProfile";

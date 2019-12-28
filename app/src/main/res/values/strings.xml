@@ -3,9 +3,9 @@
     <string name="app_name" translatable="false">Truck Remote</string>
     <string name="github_link" translatable="false">https://github.com/alexChurkin/TruckRemoteControl</string>
 
+    <integer name="version">12</integer>
     <string name="version_changes_title">Changes in version</string>
-    <integer name="version">9</integer>
-    <string name="version_changes_text">Added the ability to use the pneumatic signal instead of the usual. You need to download the latest version of Truck Remote Server to your PC / laptop.</string>
+    <string name="version_changes_text">Added force feedback support (enable it on settings). It is recommended to look at the updated instructions to use FFB. You also need to download the latest version of Truck Remote Server to your PC / laptop.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -42,11 +42,13 @@
     <string name="def_server_ip_summary">Specified server IP address</string>
 
     <string name="control">Control</string>
-    <string name="auto_turn_signals_text">Enable auto turn signal</string>
+    <string name="ffb_text">Force feedback</string>
+    <string name="ffb_summary">Collision vibration</string>
+    <string name="auto_turn_signals_text">Auto turn signal</string>
     <string name="auto_turn_signals_summary">Using automatic turn signal to turn signals off</string>
     <string name="use_pneumatic_signal_text">Use the pneumatic signal</string>
     <string name="use_pneumatic_signal_summary">Using the pneumatic signal instead of a horn</string>
-    <string name="deadzone_title">Enable deadzone</string>
+    <string name="deadzone_title">Deadzone</string>
     <string name="deadzone_summary">Enables a deadzone to prevent from moving so slightly</string>
 
     <string name="profile_title">Default profile</string>
@@ -73,7 +75,7 @@
     <string name="github_page">Source code on GitHub</string>
     <string name="about_app">About app</string>
     <string name="version">Version</string>
-    <string name="about_app_text">This app is designed to be used as a steering wheel in some popular truck simulators like Euro Truck Simulator 2 and American Truck Simulator.\n\nDeveloper: Alex Churkin\n\nContact:\nchurkindev@gmail.com\n\nThe application uses icons from here:\nhttp://icons8.com</string>
+    <string name="about_app_text">This app is designed to be used as a steering wheel in some popular truck simulators like Euro Truck Simulator 2 and American Truck Simulator.\n\nDeveloper: Alex Churkin\n\nContact:\nchurkinapps@gmail.com\n\nThe application uses icons from here:\nhttp://icons8.com</string>
     <string name="close">Close</string>
 
     <string name="guide">Instruction</string>
@@ -81,9 +83,12 @@
     <string name="how_to_run">• How to run?</string>
     <string name="how_to_run_text">First, you need to download Truck Remote Server and run it on your PC. You can do it by this link: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">As you can see, you can specify connection port and steering sensitivity as you want. Then you need to start the game and select Keyboard + vJoy in Controls. It\'s also recommended to increase \"Steering sensitivity\" and \"Steering non-linearity\" as here:</string>
-    <string name="how_to_run_text_3">Make sure all keys in the control settings are set as standard and \"Automatic blinker turn off\" option is disabled. Enter the game and proceed to the next step.</string>
+    <string name="how_to_run_text_3">When using force feedback, it is also important to disable all types of feedback in the game, except for the collision.</string>
+    <string name="how_to_run_text_4">Make sure all keys in the control settings are set as standard and \"Automatic blinker turn off\" option is disabled. Enter the game and proceed to the next step.</string>
 
     <string name="how_to_use">• How to use?</string>
-    <string name="how_to_use_text_1">Ensure that your phone/tablet is connected to the same network as the PC. Connect your Truck Remote Control app to Server app on your PC. This can be done automatically or manually. You can configure a standard ip/server in the settings. If you haven\'t used Truck Remote Control before, please turn off truck turn signals, disable parking break and all headlights by keyboard (do not leave the high beam enabled when low beam is disabled).\n\nNOTE: You can enable cruise control by swiping gas up!</string>
-    <string name="how_to_use_text_2">P.S. Truck Remote Server is still in development. Therefore, we apologize for some wrong work. Pleasant use!</string>
+    <string name="how_to_use_text_1">Ensure that your phone/tablet is connected to the same network as the PC. Connect your Truck Remote Control app to Server app on your PC. This can be done automatically or manually. You can configure a standard ip/server in the settings. If you haven\'t used Truck Remote Control before, please turn off truck turn signals, disable parking break and all headlights by keyboard (do not leave the high beam enabled when low beam is disabled).</string>
+    <string name="how_to_use_text_2">Cruise control</string>
+    <string name="how_to_use_text_3">You can enable cruise control by swiping gas up and disable it by swipe or touching break.</string>
+    <string name="how_to_use_text_4">Enjoy your driving!</string>
 </resources>

@@ -9,8 +9,8 @@ android {
         applicationId "com.alexchurkin.truckremote"
         minSdkVersion 17
         targetSdkVersion 29
-        versionCode 25
-        versionName "1.11"
+        versionCode 26
+        versionName "1.12"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField('String', 'ADMOB_APP_ID', "\"" + props.getProperty("admobAppId") + "\"")

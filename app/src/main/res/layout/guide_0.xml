@@ -55,7 +55,7 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="350dp"
+            android:layout_height="320dp"
             android:layout_marginTop="16dp"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/game_settings_screen"
@@ -64,13 +64,25 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="8dp"
             android:autoLink="web"
             android:linksClickable="true"
             android:paddingStart="30dp"
             android:paddingEnd="8dp"
             android:text="@string/how_to_run_text_3"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
+            android:autoLink="web"
+            android:linksClickable="true"
+            android:paddingStart="30dp"
+            android:paddingEnd="8dp"
+            android:text="@string/how_to_run_text_4"
             android:textColor="@android:color/white"
             android:textSize="16sp" />
     </LinearLayout>

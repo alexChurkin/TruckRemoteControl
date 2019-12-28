@@ -13,27 +13,31 @@ import java.net.SocketTimeoutException;
 
 public class TrackingClient {
 
+    public static final int RECEIVE_TIMEOUT = 300;
+
     public interface ConnectionListener {
         void onConnectionChanged(boolean isConnected);
     }
 
-    private UDPMessagesSender sender;
+    private UDPClientTask sender;
     private DatagramSocket clientSocket;
     @NonNull
     private ConnectionListener listener;
 
     private String ip;
     private int port;
-    private boolean running;
-    private boolean isPaused, isPausedByUser;
+    private volatile boolean running;
+    private volatile boolean isPaused, isPausedByUser;
 
-    private float y;
-    private boolean breakClicked, gasClicked;
-    private boolean turnSignalLeft, turnSignalRight;
-    private boolean isParkingBreakEnabled;
-    private int lightsState;
-    private int hornState;
-    private boolean cruiseEnabled;
+    private volatile long ffbDuration;
+
+    private volatile float y;
+    private volatile boolean breakClicked, gasClicked;
+    private volatile boolean turnSignalLeft, turnSignalRight;
+    private volatile boolean isParkingBreakEnabled;
+    private volatile int lightsState;
+    private volatile int hornState;
+    private volatile boolean cruiseEnabled;
 
     public TrackingClient(String ip, int port, @NonNull ConnectionListener listener) {
         this.ip = ip;
@@ -47,6 +51,14 @@ public class TrackingClient {
 
     public boolean isPausedByUser() {
         return isPausedByUser;
+    }
+
+    public long getFfbDuration() {
+        return ffbDuration;
+    }
+
+    public void resetFfbDuration() {
+        ffbDuration = 0;
     }
 
     public void provideAccelerometerY(float y) {
@@ -91,10 +103,6 @@ public class TrackingClient {
         return isParkingBreakEnabled;
     }
 
-    public boolean isCruiseEnabled() {
-        return cruiseEnabled;
-    }
-
     public void toggleCruise() {
         this.cruiseEnabled = !cruiseEnabled;
     }
@@ -135,13 +143,17 @@ public class TrackingClient {
         stop();
         isPaused = false;
         isPausedByUser = false;
-        sender = new UDPMessagesSender();
+        sender = new UDPClientTask();
         sender.execute();
     }
 
     public void stop() {
         running = false;
         sender = null;
+        if(clientSocket != null && !clientSocket.isClosed()) {
+            clientSocket.close();
+            clientSocket = null;
+        }
     }
 
     public void forceUpdate(String ip, int port) {
@@ -150,11 +162,11 @@ public class TrackingClient {
     }
 
     private void startSender() {
-        sender = new UDPMessagesSender();
+        sender = new UDPClientTask();
         sender.execute();
     }
 
-    public class UDPMessagesSender extends AsyncTask<Void, Void, Void> {
+    public class UDPClientTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -163,7 +175,7 @@ public class TrackingClient {
 
             try {
                 clientSocket = new DatagramSocket();
-                clientSocket.setSoTimeout(2000);
+                clientSocket.setSoTimeout(RECEIVE_TIMEOUT);
 
                 try {
                     if (ip == null) {
@@ -181,29 +193,30 @@ public class TrackingClient {
                 listener.onConnectionChanged(true);
 
                 while (running) {
-                    byte[] bytes;
-                    if (!isPaused && !isPausedByUser) {
-                        bytes = (y + "," + breakClicked + "," + gasClicked + ","
-                                + turnSignalLeft + "," + turnSignalRight + ","
-                                + isParkingBreakEnabled + "," + lightsState + ","
-                                + hornState + "," + cruiseEnabled).getBytes();
-                    } else {
-                        bytes = "paused".getBytes();
-                    }
-                    clientSocket.send(new DatagramPacket(bytes, bytes.length,
-                            InetAddress.getByName(ip), port)
-                    );
-                    if (!isPaused || !isPausedByUser) {
-                        sleep(20);
-                    } else {
-                        sleep(2000);
+                    boolean paused = isPaused || isPausedByUser;
+
+                    String textToSend = !paused ?
+                            y + "," + breakClicked + "," + gasClicked + ","
+                                    + turnSignalLeft + "," + turnSignalRight + ","
+                                    + isParkingBreakEnabled + "," + lightsState + ","
+                                    + hornState + "," + cruiseEnabled
+                            : "paused";
+
+                    sendText(textToSend);
+
+                    String serverMsg = receiveText();
+                    String[] elements = serverMsg.split(",");
+                    ffbDuration = Long.parseLong(elements[0]);
+
+                    if (paused) {
+                        sleep(500);
                     }
                 }
                 clientSocket.close();
-                running = false;
+                clientSocket = null;
                 listener.onConnectionChanged(false);
             } catch (Exception e) {
-                Log.d("TAG", "Exception: " + e.getMessage());
+                Log.d("TAG", "Exception: " + e.toString());
                 running = false;
                 listener.onConnectionChanged(false);
             }
@@ -219,21 +232,34 @@ public class TrackingClient {
                 throws IOException {
 
             clientSocket.setBroadcast(true);
-            // Sending HELLO
+            // Sends HELLO
             byte[] sendData = ("TruckRemoteHello\n" + getStateInfoString()).getBytes();
             clientSocket.send(
                     new DatagramPacket(sendData, sendData.length, ipAddress, port));
 
-            // Receiving host address
-            byte[] receiveData = new byte[1024];
+            // Receives host address
+            byte[] receiveData = new byte[32];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             clientSocket.receive(receivePacket);
 
             clientSocket.setBroadcast(false);
+            clientSocket.connect(receivePacket.getSocketAddress());
 
             if (needDefineIp) {
                 ip = receivePacket.getAddress().getHostAddress();
             }
+        }
+
+        private void sendText(String text) throws IOException {
+            byte[] bytes = text.getBytes();
+            clientSocket.send(new DatagramPacket(bytes, bytes.length));
+        }
+
+        private String receiveText() throws IOException {
+            byte[] receiveData = new byte[32];
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            clientSocket.receive(receivePacket);
+            return new String(receiveData, 0, receivePacket.getLength());
         }
     }
 

@@ -9,8 +9,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -42,6 +46,7 @@ import com.google.android.gms.ads.MobileAds;
 import static com.alexchurkin.truckremote.PrefConsts.AUTO_TURN_SIGNALS;
 import static com.alexchurkin.truckremote.PrefConsts.CALIBRATION_OFFSET;
 import static com.alexchurkin.truckremote.PrefConsts.DEFAULT_PROFILE;
+import static com.alexchurkin.truckremote.PrefConsts.FORCE_FEEDBACK;
 import static com.alexchurkin.truckremote.PrefConsts.GUIDE_SHOWED;
 import static com.alexchurkin.truckremote.PrefConsts.LAST_SHOWED_VERSION_INFO;
 import static com.alexchurkin.truckremote.PrefConsts.PORT;
@@ -65,11 +70,14 @@ public class MainActivity extends AppCompatActivity implements
     public static final String IS_PARKING = "isParking";
     public static final String LIGHTS_STATE = "lightsState";
 
+    private static boolean hasMenuShowed;
+
     public static WifiManager wifi;
     public static int dBm = -200;
 
     private SensorManager mSensorManager;
     private Sensor mSensor;
+    private Vibrator vibrator;
     private Handler mHandler;
     SharedPreferences prefs;
 
@@ -79,8 +87,6 @@ public class MainActivity extends AppCompatActivity implements
     private AppCompatImageButton mButtonParking, mButtonLights, mButtonHorn;
     private ConstraintLayout mBreakLayout, mGasLayout;
     private AppCompatImageView mGasImage;
-
-    private static boolean hasMenuShowed;
 
     private Animation gasCruiseAnimation;
 
@@ -94,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements
     private boolean autoTurnCondition;
 
     private int activeProfileNumber = -1;
+    private boolean useFFB;
 
     private boolean runnableRunning;
     Runnable turnSignalsRunnable = new Runnable() {
@@ -174,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mHandler = new Handler();
@@ -257,6 +265,9 @@ public class MainActivity extends AppCompatActivity implements
         breakPressed = false;
         gasPressed = false;
         client.resume();
+
+        useFFB = prefs.getBoolean(FORCE_FEEDBACK, false);
+
         if (isConnected) {
             mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
         }
@@ -640,30 +651,45 @@ public class MainActivity extends AppCompatActivity implements
         try {
             float receivedYValue = event.values[1] + calibrationOffset;
             lastReceivedYValue = receivedYValue;
-            float finalYValue = isReverseLandscape(this) ? (-receivedYValue) : receivedYValue;
+            float realYValue = isReverseLandscape(this) ? (-receivedYValue) : receivedYValue;
             if (prefs.getBoolean("deadZone", false)) {
-                finalYValue = applyDeadZoneY(finalYValue);
+                realYValue = applyDeadZoneY(realYValue);
             }
-            client.provideAccelerometerY(finalYValue);
+            client.provideAccelerometerY(realYValue);
 
             if (prefs.getBoolean(AUTO_TURN_SIGNALS, true)) {
                 if (client.isTwoTurnSignals()) return;
 
                 if (client.isTurnSignalRight()) {
-                    if (autoTurnCondition && finalYValue < 0.0) {
+                    if (autoTurnCondition && realYValue < 0.0) {
                         autoTurnCondition = false;
                         client.provideSignalsInfo(false, false);
-                    } else if (finalYValue > 3.0) {
+                        mHandler.removeCallbacksAndMessages(null);
+                        mHandler.post(turnSignalsRunnable);
+                    } else if (realYValue > 3.0) {
                         autoTurnCondition = true;
                     }
                 } else if (client.isTurnSignalLeft()) {
-                    if (autoTurnCondition && finalYValue > 0.0) {
+                    if (autoTurnCondition && realYValue > 0.0) {
                         autoTurnCondition = false;
                         client.provideSignalsInfo(false, false);
-                    } else if (finalYValue < -3.0) {
+                        mHandler.removeCallbacksAndMessages(null);
+                        mHandler.post(turnSignalsRunnable);
+                    } else if (realYValue < -3.0) {
                         autoTurnCondition = true;
                     }
                 }
+            }
+
+            long ffbDuration = client.getFfbDuration();
+            if (vibrator.hasVibrator() && useFFB && ffbDuration != 0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(ffbDuration,
+                            VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vibrator.vibrate(ffbDuration);
+                }
+                client.resetFfbDuration();
             }
         } catch (Exception ignore) {
         }
