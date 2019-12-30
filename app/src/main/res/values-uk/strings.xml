@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Изменения в версии</string>
-    <string name="version_changes_text">Добавлена поддержка телеметрии. Для корректной работы необходимо загрузить самую последнюю версию Truck Remote Server на ваш ПК / ноутбук.</string>
+    <string name="version_changes_text">Добавлена поддержка телеметрии. Вы можете включить автоотключение поворотников в игре. Для корректной работы необходимо загрузить самую последнюю версию Truck Remote Server на ваш ПК / ноутбук.</string>
 
     <string name="searching_on_local">Поиск серверов в локальной сети…</string>
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>

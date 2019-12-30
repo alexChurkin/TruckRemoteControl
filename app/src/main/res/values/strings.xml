@@ -5,7 +5,7 @@
 
     <integer name="version">13</integer>
     <string name="version_changes_title">Changes in version</string>
-    <string name="version_changes_text">Added telemetry support. It is required to download the latest version of Truck Remote Server to your PC / laptop.</string>
+    <string name="version_changes_text">Added telemetry support. You can enable in-game Automatic blinker turn off. It is required to download the latest version of Truck Remote Server to your PC / laptop.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
