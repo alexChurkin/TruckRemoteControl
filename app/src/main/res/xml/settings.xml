@@ -43,12 +43,6 @@
             app:summary="@string/ffb_summary"
             app:title="@string/ffb_text" />
         <androidx.preference.SwitchPreference
-            app:defaultValue="true"
-            app:iconSpaceReserved="false"
-            app:key="autoTurnSignals"
-            app:summary="@string/auto_turn_signals_summary"
-            app:title="@string/auto_turn_signals_text" />
-        <androidx.preference.SwitchPreference
             app:defaultValue="false"
             app:iconSpaceReserved="false"
             app:key="pneumaticSignal"
@@ -60,14 +54,6 @@
             app:key="deadzone"
             app:summary="@string/deadzone_summary"
             app:title="@string/deadzone_title" />
-        <androidx.preference.ListPreference
-            app:defaultValue="0"
-            app:entries="@array/profile_variants"
-            app:entryValues="@array/profile_values"
-            app:iconSpaceReserved="false"
-            app:key="defaultProfile"
-            app:summary="@string/profile_summary"
-            app:title="@string/profile_title" />
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory

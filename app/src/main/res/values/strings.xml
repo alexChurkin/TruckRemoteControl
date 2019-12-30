@@ -3,9 +3,9 @@
     <string name="app_name" translatable="false">Truck Remote</string>
     <string name="github_link" translatable="false">https://github.com/alexChurkin/TruckRemoteControl</string>
 
-    <integer name="version">12</integer>
+    <integer name="version">13</integer>
     <string name="version_changes_title">Changes in version</string>
-    <string name="version_changes_text">Added force feedback support (enable it on settings). It is recommended to look at the updated instructions to use FFB. You also need to download the latest version of Truck Remote Server to your PC / laptop.</string>
+    <string name="version_changes_text">Added telemetry support. It is required to download the latest version of Truck Remote Server to your PC / laptop.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -44,9 +44,7 @@
     <string name="control">Control</string>
     <string name="ffb_text">Force feedback</string>
     <string name="ffb_summary">Collision vibration</string>
-    <string name="auto_turn_signals_text">Auto turn signal</string>
-    <string name="auto_turn_signals_summary">Using automatic turn signal to turn signals off</string>
-    <string name="use_pneumatic_signal_text">Use the pneumatic signal</string>
+    <string name="use_pneumatic_signal_text">Pneumatic signal</string>
     <string name="use_pneumatic_signal_summary">Using the pneumatic signal instead of a horn</string>
     <string name="deadzone_title">Deadzone</string>
     <string name="deadzone_summary">Enables a deadzone to prevent from moving so slightly</string>
