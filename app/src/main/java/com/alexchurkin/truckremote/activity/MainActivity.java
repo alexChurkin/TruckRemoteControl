@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.connectionIndicator:
                 if (wifi.isWifiEnabled()) {
                     showToastWithOffset(getString(R.string.signal_strength) + " "
-                            + abs(getSignalStrength()) + " dBm");
+                            + getSignalStrength() + " dBm");
                 } else {
                     getSignalStrength();
                 }
