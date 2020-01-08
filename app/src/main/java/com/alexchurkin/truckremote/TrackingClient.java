@@ -13,7 +13,7 @@ import java.net.SocketTimeoutException;
 
 public class TrackingClient {
 
-    private static final int RECEIVE_TIMEOUT = 300;
+    private static final int RECEIVE_TIMEOUT = 600;
 
     public interface ConnectionListener {
         int NOT_CONNECTED = 0;
@@ -94,33 +94,27 @@ public class TrackingClient {
     }
 
     public void clickParkingBreak() {
-        if (!parkingBreakClick) this.parkingBreakClick = true;
-        else this.parkingBreakClick = false;
+        this.parkingBreakClick = !parkingBreakClick;
     }
 
     public void clickLights() {
-        if (!lightsClick) this.lightsClick = true;
-        else this.lightsClick = false;
+        this.lightsClick = !lightsClick;
     }
 
     public void slideCruise() {
-        if (!cruiseSlide) this.cruiseSlide = true;
-        else this.cruiseSlide = false;
+        this.cruiseSlide = !cruiseSlide;
     }
 
     public void clickLeftBlinker() {
-        if (!turnLeftClick) this.turnLeftClick = true;
-        else this.turnLeftClick = false;
+        this.turnLeftClick = !turnLeftClick;
     }
 
     public void clickRightBlinker() {
-        if (!turnRightClick) this.turnRightClick = true;
-        else this.turnRightClick = false;
+        this.turnRightClick = !turnRightClick;
     }
 
     public void clickEmergencySignal() {
-        if (!emergencySignalClick) this.emergencySignalClick = true;
-        else this.emergencySignalClick = false;
+        this.emergencySignalClick = !emergencySignalClick;
     }
 
 
