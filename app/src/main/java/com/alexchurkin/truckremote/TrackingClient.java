@@ -31,10 +31,10 @@ public class TrackingClient {
     private UDPClientTask sender;
     private DatagramSocket clientSocket;
     @NonNull
-    private ConnectionListener listener;
+    private final ConnectionListener listener;
 
     private String ip;
-    private int port;
+    private int port = 18250;
     private volatile boolean running;
     private volatile boolean isPaused, isPausedByUser;
 
@@ -58,9 +58,8 @@ public class TrackingClient {
     private volatile long ffbDuration;
 
 
-    public TrackingClient(String ip, int port, @NonNull ConnectionListener listener) {
+    public TrackingClient(String ip, @NonNull ConnectionListener listener) {
         this.ip = ip;
-        this.port = port;
         this.listener = listener;
     }
 
@@ -175,6 +174,10 @@ public class TrackingClient {
 
     public class UDPClientTask extends AsyncTask<Void, Integer, Void> {
 
+        public UDPClientTask() {
+            super();
+        }
+
         @Override
         protected Void doInBackground(Void... voids) {
             Log.d("TAG", "Execution started");
@@ -184,12 +187,13 @@ public class TrackingClient {
                 clientSocket = new DatagramSocket();
                 clientSocket.setSoTimeout(RECEIVE_TIMEOUT);
 
+                //Hello's
                 try {
                     if (ip == null) {
                         Log.d("TAG", "Sending BROADCAST hello");
                         sendHello();
                     } else {
-                        Log.d("TAG", "Sending hello to CONCRETE server");
+                        Log.d("TAG", "Sending hello to the SPECIFIC server");
                         sendHello(InetAddress.getByName(ip), port, false);
                     }
                 } catch (SocketTimeoutException e) {
@@ -199,58 +203,22 @@ public class TrackingClient {
 
                 listener.onConnectionChanged(ConnectionListener.CONNECTED);
 
+                //Here we know that hello from server received and we can send data
+                int tries = 0;
                 while (running) {
                     boolean paused = isPaused || isPausedByUser;
 
-                    String textToSend = !paused ?
-                            y + "," + breakPressed + "," + gasPressed + ","
-                                    + turnLeftClick + "," + turnRightClick + "," + emergencySignalClick + ","
-                                    + parkingBreakClick + "," + lightsClick + ","
-                                    + hornState + "," + cruiseSlide
-                            : "paused";
+                    try {
+                        sendText(makeStringToSend(paused));
+                        if (!paused) processServerResponse(receiveText());
+                        else sleep500();
 
-                    sendText(textToSend);
-
-                    String serverMsg = receiveText();
-
-                    if (!paused) {
-                        String[] elements = serverMsg.split(",");
-
-
-                        boolean newTelIsEngineOn = Boolean.parseBoolean(elements[0]);
-                        if(newTelIsEngineOn != telWasEngineOn) {
-                            telWasEngineOn = newTelIsEngineOn;
-                            //TODO
+                    } catch (SocketTimeoutException e) {
+                        e.printStackTrace();
+                        if (++tries > 2) {
+                            running = false;
                         }
-
-                        //Parking
-                        boolean newTelIsParking = Boolean.parseBoolean(elements[1]);
-                        if (newTelIsParking != telWasParking) {
-                            telWasParking = newTelIsParking;
-                            listener.onParkingUpdate(newTelIsParking);
-                        }
-
-                        //Blinkers
-                        boolean newTelLeftBlinker = Boolean.parseBoolean(elements[2]);
-                        boolean newTelRightBlinker = Boolean.parseBoolean(elements[3]);
-
-                        if (newTelLeftBlinker != telWasLeftBlinker || newTelRightBlinker != telWasRightBlinker) {
-                            telWasLeftBlinker = newTelLeftBlinker;
-                            telWasRightBlinker = newTelRightBlinker;
-
-                            listener.onBlinkersUpdate(newTelLeftBlinker, newTelRightBlinker);
-                        }
-
-                        //Lights
-                        int newTelLightsState = Integer.parseInt(elements[4]);
-                        if (newTelLightsState != telPrevLightsState) {
-                            telPrevLightsState = newTelLightsState;
-                            listener.onLightsUpdate(newTelLightsState);
-                        }
-
-                        ffbDuration = Long.parseLong(elements[5]);
-                    } else {
-                        sleep(500);
+                        continue;
                     }
                 }
                 clientSocket.close();
@@ -264,6 +232,55 @@ public class TrackingClient {
             return null;
         }
 
+
+        /* Helpful local methods */
+        private String makeStringToSend(boolean paused) {
+            return !paused ?
+                    y + "," + breakPressed + "," + gasPressed + ","
+                            + turnLeftClick + "," + turnRightClick + "," + emergencySignalClick + ","
+                            + parkingBreakClick + "," + lightsClick + ","
+                            + hornState + "," + cruiseSlide
+                    : "paused";
+        }
+
+        private void processServerResponse(String serverResponse) {
+            String[] elements = serverResponse.split(",");
+
+            boolean newTelIsEngineOn = Boolean.parseBoolean(elements[0]);
+            if (newTelIsEngineOn != telWasEngineOn) {
+                telWasEngineOn = newTelIsEngineOn;
+                //TODO
+            }
+
+            //Parking
+            boolean newTelIsParking = Boolean.parseBoolean(elements[1]);
+            if (newTelIsParking != telWasParking) {
+                telWasParking = newTelIsParking;
+                listener.onParkingUpdate(newTelIsParking);
+            }
+
+            //Blinkers
+            boolean newTelLeftBlinker = Boolean.parseBoolean(elements[2]);
+            boolean newTelRightBlinker = Boolean.parseBoolean(elements[3]);
+
+            if (newTelLeftBlinker != telWasLeftBlinker || newTelRightBlinker != telWasRightBlinker) {
+                telWasLeftBlinker = newTelLeftBlinker;
+                telWasRightBlinker = newTelRightBlinker;
+
+                listener.onBlinkersUpdate(newTelLeftBlinker, newTelRightBlinker);
+            }
+
+            //Lights
+            int newTelLightsState = Integer.parseInt(elements[4]);
+            if (newTelLightsState != telPrevLightsState) {
+                telPrevLightsState = newTelLightsState;
+                listener.onLightsUpdate(newTelLightsState);
+            }
+
+            ffbDuration = Long.parseLong(elements[5]);
+        }
+
+        /* Helpful network operations */
         private void sendHello() throws IOException {
             sendHello(InetAddress.getByName("255.255.255.255"), port, true);
         }
@@ -304,9 +321,16 @@ public class TrackingClient {
         }
     }
 
-    private void sleep(int ms) {
+    private void sleep500() {
         try {
-            Thread.sleep(ms);
+            Thread.sleep(500);
+        } catch (InterruptedException ignore) {
+        }
+    }
+
+    private void sleep100() {
+        try {
+            Thread.sleep(100);
         } catch (InterruptedException ignore) {
         }
     }

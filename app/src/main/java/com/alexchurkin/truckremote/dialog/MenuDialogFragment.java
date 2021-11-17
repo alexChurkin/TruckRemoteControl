@@ -1,9 +1,10 @@
 package com.alexchurkin.truckremote.dialog;
 
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+import static java.util.Objects.requireNonNull;
+
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,18 +14,14 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.alexchurkin.truckremote.R;
-import com.alexchurkin.truckremote.helpers.ActivityExt;
+import com.alexchurkin.truckremote.helpers.ActivityTools;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-
-import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
 public class MenuDialogFragment extends DialogFragment implements View.OnClickListener {
 
@@ -35,37 +32,17 @@ public class MenuDialogFragment extends DialogFragment implements View.OnClickLi
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View dialogView = inflater.inflate(R.layout.dialog_menu, container, false);
         setMaxPeekHeight();
-        ActivityExt.enterFullscreen((AppCompatActivity) getActivity());
+        ActivityTools.enterFullscreen((AppCompatActivity) getActivity());
         return dialogView;
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        return new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
-    }
-
-    @Override
-    public void setupDialog(@NonNull Dialog dialog, int style) {
-        super.setupDialog(dialog, style);
-        getDialog().getWindow().setFlags(FLAG_NOT_FOCUSABLE, FLAG_NOT_FOCUSABLE);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        View view = getView();
-        view.setFitsSystemWindows(false);
-        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> insets);
-        ViewParent parent = view.getParent();
-
-        while(parent instanceof View) {
-            View parentView = ((View) parent);
-            parentView.setFitsSystemWindows(false);
-            ViewCompat.setOnApplyWindowInsetsListener(parentView, (v, insets) -> insets);
-            parent = parentView.getParent();
-        }
+        BottomSheetDialog dialog = new
+                BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme);
+        dialog.getWindow().setFlags(FLAG_NOT_FOCUSABLE, FLAG_NOT_FOCUSABLE);
+        return dialog;
     }
 
     @Override
@@ -76,29 +53,41 @@ public class MenuDialogFragment extends DialogFragment implements View.OnClickLi
         menuView.findViewById(R.id.calibrateItem).setOnClickListener(this);
         menuView.findViewById(R.id.settingsItem).setOnClickListener(this);
         menuView.findViewById(R.id.instructionItem).setOnClickListener(this);
+
+        View view = requireView();
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> insets);
+        ViewParent parent = view.getParent();
+
+        while (parent instanceof View) {
+            View parentView = ((View) parent);
+            parentView.setFitsSystemWindows(false);
+            ViewCompat.setOnApplyWindowInsetsListener(parentView, (v, insets) -> insets);
+            parent = parentView.getParent();
+        }
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.autoConnectItem:
-                mListener.onItemClick(0);
-                break;
-            case R.id.defaultConnectItem:
-                mListener.onItemClick(1);
-                break;
-            case R.id.disconnectItem:
-                mListener.onItemClick(2);
-                break;
-            case R.id.instructionItem:
-                mListener.onItemClick(3);
-                break;
-            case R.id.calibrateItem:
-                mListener.onItemClick(4);
-                break;
-            case R.id.settingsItem:
-                mListener.onItemClick(5);
-                break;
+        int id = view.getId();
+
+        if (id == R.id.autoConnectItem) {
+            mListener.onItemClick(0);
+
+        } else if (id == R.id.defaultConnectItem) {
+            mListener.onItemClick(1);
+
+        } else if (id == R.id.disconnectItem) {
+            mListener.onItemClick(2);
+
+        } else if (id == R.id.instructionItem) {
+            mListener.onItemClick(3);
+
+        } else if (id == R.id.calibrateItem) {
+            mListener.onItemClick(4);
+
+        } else if (id == R.id.settingsItem) {
+            mListener.onItemClick(5);
+
         }
         dismiss();
     }
@@ -122,7 +111,7 @@ public class MenuDialogFragment extends DialogFragment implements View.OnClickLi
     }
 
     public void setMaxPeekHeight() {
-        getDialog().setOnShowListener(dialog -> {
+        requireNonNull(getDialog()).setOnShowListener(dialog -> {
             BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) dialog;
             FrameLayout bottomSheet = bottomSheetDialog.findViewById(R.id.design_bottom_sheet);
             assert bottomSheet != null;

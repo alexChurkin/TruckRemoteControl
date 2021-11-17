@@ -1,5 +1,11 @@
 package com.alexchurkin.truckremote.fragment;
 
+import static com.alexchurkin.truckremote.TruckRemote.billingMan;
+import static com.alexchurkin.truckremote.helpers.BillingMan.PREF_AD_OFF;
+import static com.alexchurkin.truckremote.helpers.BillingMan.SKU_AD_OFF_ID;
+import static com.alexchurkin.truckremote.helpers.LogMan.logD;
+import static com.alexchurkin.truckremote.helpers.Toaster.showToast;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,41 +14,25 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.alexchurkin.truckremote.BuildConfig;
 import com.alexchurkin.truckremote.R;
+import com.alexchurkin.truckremote.helpers.AdManager;
 import com.alexchurkin.truckremote.helpers.Prefs;
-import com.android.billingclient.api.AcknowledgePurchaseParams;
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingFlowParams;
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-
-import static com.alexchurkin.truckremote.helpers.Toaster.showToast;
-
-public class SettingsFragment extends PreferenceFragmentCompat implements PurchasesUpdatedListener, BillingClientStateListener {
-
-    public static final String PREF_KEY_ADDOFF = "prefadsetting";
-    private static final String SKU_AD_OFF_ID = "add_off";
+public class SettingsFragment extends PreferenceFragmentCompat {
 
     private static final String KEY_SHOWED_ABOUT = "ShowedAbout";
     private boolean showedAbout;
 
-    private BillingClient mBillingClient;
-    private HashMap<String, SkuDetails> mSkuDetailsMap = new HashMap<>();
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getLifecycle().addObserver(billingMan);
+    }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -51,7 +41,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
         preferenceManager.findPreference("about")
                 .setSummary(getString(R.string.version) + " " + BuildConfig.VERSION_NAME);
         preferenceManager.findPreference("removeAds").setOnPreferenceClickListener(preference -> {
-            launchBilling();
+            billingMan.launchPurchaseFlow(requireActivity(), SKU_AD_OFF_ID);
             return true;
         });
         preferenceManager.findPreference("github").setOnPreferenceClickListener(preference -> {
@@ -65,7 +55,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
             showedAbout = true;
             return true;
         });
-        if (Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
+        if (Prefs.getBoolean(PREF_AD_OFF, false)) {
             getPreferenceManager().findPreference("removeAds").setVisible(false);
         }
     }
@@ -79,9 +69,37 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
                 showDialogAbout();
             }
         }
-        mBillingClient = BillingClient.newBuilder(getActivity())
-                .enablePendingPurchases().setListener(this).build();
-        mBillingClient.startConnection(this);
+
+        billingMan.livePurchaseEvent.observe(requireActivity(), it -> {
+            logD("* Live purchases event received");
+            if (it.contains(SKU_AD_OFF_ID)) {
+                logD("* Contains SKU_AD_OFF_ID");
+                showToast(R.string.purchase_success);
+                getPreferenceManager().findPreference("removeAds").setVisible(false);
+            }
+        });
+        billingMan.restorePurchaseEvent.observe(requireActivity(), it -> {
+            logD("* Restored purchases event received");
+            if (it.contains(SKU_AD_OFF_ID)) {
+                logD("* Contains SKU_AD_OFF_ID");
+                showToast(R.string.purchase_restored);
+                getPreferenceManager().findPreference("removeAds").setVisible(false);
+            }
+        });
+        billingMan.returnedBackPurchaseEvent.observe(requireActivity(), it -> {
+            logD("* Returned purchases event received");
+            if (it.contains(SKU_AD_OFF_ID)) {
+                logD("* Contains SKU_AD_OFF_ID");
+                showToast(R.string.purchase_returned);
+                getPreferenceManager().findPreference("removeAds").setVisible(true);
+            }
+        });
+        billingMan.userCancelledEvent.observe(requireActivity(), someVoid -> {
+            logD("* User cancelled purchase flow");
+            showToast(R.string.purchase_cancelled);
+        });
+
+        AdManager.tryShowFullscreenAd(requireActivity());
     }
 
     @Override
@@ -95,7 +113,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
         TextView textView = aboutLayout.findViewById(R.id.textView);
         textView.setText(R.string.about_app_text);
 
-        new AlertDialog.Builder(Objects.requireNonNull(getContext()))
+        new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.about_app)
                 .setIcon(R.mipmap.ic_launcher)
                 .setView(aboutLayout)
@@ -103,89 +121,5 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Purcha
                 .setOnDismissListener(dialogInterface -> showedAbout = false)
                 .create()
                 .show();
-    }
-
-    private void launchBilling() {
-        BillingFlowParams flowParams = BillingFlowParams.newBuilder()
-                .setSkuDetails(mSkuDetailsMap.get(SKU_AD_OFF_ID))
-                .build();
-        mBillingClient.launchBillingFlow(getActivity(), flowParams);
-    }
-
-    @Override
-    public void onBillingSetupFinished(BillingResult result) {
-        if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-            querySkuDetails();
-            List<Purchase> purchases = queryPurchases();
-
-            if (purchases != null) {
-                for (Purchase purchase : purchases) {
-
-                    if (purchase.getSku().equals(SKU_AD_OFF_ID)) {
-                        if (!purchase.isAcknowledged()) {
-                            acknowledgePurchase(purchase, R.string.purchase_success);
-                        } else if(!Prefs.getBoolean(PREF_KEY_ADDOFF, false)) {
-                            Prefs.putBoolean(PREF_KEY_ADDOFF, true);
-                            showToast(R.string.purchase_restored);
-                            getPreferenceManager().findPreference("removeAds").setVisible(false);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onBillingServiceDisconnected() {
-    }
-
-    @Override
-    public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
-        switch (billingResult.getResponseCode()) {
-            case BillingClient.BillingResponseCode.OK:
-                for (Purchase purchase : purchases) {
-                    if (purchase.getSku().equals(SKU_AD_OFF_ID) && !purchase.isAcknowledged()) {
-                        acknowledgePurchase(purchase, R.string.purchase_success);
-                    }
-                }
-                break;
-            case BillingClient.BillingResponseCode.USER_CANCELED:
-                showToast(R.string.purchase_cancelled);
-                break;
-        }
-    }
-
-    private void acknowledgePurchase(Purchase purchase, @StringRes int msgRes) {
-        AcknowledgePurchaseParams params = AcknowledgePurchaseParams.newBuilder()
-                .setPurchaseToken(purchase.getPurchaseToken())
-                .build();
-        mBillingClient.acknowledgePurchase(params, billingResult -> {
-            Prefs.putBoolean(PREF_KEY_ADDOFF, true);
-            showToast(msgRes);
-            getPreferenceManager().findPreference("removeAds").setVisible(false);
-        });
-    }
-
-    private void querySkuDetails() {
-        ArrayList<String> skuList = new ArrayList<>();
-        skuList.add(SKU_AD_OFF_ID);
-
-        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder()
-                .setSkusList(skuList)
-                .setType(BillingClient.SkuType.INAPP);
-
-        mBillingClient.querySkuDetailsAsync(params.build(), (billingResult, skuDetailsList) -> {
-            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                for (SkuDetails skuDetails : skuDetailsList) {
-                    mSkuDetailsMap.put(skuDetails.getSku(), skuDetails);
-                }
-            }
-        });
-    }
-
-    private List<Purchase> queryPurchases() {
-        Purchase.PurchasesResult purchasesResult =
-                mBillingClient.queryPurchases(BillingClient.SkuType.INAPP);
-        return purchasesResult.getPurchasesList();
     }
 }

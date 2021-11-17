@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatDialog;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
-public class FullScreenActivityExt {
+public class FullscreenActivityTools {
 
     public static void showAlert(AppCompatActivity activity, AppCompatDialog dialog) {
         dialog.getWindow().setFlags(FLAG_NOT_FOCUSABLE, FLAG_NOT_FOCUSABLE);

@@ -3,9 +3,9 @@
     <string name="app_name" translatable="false">Truck Remote</string>
     <string name="github_link" translatable="false">https://github.com/alexChurkin/TruckRemoteControl</string>
 
-    <integer name="version">13</integer>
-    <string name="version_changes_title">Changes in version</string>
-    <string name="version_changes_text">Added telemetry support. You can enable in-game Automatic blinker turn off. It is required to download the latest version of Truck Remote Server to your PC / laptop.</string>
+    <integer name="version">14</integer>
+    <string name="version_changes_title">New in this version</string>
+    <string name="version_changes_text">Updated to work on the newest Android devices; new animations added. It is RECOMMENDED to download the latest version of Truck Remote Server to your PC / laptop.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -46,8 +46,8 @@
     <string name="ffb_summary">Collision vibration</string>
     <string name="use_pneumatic_signal_text">Pneumatic signal</string>
     <string name="use_pneumatic_signal_summary">Using the pneumatic signal instead of a horn</string>
-    <string name="deadzone_title">Deadzone</string>
-    <string name="deadzone_summary">Enables a deadzone to prevent from moving so slightly</string>
+    <string name="deadzone_title">Dead zone</string>
+    <string name="deadzone_summary">Enables a dead zone to prevent from moving so slightly</string>
 
     <string name="profile_title">Default profile</string>
     <string name="profile_summary">Allows you to save state of buttons for several game profiles / games</string>
@@ -67,6 +67,7 @@
     <string name="remove_ads">Remove Ads</string>
     <string name="purchase_success">The purchase is successfully completed</string>
     <string name="purchase_restored">The purchase was successfully restored</string>
+    <string name="purchase_returned">The purchase was returned</string>
     <string name="purchase_cancelled">The purchase was cancelled</string>
 
 

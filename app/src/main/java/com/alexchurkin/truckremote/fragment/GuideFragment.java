@@ -18,7 +18,7 @@ public class GuideFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        int guideNumber = getArguments().getInt(GUIDE_NUMBER);
+        int guideNumber = requireArguments().getInt(GUIDE_NUMBER);
         if(guideNumber == 0) {
             return inflater.inflate(R.layout.guide_0, container, false);
         } else if(guideNumber == 1) {
