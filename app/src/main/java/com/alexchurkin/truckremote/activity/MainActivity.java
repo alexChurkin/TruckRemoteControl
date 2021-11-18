@@ -9,7 +9,6 @@ import static com.alexchurkin.truckremote.PrefConsts.SPECIFIED_IP;
 import static com.alexchurkin.truckremote.PrefConsts.USE_PNEUMATIC_SIGNAL;
 import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
 import static com.alexchurkin.truckremote.helpers.ActivityTools.isReverseLandscape;
-import static com.alexchurkin.truckremote.helpers.BillingMan.PREF_AD_OFF;
 import static com.alexchurkin.truckremote.helpers.Toaster.showToastWithOffset;
 import static java.lang.Math.abs;
 
@@ -159,7 +158,8 @@ public class MainActivity extends AppCompatActivity implements
 
         mBreakLayout.setOnTouchListener(this);
         mGasLayout.setOnTouchListener(this);
-        mButtonHorn.setOnTouchListener(this);
+        if (isConnectedToServer)
+            mButtonHorn.setOnTouchListener(this);
 
         mConnectionIndicator.setOnClickListener(this);
         mPauseButton.setOnClickListener(this);
@@ -192,8 +192,6 @@ public class MainActivity extends AppCompatActivity implements
                     .putBoolean(GUIDE_SHOWED, true)
                     .putInt(LAST_SHOWED_VERSION_INFO, getResources().getInteger(R.integer.version))
                     .apply();
-        } else if (savedInstanceState == null && !prefs.getBoolean(PREF_AD_OFF, false)) {
-            AdManager.init(this.getApplicationContext());
         }
 
         if (prefs.getInt(LAST_SHOWED_VERSION_INFO, 0) != getResources().getInteger(R.integer.version)) {

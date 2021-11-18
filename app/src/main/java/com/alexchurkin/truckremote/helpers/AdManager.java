@@ -1,5 +1,8 @@
 package com.alexchurkin.truckremote.helpers;
 
+import static com.alexchurkin.truckremote.helpers.BillingMan.PREF_AD_OFF;
+import static com.alexchurkin.truckremote.helpers.LogMan.logD;
+
 import android.app.Activity;
 import android.content.Context;
 
@@ -16,7 +19,9 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
 public class AdManager {
 
-    private static boolean isSdkInitialized = false;
+    private static volatile boolean isSdkInitialized = false;
+    private static volatile boolean isInitializingNow = false;
+
     private static InterstitialAd preloadedBanner;
     private static boolean wasBannerShown = false;
 
@@ -26,10 +31,18 @@ public class AdManager {
     }
 
     public static void init(@NonNull Context context) {
-        MobileAds.initialize(context, initializationStatus -> {
-            isSdkInitialized = true;
-            preloadFullscreenAd(context);
-        });
+        boolean adDisabled = Prefs.getBoolean(PREF_AD_OFF, false);
+
+        if (!adDisabled && !isSdkInitialized && !isInitializingNow) {
+            logD("> AdManager is initializing");
+            isInitializingNow = true;
+            MobileAds.initialize(context, initializationStatus -> {
+                logD("> AdManager was initialized");
+                isInitializingNow = false;
+                isSdkInitialized = true;
+                preloadFullscreenAd(context);
+            });
+        }
     }
 
     private static void preloadFullscreenAd(@NonNull Context context) {

@@ -21,12 +21,7 @@ public class TruckRemote extends MultiDexApplication {
         Prefs.initialize(this);
         Toaster.initialize(this);
 
-        //If ad disablement wasn't purchased, let's init AdManager
-        if (!Prefs.getBoolean(PREF_AD_OFF, false)) {
-            AdManager.init(this);
-            logD(">> Application: AdManager initialized");
-        }
-
+        AdManager.init(this);
         billingMan = BillingMan.getInstance(this);
     }
 }

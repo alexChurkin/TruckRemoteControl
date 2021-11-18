@@ -82,7 +82,7 @@
     <string name="how_to_run">• How to run?</string>
     <string name="how_to_run_text">First, you need to download Truck Remote Server and run it on your PC. You can do it by this link: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">As you can see, you can specify connection port and steering sensitivity as you want. Then you need to start the game and select Keyboard + vJoy in Controls. It\'s also recommended to increase \"Steering sensitivity\" and \"Steering non-linearity\" as here:</string>
-    <string name="how_to_run_text_3">When using force feedback, it is also important to disable all types of feedback in the game, except for the collision.</string>
+    <string name="how_to_run_text_3">When using force feedback, it is also important to disable all types of feedback in the game, except for the Collisions (50%), Bumps (~10%) and Terrain (~5%).</string>
     <string name="how_to_run_text_4">Make sure all keys in the control settings are set as standard. Enter the game and proceed to the next step.</string>
 
     <string name="how_to_use">• How to use?</string>
