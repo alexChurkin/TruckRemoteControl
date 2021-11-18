@@ -1,6 +1,5 @@
 package com.alexchurkin.truckremote;
 
-import static com.alexchurkin.truckremote.helpers.BillingMan.PREF_AD_OFF;
 import static com.alexchurkin.truckremote.helpers.LogMan.logD;
 
 import androidx.multidex.MultiDexApplication;
