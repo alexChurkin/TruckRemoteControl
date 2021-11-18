@@ -14,7 +14,7 @@ That's all :) Enjoy it!
 
 ## License
 
-    Copyright 2019 Alex Churkin.
+    Copyright 2021 Alex Churkin.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
