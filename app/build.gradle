@@ -9,7 +9,7 @@ android {
         applicationId "com.alexchurkin.truckremote"
         minSdkVersion 17
         targetSdkVersion 31
-        versionCode 31
+        versionCode 32
         versionName "1.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -33,7 +33,7 @@ android {
             minifyEnabled true
             shrinkResources true
             buildConfigField('String', 'INTERSTITIAL_AD_ID', "\"" + props.getProperty("interstitialAdId") + "\"")
-            buildConfigField "boolean", "USE_LOG", "true"
+            buildConfigField "boolean", "USE_LOG", "false"
         }
     }
     compileOptions {

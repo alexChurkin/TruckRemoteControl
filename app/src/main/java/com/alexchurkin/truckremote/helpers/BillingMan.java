@@ -300,7 +300,7 @@ public class BillingMan implements LifecycleObserver,
 
         //App should give something to the user
         if (!newPurchasedSkus.isEmpty()) {
-            if (newPurchasedSkus.contains(PREF_AD_OFF))
+            if (newPurchasedSkus.contains(SKU_AD_OFF_ID))
                 Prefs.putBoolean(PREF_AD_OFF, true);
 
             if (isLiveUpdate) {
