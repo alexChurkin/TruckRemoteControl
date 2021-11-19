@@ -35,7 +35,7 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="260dp"
             android:layout_marginTop="16dp"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/server_screen"
@@ -55,16 +55,16 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="320dp"
+            android:layout_height="160dp"
             android:layout_marginTop="16dp"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/game_settings_screen"
+            app:srcCompat="@drawable/game_settings_screen_1"
             tools:ignore="ContentDescription" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:autoLink="web"
             android:linksClickable="true"
             android:paddingStart="30dp"
@@ -72,6 +72,14 @@
             android:text="@string/how_to_run_text_3"
             android:textColor="@android:color/white"
             android:textSize="16sp" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="16dp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/game_settings_screen_2"
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:layout_width="match_parent"

@@ -59,7 +59,7 @@
             android:layout_height="0dp"
             android:layout_marginTop="12dp"
             android:paddingStart="36dp"
-            android:text="@string/instruction"
+            android:text="@string/start_guide"
             app:drawableStartCompat="@drawable/ic_instruction"
             app:layout_constraintBottom_toBottomOf="@+id/autoConnectItem"
             app:layout_constraintEnd_toEndOf="parent"
