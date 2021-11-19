@@ -26,6 +26,7 @@ android {
         debug {
             minifyEnabled false
             applicationIdSuffix '.debug'
+            versionNameSuffix ' (debug)'
             buildConfigField('String', 'INTERSTITIAL_AD_ID', "\"ca-app-pub-3940256099942544/1033173712\"")
             buildConfigField "boolean", "USE_LOG", "true"
         }
