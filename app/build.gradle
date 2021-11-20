@@ -9,8 +9,8 @@ android {
         applicationId "com.alexchurkin.truckremote"
         minSdkVersion 17
         targetSdkVersion 31
-        versionCode 33
-        versionName "1.21"
+        versionCode 34
+        versionName "1.22"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField('String', 'ADMOB_APP_ID', "\"" + props.getProperty("admobAppId") + "\"")
@@ -60,4 +60,7 @@ dependencies {
 
     implementation 'com.google.android.gms:play-services-ads:20.4.0'
     implementation 'com.android.billingclient:billing:4.0.0'
+
+    //Required to avoid crash on Android 12 API 31
+    implementation 'androidx.work:work-runtime:2.7.1'
 }
