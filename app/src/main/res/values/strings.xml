@@ -27,6 +27,8 @@
     <string name="attach_trailer">Attach trailer</string>
     <string name="detach_trailer">Detach trailer</string>
     <string name="perform_action">Perform action</string>
+    <string name="beacon">Beacon</string>
+    <string name="wipers">Wipers</string>
 
     <string-array name="calibration_items">
         <item>Calibrate</item>

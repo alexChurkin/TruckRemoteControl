@@ -18,11 +18,13 @@
     <string name="settings">Настройки</string>
     <string name="start_guide">Инструкция</string>
 
-    <string name="start_engine">Завести двигатель</string>
+    <string name="start_engine">Запустить двигатель</string>
     <string name="stop_engine">Заглушить двигатель</string>
     <string name="attach_trailer">Прицеп: сцепка</string>
     <string name="detach_trailer">Прицеп: отцепить</string>
     <string name="perform_action">Выполнить</string>
+    <string name="beacon">Маячок</string>
+    <string name="wipers">Стеклоочистители</string>
 
     <string-array name="calibration_items">
         <item>Калибровать</item>

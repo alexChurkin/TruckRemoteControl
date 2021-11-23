@@ -195,6 +195,7 @@ public class TrackingClient {
         sender.execute();
     }
 
+    //TODO Migrate from AsyncTask to something better
     public class UDPClientTask extends AsyncTask<Void, Integer, Void> {
 
         public UDPClientTask() {
@@ -241,7 +242,6 @@ public class TrackingClient {
                         if (++tries > 2) {
                             running = false;
                         }
-                        continue;
                     }
                 }
                 clientSocket.close();
@@ -258,6 +258,7 @@ public class TrackingClient {
 
         /* Helpful local methods */
         private String makeStringToSend(boolean paused) {
+            //TODO Add new values to this string
             return !paused ?
                     y + "," + breakPressed + "," + gasPressed + ","
                             + turnLeftClick + "," + turnRightClick + "," + emergencySignalClick + ","
