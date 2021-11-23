@@ -21,11 +21,25 @@ public class TrackingClient {
 
         void onConnectionChanged(int connectionState);
 
+        void onEngineUpdate(boolean isStarted);
+
         void onParkingUpdate(boolean isParking);
 
         void onLightsUpdate(int lightsMode);
 
         void onBlinkersUpdate(boolean leftBlinker, boolean rightBlinker);
+
+        void onWipersUpdate(boolean isWipers);
+
+        void onBeaconUpdate(boolean isBeacon);
+
+        void onLowFuelUpdate(boolean isLowFuel);
+
+        void onFuelUpdate(int percentage);
+
+        void onTruckDamageUpdate(int damage);
+
+        void onTrailerUpdate(boolean isAttached, int trailerDamage, int cargoDamage);
     }
 
     private UDPClientTask sender;
@@ -54,6 +68,15 @@ public class TrackingClient {
     private volatile boolean telWasLeftBlinker;
     private volatile int telPrevLightsState;
 
+    private volatile boolean telWasWipers;
+    private volatile boolean telWasBeacon;
+    private volatile boolean telWasLowFuel;
+    private volatile int telPrevFuelLevel;
+
+    private volatile int telPrevTruckDamage;
+    private volatile boolean telWasTrailerAttached;
+    private volatile int telPrevTrailerDamage;
+    private volatile int telPrevCargoDamage;
 
     private volatile long ffbDuration;
 
@@ -249,7 +272,7 @@ public class TrackingClient {
             boolean newTelIsEngineOn = Boolean.parseBoolean(elements[0]);
             if (newTelIsEngineOn != telWasEngineOn) {
                 telWasEngineOn = newTelIsEngineOn;
-                //TODO
+                listener.onEngineUpdate(newTelIsEngineOn);
             }
 
             //Parking
@@ -277,7 +300,65 @@ public class TrackingClient {
                 listener.onLightsUpdate(newTelLightsState);
             }
 
-            ffbDuration = Long.parseLong(elements[5]);
+            /* New info (23.11.21) */
+
+            boolean newTelIsWipers = Boolean.parseBoolean(elements[5]);
+            if (newTelIsWipers != telWasWipers) {
+                telWasWipers = newTelIsWipers;
+                listener.onWipersUpdate(newTelIsWipers);
+            }
+
+            boolean newTelIsBeacon = Boolean.parseBoolean(elements[6]);
+            if (newTelIsBeacon != telWasBeacon) {
+                telWasBeacon = newTelIsBeacon;
+                listener.onBeaconUpdate(newTelIsBeacon);
+            }
+
+
+            boolean newIsLowFuel = Boolean.parseBoolean(elements[7]);
+            if (newIsLowFuel != telWasLowFuel) {
+                telWasLowFuel = newIsLowFuel;
+                listener.onLowFuelUpdate(newIsLowFuel);
+            }
+
+            int newFuelLevel = Integer.parseInt(elements[8]);
+            if (newFuelLevel != telPrevFuelLevel) {
+                telPrevFuelLevel = newFuelLevel;
+                listener.onFuelUpdate(newFuelLevel);
+            }
+
+            int newTelTruckDamage = Integer.parseInt(elements[9]);
+            if (newTelTruckDamage != telPrevTruckDamage) {
+                telPrevTruckDamage = newTelTruckDamage;
+                listener.onTruckDamageUpdate(newTelTruckDamage);
+            }
+
+            boolean trailerUpdated = false;
+
+            boolean newTelTrailerAttached = Boolean.parseBoolean(elements[10]);
+            if (newTelTrailerAttached != telWasTrailerAttached) {
+                telWasTrailerAttached = newTelTrailerAttached;
+                trailerUpdated = true;
+            }
+
+            int newTelTrailerDamage = Integer.parseInt(elements[11]);
+            if (newTelTrailerDamage != telPrevTrailerDamage) {
+                telPrevTrailerDamage = newTelTrailerDamage;
+                trailerUpdated = true;
+            }
+
+            int newTelCargoDamage = Integer.parseInt(elements[12]);
+            if (newTelCargoDamage != telPrevCargoDamage) {
+                telPrevCargoDamage = newTelCargoDamage;
+                trailerUpdated = true;
+            }
+
+            if (trailerUpdated) {
+                listener.onTrailerUpdate(newTelTrailerAttached,
+                        newTelTrailerDamage, newTelCargoDamage);
+            }
+
+            ffbDuration = Long.parseLong(elements[13]);
         }
 
         /* Helpful network operations */
@@ -324,13 +405,6 @@ public class TrackingClient {
     private void sleep500() {
         try {
             Thread.sleep(500);
-        } catch (InterruptedException ignore) {
-        }
-    }
-
-    private void sleep100() {
-        try {
-            Thread.sleep(100);
         } catch (InterruptedException ignore) {
         }
     }

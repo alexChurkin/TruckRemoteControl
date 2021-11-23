@@ -18,6 +18,12 @@
     <string name="settings">Настройки</string>
     <string name="start_guide">Инструкция</string>
 
+    <string name="start_engine">Завести двигатель</string>
+    <string name="stop_engine">Заглушить двигатель</string>
+    <string name="attach_trailer">Прицеп: сцепка</string>
+    <string name="detach_trailer">Прицеп: отцепить</string>
+    <string name="perform_action">Выполнить</string>
+
     <string-array name="calibration_items">
         <item>Калибровать</item>
         <item>Сбросить калибровку</item>
@@ -44,20 +50,6 @@
     <string name="use_pneumatic_signal_summary">Использовать пневматический сигнал вместо обычного</string>
     <string name="deadzone_title">Мёртвая зона</string>
     <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
-
-    <string name="profile_title">Профиль по умолчанию</string>
-    <string name="profile_summary">Позволяет сохранять состояние кнопок в нескольких игровых профилях / играх</string>
-    <string-array name="profile_variants">
-        <item>Профиль 1</item>
-        <item>Профиль 2</item>
-        <item>Всегда спрашивать</item>
-    </string-array>
-    <string-array name="profile_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string name="what_profile_title">Какой профиль использовать?</string>
 
     <string name="additionally">Дополнительно</string>
     <string name="remove_ads">Отключить рекламу</string>

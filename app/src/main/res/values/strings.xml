@@ -22,6 +22,12 @@
     <string name="settings">Settings</string>
     <string name="start_guide">Show guide</string>
 
+    <string name="start_engine">Start engine</string>
+    <string name="stop_engine">Stop engine</string>
+    <string name="attach_trailer">Attach trailer</string>
+    <string name="detach_trailer">Detach trailer</string>
+    <string name="perform_action">Perform action</string>
+
     <string-array name="calibration_items">
         <item>Calibrate</item>
         <item>Reset calibration</item>
@@ -48,20 +54,6 @@
     <string name="use_pneumatic_signal_summary">Using the pneumatic signal instead of a horn</string>
     <string name="deadzone_title">Dead zone</string>
     <string name="deadzone_summary">Enables a dead zone to prevent from moving so slightly</string>
-
-    <string name="profile_title">Default profile</string>
-    <string name="profile_summary">Allows you to save state of buttons for several game profiles / games</string>
-    <string-array name="profile_variants">
-        <item>Profile 1</item>
-        <item>Profile 2</item>
-        <item>Always ask</item>
-    </string-array>
-    <string-array name="profile_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string name="what_profile_title">What profile to use?</string>
 
     <string name="additionally">Additionally</string>
     <string name="remove_ads">Remove Ads</string>

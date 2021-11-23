@@ -30,7 +30,7 @@ public class MenuDialogFragment extends DialogFragment implements View.OnClickLi
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View dialogView = inflater.inflate(R.layout.dialog_menu, container, false);
+        View dialogView = inflater.inflate(R.layout.dialog_menu_default, container, false);
         setMaxPeekHeight();
         ActivityTools.enterFullscreen((AppCompatActivity) getActivity());
         return dialogView;

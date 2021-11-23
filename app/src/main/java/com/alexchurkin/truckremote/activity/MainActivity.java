@@ -475,6 +475,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onEngineUpdate(boolean isStarted) {
+        //TODO
+        Log.d("TAG", "onEngineUpdate: " + isStarted);
+    }
+
+    @Override
     public void onParkingUpdate(boolean isParking) {
         runOnUiThread(() -> {
             if (isParking) {
@@ -537,6 +543,43 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onWipersUpdate(boolean isWipers) {
+        //TODO
+        Log.d("TAG", "onWipersUpdate: " + isWipers);
+    }
+
+    @Override
+    public void onBeaconUpdate(boolean isBeacon) {
+        //TODO
+        Log.d("TAG", "onBeaconUpdate: " + isBeacon);
+    }
+
+    @Override
+    public void onLowFuelUpdate(boolean isLowFuel) {
+        //TODO
+        Log.d("TAG", "onLowFuelUpdate: " + isLowFuel);
+    }
+
+    @Override
+    public void onFuelUpdate(int percentage) {
+        //TODO
+        Log.d("TAG", "onFuelUpdate: " + percentage);
+    }
+
+    @Override
+    public void onTruckDamageUpdate(int damage) {
+        //TODO
+        Log.d("TAG", "onTruckDamageUpdate: " + damage);
+    }
+
+    @Override
+    public void onTrailerUpdate(boolean isAttached, int trailerDamage, int cargoDamage) {
+        //TODO
+        Log.d("TAG", "onTrailerUpdate: isAttached = " + isAttached +
+                ", trailerDamage = " + trailerDamage + ", cargoDamage = " + cargoDamage);
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
@@ -556,7 +599,6 @@ public class MainActivity extends AppCompatActivity implements
             client.provideAccelerometerY(realYValue);
 
             long ffbDuration = client.getFfbDuration();
-            Log.d("TAG", "Duration = " + ffbDuration);
 
             if (vibrator.hasVibrator() && useFFB && ffbDuration != 0) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
