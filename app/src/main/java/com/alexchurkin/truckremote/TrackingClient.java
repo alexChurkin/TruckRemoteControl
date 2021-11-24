@@ -1,9 +1,8 @@
 package com.alexchurkin.truckremote;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
+import com.alexchurkin.truckremote.helpers.LogMan;
 import com.alexchurkin.truckremote.helpers.TaskRunner;
 
 import java.io.IOException;
@@ -11,6 +10,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.Calendar;
 
 public class TrackingClient {
 
@@ -197,10 +197,6 @@ public class TrackingClient {
 
     public void stop() {
         running = false;
-        /*if (clientSocket != null && !clientSocket.isClosed()) {
-            clientSocket.close();
-            clientSocket = null;
-        }*/
     }
 
     public void forceUpdate(String ip, int port) {
@@ -217,7 +213,7 @@ public class TrackingClient {
         @Override
         public void run() {
             running = true;
-            Log.d("TAG", "Execution started");
+            LogMan.logD("Execution started");
 
             try {
                 clientSocket = new DatagramSocket();
@@ -226,10 +222,10 @@ public class TrackingClient {
                 //Hello's
                 try {
                     if (ip == null) {
-                        Log.d("TAG", "Sending BROADCAST hello");
+                        LogMan.logD("Sending BROADCAST hello");
                         sendHello();
                     } else {
-                        Log.d("TAG", "Sending hello to the SPECIFIC server");
+                        LogMan.logD("Sending hello to the SPECIFIC server");
                         sendHello(InetAddress.getByName(ip), port, false);
                     }
                 } catch (SocketTimeoutException e) {
@@ -246,12 +242,23 @@ public class TrackingClient {
                     boolean paused = isPaused || isPausedByUser;
 
                     try {
+                        long tStart = Calendar.getInstance().getTimeInMillis();
+
                         sendText(makeStringToSend(paused));
+
+                        long tEnd1 = Calendar.getInstance().getTimeInMillis();
+                        LogMan.logD("duration 1 = " + (tEnd1 - tStart));
+
                         String response = receiveText();
+
+                        long tEnd2 = Calendar.getInstance().getTimeInMillis();
+                        LogMan.logD("duration 2 = " + (tEnd2 - tEnd1));
+
                         if (!paused) processServerResponse(response);
                         else sleep500();
 
                     } catch (SocketTimeoutException e) {
+                        LogMan.logD("Socket timeout: " + e.getMessage());
                         e.printStackTrace();
                         if (++tries > 2) {
                             running = false;
@@ -264,7 +271,7 @@ public class TrackingClient {
                 taskRunner.postToMainThread(() ->
                         listener.onConnectionChanged(TrackingClient.NOT_CONNECTED));
             } catch (Exception e) {
-                Log.d("TAG", "Exception: " + e.toString());
+                LogMan.logD("Exception: " + e.toString());
                 running = false;
                 taskRunner.postToMainThread(() ->
                         listener.onConnectionChanged(TrackingClient.NOT_CONNECTED));
@@ -286,7 +293,7 @@ public class TrackingClient {
             String[] elements = serverResponse.split(",");
 
             boolean telemetryActive = Boolean.parseBoolean(elements[0]);
-            if(!telemetryActive) return;
+            if (!telemetryActive) return;
 
             boolean newTelIsEngineOn = Boolean.parseBoolean(elements[1]);
             if (newTelIsEngineOn != telWasEngineOn) {
