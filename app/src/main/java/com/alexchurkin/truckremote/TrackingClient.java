@@ -1,6 +1,5 @@
 package com.alexchurkin.truckremote;
 
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -230,7 +229,7 @@ public class TrackingClient {
                         sendText(makeStringToSend(paused));
                         String response = receiveText();
                         Log.d("TAG", "Response: " + response);
-                        if (!paused) processServerResponse(receiveText());
+                        if (!paused) processServerResponse(response);
                         else sleep500();
 
                     } catch (SocketTimeoutException e) {
