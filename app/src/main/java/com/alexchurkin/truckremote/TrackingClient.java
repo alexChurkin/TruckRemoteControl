@@ -1,9 +1,11 @@
 package com.alexchurkin.truckremote;
 
-import android.os.AsyncTask;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import com.alexchurkin.truckremote.helpers.TaskRunner;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -13,11 +15,10 @@ import java.net.SocketTimeoutException;
 
 public class TrackingClient {
 
-    private static final int RECEIVE_TIMEOUT = 600;
+    public static final int NOT_CONNECTED = 0;
+    public static final int CONNECTED = 2;
 
-    public interface ConnectionListener {
-        int NOT_CONNECTED = 0;
-        int CONNECTED = 2;
+    public interface TelemetryListener {
 
         void onConnectionChanged(int connectionState);
 
@@ -42,10 +43,9 @@ public class TrackingClient {
         void onTrailerUpdate(boolean isAttached, int trailerDamage, int cargoDamage);
     }
 
-    private UDPClientTask sender;
-    private DatagramSocket clientSocket;
+    private final TaskRunner taskRunner = new TaskRunner();
     @NonNull
-    private final ConnectionListener listener;
+    private final TelemetryListener listener;
 
     private String ip;
     private int port = 18250;
@@ -81,7 +81,7 @@ public class TrackingClient {
     private volatile long ffbDuration;
 
 
-    public TrackingClient(String ip, @NonNull ConnectionListener listener) {
+    public TrackingClient(String ip, @NonNull TelemetryListener listener) {
         this.ip = ip;
         this.listener = listener;
     }
@@ -115,27 +115,27 @@ public class TrackingClient {
         this.hornState = hornState;
     }
 
-    public void clickParkingBreak() {
+    public synchronized void clickParkingBreak() {
         this.parkingBreakClick = !parkingBreakClick;
     }
 
-    public void clickLights() {
+    public synchronized void clickLights() {
         this.lightsClick = !lightsClick;
     }
 
-    public void slideCruise() {
+    public synchronized void slideCruise() {
         this.cruiseSlide = !cruiseSlide;
     }
 
-    public void clickLeftBlinker() {
+    public synchronized void clickLeftBlinker() {
         this.turnLeftClick = !turnLeftClick;
     }
 
-    public void clickRightBlinker() {
+    public synchronized void clickRightBlinker() {
         this.turnRightClick = !turnRightClick;
     }
 
-    public void clickEmergencySignal() {
+    public synchronized void clickEmergencySignal() {
         this.emergencySignalClick = !emergencySignalClick;
     }
 
@@ -147,7 +147,7 @@ public class TrackingClient {
 
     public void start(String ip, int port) {
         forceUpdate(ip, port);
-        startSender();
+        taskRunner.executeAsync(new UDPClientTask());
     }
 
     public void pauseByUser() {
@@ -172,17 +172,16 @@ public class TrackingClient {
         stop();
         isPaused = false;
         isPausedByUser = false;
-        sender = new UDPClientTask();
-        sender.execute();
+
+        taskRunner.executeAsync(new UDPClientTask());
     }
 
     public void stop() {
         running = false;
-        sender = null;
-        if (clientSocket != null && !clientSocket.isClosed()) {
+        /*if (clientSocket != null && !clientSocket.isClosed()) {
             clientSocket.close();
             clientSocket = null;
-        }
+        }*/
     }
 
     public void forceUpdate(String ip, int port) {
@@ -190,22 +189,16 @@ public class TrackingClient {
         this.port = port;
     }
 
-    private void startSender() {
-        sender = new UDPClientTask();
-        sender.execute();
-    }
 
-    //TODO Migrate from AsyncTask to something better
-    public class UDPClientTask extends AsyncTask<Void, Integer, Void> {
+    private class UDPClientTask implements Runnable {
 
-        public UDPClientTask() {
-            super();
-        }
+        private DatagramSocket clientSocket;
+        private static final int RECEIVE_TIMEOUT = 600;
 
         @Override
-        protected Void doInBackground(Void... voids) {
-            Log.d("TAG", "Execution started");
+        public void run() {
             running = true;
+            Log.d("TAG", "Execution started");
 
             try {
                 clientSocket = new DatagramSocket();
@@ -222,10 +215,11 @@ public class TrackingClient {
                     }
                 } catch (SocketTimeoutException e) {
                     running = false;
-                    return null;
+                    return;
                 }
 
-                listener.onConnectionChanged(ConnectionListener.CONNECTED);
+                taskRunner.postToMainThread(() ->
+                        listener.onConnectionChanged(TrackingClient.CONNECTED));
 
                 //Here we know that hello from server received and we can send data
                 int tries = 0;
@@ -234,6 +228,8 @@ public class TrackingClient {
 
                     try {
                         sendText(makeStringToSend(paused));
+                        String response = receiveText();
+                        Log.d("TAG", "Response: " + response);
                         if (!paused) processServerResponse(receiveText());
                         else sleep500();
 
@@ -246,15 +242,16 @@ public class TrackingClient {
                 }
                 clientSocket.close();
                 clientSocket = null;
-                listener.onConnectionChanged(ConnectionListener.NOT_CONNECTED);
+
+                taskRunner.postToMainThread(() ->
+                        listener.onConnectionChanged(TrackingClient.NOT_CONNECTED));
             } catch (Exception e) {
                 Log.d("TAG", "Exception: " + e.toString());
                 running = false;
-                listener.onConnectionChanged(ConnectionListener.NOT_CONNECTED);
+                taskRunner.postToMainThread(() ->
+                        listener.onConnectionChanged(TrackingClient.NOT_CONNECTED));
             }
-            return null;
         }
-
 
         /* Helpful local methods */
         private String makeStringToSend(boolean paused) {
@@ -273,14 +270,14 @@ public class TrackingClient {
             boolean newTelIsEngineOn = Boolean.parseBoolean(elements[0]);
             if (newTelIsEngineOn != telWasEngineOn) {
                 telWasEngineOn = newTelIsEngineOn;
-                listener.onEngineUpdate(newTelIsEngineOn);
+                taskRunner.postToMainThread(() -> listener.onEngineUpdate(newTelIsEngineOn));
             }
 
             //Parking
             boolean newTelIsParking = Boolean.parseBoolean(elements[1]);
             if (newTelIsParking != telWasParking) {
                 telWasParking = newTelIsParking;
-                listener.onParkingUpdate(newTelIsParking);
+                taskRunner.postToMainThread(() -> listener.onParkingUpdate(newTelIsParking));
             }
 
             //Blinkers
@@ -291,14 +288,15 @@ public class TrackingClient {
                 telWasLeftBlinker = newTelLeftBlinker;
                 telWasRightBlinker = newTelRightBlinker;
 
-                listener.onBlinkersUpdate(newTelLeftBlinker, newTelRightBlinker);
+                taskRunner.postToMainThread(() ->
+                        listener.onBlinkersUpdate(newTelLeftBlinker, newTelRightBlinker));
             }
 
             //Lights
             int newTelLightsState = Integer.parseInt(elements[4]);
             if (newTelLightsState != telPrevLightsState) {
                 telPrevLightsState = newTelLightsState;
-                listener.onLightsUpdate(newTelLightsState);
+                taskRunner.postToMainThread(() -> listener.onLightsUpdate(newTelLightsState));
             }
 
             /* New info (23.11.21) */
@@ -306,32 +304,32 @@ public class TrackingClient {
             boolean newTelIsWipers = Boolean.parseBoolean(elements[5]);
             if (newTelIsWipers != telWasWipers) {
                 telWasWipers = newTelIsWipers;
-                listener.onWipersUpdate(newTelIsWipers);
+                taskRunner.postToMainThread(() -> listener.onWipersUpdate(newTelIsWipers));
             }
 
             boolean newTelIsBeacon = Boolean.parseBoolean(elements[6]);
             if (newTelIsBeacon != telWasBeacon) {
                 telWasBeacon = newTelIsBeacon;
-                listener.onBeaconUpdate(newTelIsBeacon);
+                taskRunner.postToMainThread(() -> listener.onBeaconUpdate(newTelIsBeacon));
             }
 
 
             boolean newIsLowFuel = Boolean.parseBoolean(elements[7]);
             if (newIsLowFuel != telWasLowFuel) {
                 telWasLowFuel = newIsLowFuel;
-                listener.onLowFuelUpdate(newIsLowFuel);
+                taskRunner.postToMainThread(() -> listener.onLowFuelUpdate(newIsLowFuel));
             }
 
             int newFuelLevel = Integer.parseInt(elements[8]);
             if (newFuelLevel != telPrevFuelLevel) {
                 telPrevFuelLevel = newFuelLevel;
-                listener.onFuelUpdate(newFuelLevel);
+                taskRunner.postToMainThread(() -> listener.onFuelUpdate(newFuelLevel));
             }
 
             int newTelTruckDamage = Integer.parseInt(elements[9]);
             if (newTelTruckDamage != telPrevTruckDamage) {
                 telPrevTruckDamage = newTelTruckDamage;
-                listener.onTruckDamageUpdate(newTelTruckDamage);
+                taskRunner.postToMainThread(() -> listener.onTruckDamageUpdate(newTelTruckDamage));
             }
 
             boolean trailerUpdated = false;
@@ -355,8 +353,9 @@ public class TrackingClient {
             }
 
             if (trailerUpdated) {
-                listener.onTrailerUpdate(newTelTrailerAttached,
-                        newTelTrailerDamage, newTelCargoDamage);
+                taskRunner.postToMainThread(() ->
+                        listener.onTrailerUpdate(newTelTrailerAttached,
+                                newTelTrailerDamage, newTelCargoDamage));
             }
 
             ffbDuration = Long.parseLong(elements[13]);
@@ -401,12 +400,12 @@ public class TrackingClient {
             clientSocket.receive(receivePacket);
             return new String(receiveData, 0, receivePacket.getLength());
         }
-    }
 
-    private void sleep500() {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException ignore) {
+        private void sleep500() {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignore) {
+            }
         }
     }
 }

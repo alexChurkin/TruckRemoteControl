@@ -23,6 +23,7 @@ import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
         View.OnClickListener,
         View.OnTouchListener,
-        TrackingClient.ConnectionListener,
+        TrackingClient.TelemetryListener,
         MenuDialogFragment.ItemClickListener {
 
     private static boolean hasMenuShowed;
@@ -453,93 +454,87 @@ public class MainActivity extends AppCompatActivity implements
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onConnectionChanged(int connectionState) {
-        runOnUiThread(() -> {
-            this.isConnectedToServer = connectionState != TrackingClient.ConnectionListener.NOT_CONNECTED;
+        this.isConnectedToServer = connectionState != TrackingClient.NOT_CONNECTED;
 
-            switch (connectionState) {
-                case TrackingClient.ConnectionListener.NOT_CONNECTED:
-                    mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
-                    showToastWithOffset(R.string.connection_lost);
-                    mSensorManager.unregisterListener(this, mSensor);
-                    mButtonHorn.setOnTouchListener(null);
-                    break;
-                case TrackingClient.ConnectionListener.CONNECTED:
-                    mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
-                    showToastWithOffset(getString(R.string.connected_to_server_at)
-                            + " " + client.getSocketInetHostAddress());
-                    mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-                    mButtonHorn.setOnTouchListener(this);
-                    break;
-            }
-        });
+        switch (connectionState) {
+            case TrackingClient.NOT_CONNECTED:
+                mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
+                showToastWithOffset(R.string.connection_lost);
+                mSensorManager.unregisterListener(this, mSensor);
+                mButtonHorn.setOnTouchListener(null);
+                break;
+            case TrackingClient.CONNECTED:
+                mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
+                showToastWithOffset(getString(R.string.connected_to_server_at)
+                        + " " + client.getSocketInetHostAddress());
+                mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
+                mButtonHorn.setOnTouchListener(this);
+                break;
+        }
     }
 
     @Override
     public void onEngineUpdate(boolean isStarted) {
         //TODO
         Log.d("TAG", "onEngineUpdate: " + isStarted);
+        Log.d("TAG", "Is Main Thread: "
+                + (Looper.myLooper() == Looper.getMainLooper()));
     }
 
     @Override
     public void onParkingUpdate(boolean isParking) {
-        runOnUiThread(() -> {
-            if (isParking) {
-                mButtonParking.setImageResource(R.drawable.parking_break_on);
-                mButtonParking.startAnimation(parkingOnAnim);
-            } else {
-                mButtonParking.setImageResource(R.drawable.parking_break_off);
-                mButtonParking.startAnimation(parkingOffAnim);
-            }
-        });
+        if (isParking) {
+            mButtonParking.setImageResource(R.drawable.parking_break_on);
+            mButtonParking.startAnimation(parkingOnAnim);
+        } else {
+            mButtonParking.setImageResource(R.drawable.parking_break_off);
+            mButtonParking.startAnimation(parkingOffAnim);
+        }
     }
 
     @Override
     public void onLightsUpdate(int lightsMode) {
-        runOnUiThread(() -> {
-            switch (lightsMode) {
-                case 0:
-                    mButtonLights.setImageResource(R.drawable.lights_off);
-                    mButtonLights.startAnimation(lightsOffAnim);
-                    break;
-                case 1:
-                    mButtonLights.setImageResource(R.drawable.lights_gab);
-                    mButtonLights.startAnimation(lightsOnAnim);
-                    break;
-                case 2:
-                    mButtonLights.setImageResource(R.drawable.lights_low);
-                    break;
-                case 3:
-                    mButtonLights.setImageResource(R.drawable.lights_high);
-                    break;
-            }
-        });
+        switch (lightsMode) {
+            case 0:
+                mButtonLights.setImageResource(R.drawable.lights_off);
+                mButtonLights.startAnimation(lightsOffAnim);
+                break;
+            case 1:
+                mButtonLights.setImageResource(R.drawable.lights_gab);
+                mButtonLights.startAnimation(lightsOnAnim);
+                break;
+            case 2:
+                mButtonLights.setImageResource(R.drawable.lights_low);
+                break;
+            case 3:
+                mButtonLights.setImageResource(R.drawable.lights_high);
+                break;
+        }
     }
 
     @Override
     public void onBlinkersUpdate(boolean leftBlinker, boolean rightBlinker) {
-        runOnUiThread(() -> {
-            if (leftBlinker) {
-                mLeftSignalButton.setImageResource(R.drawable.left_enabled);
-            } else {
-                mLeftSignalButton.setImageResource(R.drawable.left_disabled);
-            }
+        if (leftBlinker) {
+            mLeftSignalButton.setImageResource(R.drawable.left_enabled);
+        } else {
+            mLeftSignalButton.setImageResource(R.drawable.left_disabled);
+        }
 
-            if (rightBlinker) {
-                mRightSignalButton.setImageResource(R.drawable.right_enabled);
-            } else {
-                mRightSignalButton.setImageResource(R.drawable.right_disabled);
-            }
+        if (rightBlinker) {
+            mRightSignalButton.setImageResource(R.drawable.right_enabled);
+        } else {
+            mRightSignalButton.setImageResource(R.drawable.right_disabled);
+        }
 
-            if (leftBlinker && rightBlinker) {
-                mAllSignalsButton.setImageResource(R.drawable.emergency_on);
-                mAllSignalsButton.startAnimation(emergencyOnAnim);
-                wasRedOnBefore = true;
-            } else if (!leftBlinker && !rightBlinker && wasRedOnBefore) {
-                mAllSignalsButton.setImageResource(R.drawable.emergency_off);
-                mAllSignalsButton.startAnimation(emergencyOffAnim);
-                wasRedOnBefore = false;
-            }
-        });
+        if (leftBlinker && rightBlinker) {
+            mAllSignalsButton.setImageResource(R.drawable.emergency_on);
+            mAllSignalsButton.startAnimation(emergencyOnAnim);
+            wasRedOnBefore = true;
+        } else if (!leftBlinker && !rightBlinker && wasRedOnBefore) {
+            mAllSignalsButton.setImageResource(R.drawable.emergency_off);
+            mAllSignalsButton.startAnimation(emergencyOffAnim);
+            wasRedOnBefore = false;
+        }
     }
 
     @Override
