@@ -59,6 +59,10 @@ public class TrackingClient {
     private volatile boolean lightsClick;
     private volatile int hornState;
     private volatile boolean cruiseSlide;
+    private volatile boolean engineClick;
+    private volatile boolean trailerClick;
+    private volatile boolean wipersClick;
+    private volatile boolean beaconClick;
 
     //Data received from server
     private volatile boolean telWasEngineOn;
@@ -136,6 +140,22 @@ public class TrackingClient {
 
     public synchronized void clickEmergencySignal() {
         this.emergencySignalClick = !emergencySignalClick;
+    }
+
+    public synchronized void clickEngine() {
+        this.engineClick = !engineClick;
+    }
+
+    public synchronized void clickTrailer() {
+        this.trailerClick = !trailerClick;
+    }
+
+    public synchronized void clickWipers() {
+        this.wipersClick = !wipersClick;
+    }
+
+    public synchronized void clickBeacon() {
+        this.beaconClick = !beaconClick;
     }
 
 
@@ -228,7 +248,6 @@ public class TrackingClient {
                     try {
                         sendText(makeStringToSend(paused));
                         String response = receiveText();
-                        Log.d("TAG", "Response: " + response);
                         if (!paused) processServerResponse(response);
                         else sleep500();
 
@@ -266,22 +285,25 @@ public class TrackingClient {
         private void processServerResponse(String serverResponse) {
             String[] elements = serverResponse.split(",");
 
-            boolean newTelIsEngineOn = Boolean.parseBoolean(elements[0]);
+            boolean telemetryActive = Boolean.parseBoolean(elements[0]);
+            if(!telemetryActive) return;
+
+            boolean newTelIsEngineOn = Boolean.parseBoolean(elements[1]);
             if (newTelIsEngineOn != telWasEngineOn) {
                 telWasEngineOn = newTelIsEngineOn;
                 taskRunner.postToMainThread(() -> listener.onEngineUpdate(newTelIsEngineOn));
             }
 
             //Parking
-            boolean newTelIsParking = Boolean.parseBoolean(elements[1]);
+            boolean newTelIsParking = Boolean.parseBoolean(elements[2]);
             if (newTelIsParking != telWasParking) {
                 telWasParking = newTelIsParking;
                 taskRunner.postToMainThread(() -> listener.onParkingUpdate(newTelIsParking));
             }
 
             //Blinkers
-            boolean newTelLeftBlinker = Boolean.parseBoolean(elements[2]);
-            boolean newTelRightBlinker = Boolean.parseBoolean(elements[3]);
+            boolean newTelLeftBlinker = Boolean.parseBoolean(elements[3]);
+            boolean newTelRightBlinker = Boolean.parseBoolean(elements[4]);
 
             if (newTelLeftBlinker != telWasLeftBlinker || newTelRightBlinker != telWasRightBlinker) {
                 telWasLeftBlinker = newTelLeftBlinker;
@@ -292,7 +314,7 @@ public class TrackingClient {
             }
 
             //Lights
-            int newTelLightsState = Integer.parseInt(elements[4]);
+            int newTelLightsState = Integer.parseInt(elements[5]);
             if (newTelLightsState != telPrevLightsState) {
                 telPrevLightsState = newTelLightsState;
                 taskRunner.postToMainThread(() -> listener.onLightsUpdate(newTelLightsState));
@@ -300,32 +322,32 @@ public class TrackingClient {
 
             /* New info (23.11.21) */
 
-            boolean newTelIsWipers = Boolean.parseBoolean(elements[5]);
+            boolean newTelIsWipers = Boolean.parseBoolean(elements[6]);
             if (newTelIsWipers != telWasWipers) {
                 telWasWipers = newTelIsWipers;
                 taskRunner.postToMainThread(() -> listener.onWipersUpdate(newTelIsWipers));
             }
 
-            boolean newTelIsBeacon = Boolean.parseBoolean(elements[6]);
+            boolean newTelIsBeacon = Boolean.parseBoolean(elements[7]);
             if (newTelIsBeacon != telWasBeacon) {
                 telWasBeacon = newTelIsBeacon;
                 taskRunner.postToMainThread(() -> listener.onBeaconUpdate(newTelIsBeacon));
             }
 
 
-            boolean newIsLowFuel = Boolean.parseBoolean(elements[7]);
+            boolean newIsLowFuel = Boolean.parseBoolean(elements[8]);
             if (newIsLowFuel != telWasLowFuel) {
                 telWasLowFuel = newIsLowFuel;
                 taskRunner.postToMainThread(() -> listener.onLowFuelUpdate(newIsLowFuel));
             }
 
-            int newFuelLevel = Integer.parseInt(elements[8]);
+            int newFuelLevel = Integer.parseInt(elements[9]);
             if (newFuelLevel != telPrevFuelLevel) {
                 telPrevFuelLevel = newFuelLevel;
                 taskRunner.postToMainThread(() -> listener.onFuelUpdate(newFuelLevel));
             }
 
-            int newTelTruckDamage = Integer.parseInt(elements[9]);
+            int newTelTruckDamage = Integer.parseInt(elements[10]);
             if (newTelTruckDamage != telPrevTruckDamage) {
                 telPrevTruckDamage = newTelTruckDamage;
                 taskRunner.postToMainThread(() -> listener.onTruckDamageUpdate(newTelTruckDamage));
@@ -333,19 +355,19 @@ public class TrackingClient {
 
             boolean trailerUpdated = false;
 
-            boolean newTelTrailerAttached = Boolean.parseBoolean(elements[10]);
+            boolean newTelTrailerAttached = Boolean.parseBoolean(elements[11]);
             if (newTelTrailerAttached != telWasTrailerAttached) {
                 telWasTrailerAttached = newTelTrailerAttached;
                 trailerUpdated = true;
             }
 
-            int newTelTrailerDamage = Integer.parseInt(elements[11]);
+            int newTelTrailerDamage = Integer.parseInt(elements[12]);
             if (newTelTrailerDamage != telPrevTrailerDamage) {
                 telPrevTrailerDamage = newTelTrailerDamage;
                 trailerUpdated = true;
             }
 
-            int newTelCargoDamage = Integer.parseInt(elements[12]);
+            int newTelCargoDamage = Integer.parseInt(elements[13]);
             if (newTelCargoDamage != telPrevCargoDamage) {
                 telPrevCargoDamage = newTelCargoDamage;
                 trailerUpdated = true;
@@ -357,7 +379,7 @@ public class TrackingClient {
                                 newTelTrailerDamage, newTelCargoDamage));
             }
 
-            ffbDuration = Long.parseLong(elements[13]);
+            ffbDuration = Long.parseLong(elements[14]);
         }
 
         /* Helpful network operations */

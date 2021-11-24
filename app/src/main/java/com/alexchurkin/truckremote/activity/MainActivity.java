@@ -475,10 +475,8 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onEngineUpdate(boolean isStarted) {
-        //TODO
+        //TODO Obtain and show later
         Log.d("TAG", "onEngineUpdate: " + isStarted);
-        Log.d("TAG", "Is Main Thread: "
-                + (Looper.myLooper() == Looper.getMainLooper()));
     }
 
     @Override
@@ -539,37 +537,37 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onWipersUpdate(boolean isWipers) {
-        //TODO
+        //TODO Obtain and show later
         Log.d("TAG", "onWipersUpdate: " + isWipers);
     }
 
     @Override
     public void onBeaconUpdate(boolean isBeacon) {
-        //TODO
+        //TODO Obtain and show later
         Log.d("TAG", "onBeaconUpdate: " + isBeacon);
     }
 
     @Override
     public void onLowFuelUpdate(boolean isLowFuel) {
-        //TODO
+        //TODO Show
         Log.d("TAG", "onLowFuelUpdate: " + isLowFuel);
     }
 
     @Override
     public void onFuelUpdate(int percentage) {
-        //TODO
+        //TODO Obtain and show later
         Log.d("TAG", "onFuelUpdate: " + percentage);
     }
 
     @Override
     public void onTruckDamageUpdate(int damage) {
-        //TODO
+        //TODO Obtain and show later
         Log.d("TAG", "onTruckDamageUpdate: " + damage);
     }
 
     @Override
     public void onTrailerUpdate(boolean isAttached, int trailerDamage, int cargoDamage) {
-        //TODO
+        //TODO Obtain and show later
         Log.d("TAG", "onTrailerUpdate: isAttached = " + isAttached +
                 ", trailerDamage = " + trailerDamage + ", cargoDamage = " + cargoDamage);
     }
