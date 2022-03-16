@@ -327,11 +327,4 @@ public class TrackingClient {
         } catch (InterruptedException ignore) {
         }
     }
-
-    private void sleep100() {
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ignore) {
-        }
-    }
 }
