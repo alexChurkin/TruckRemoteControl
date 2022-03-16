@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements
         SensorEventListener,
         View.OnClickListener,
         View.OnTouchListener,
-        TrackingClient.ConnectionListener,
+        TrackingClient.TelemetryListener,
         MenuDialogFragment.ItemClickListener {
 
     private static boolean hasMenuShowed;
@@ -454,16 +454,16 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onConnectionChanged(int connectionState) {
         runOnUiThread(() -> {
-            this.isConnectedToServer = connectionState != TrackingClient.ConnectionListener.NOT_CONNECTED;
+            this.isConnectedToServer = connectionState != TrackingClient.NOT_CONNECTED;
 
             switch (connectionState) {
-                case TrackingClient.ConnectionListener.NOT_CONNECTED:
+                case TrackingClient.NOT_CONNECTED:
                     mConnectionIndicator.setImageResource(R.drawable.connection_indicator_red);
                     showToastWithOffset(R.string.connection_lost);
                     mSensorManager.unregisterListener(this, mSensor);
                     mButtonHorn.setOnTouchListener(null);
                     break;
-                case TrackingClient.ConnectionListener.CONNECTED:
+                case TrackingClient.CONNECTED:
                     mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
                     showToastWithOffset(getString(R.string.connected_to_server_at)
                             + " " + client.getSocketInetHostAddress());

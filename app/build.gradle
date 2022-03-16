@@ -33,6 +33,11 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
+
+            //TODO УДАЛИТЬ ПОТОМ!!!
+            applicationIdSuffix '.fix'
+            versionNameSuffix ' (Fix)'
+
             buildConfigField('String', 'INTERSTITIAL_AD_ID', "\"" + props.getProperty("interstitialAdId") + "\"")
             buildConfigField "boolean", "USE_LOG", "false"
         }

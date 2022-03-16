@@ -1,9 +1,10 @@
 package com.alexchurkin.truckremote;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+
+import com.alexchurkin.truckremote.helpers.TaskRunner;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -13,11 +14,10 @@ import java.net.SocketTimeoutException;
 
 public class TrackingClient {
 
-    private static final int RECEIVE_TIMEOUT = 600;
+    public static final int NOT_CONNECTED = 0;
+    public static final int CONNECTED = 2;
 
-    public interface ConnectionListener {
-        int NOT_CONNECTED = 0;
-        int CONNECTED = 2;
+    public interface TelemetryListener {
 
         void onConnectionChanged(int connectionState);
 
@@ -28,10 +28,9 @@ public class TrackingClient {
         void onBlinkersUpdate(boolean leftBlinker, boolean rightBlinker);
     }
 
-    private UDPClientTask sender;
-    private DatagramSocket clientSocket;
+    private final TaskRunner taskRunner = new TaskRunner();
     @NonNull
-    private final ConnectionListener listener;
+    private final TelemetryListener listener;
 
     private String ip;
     private int port = 18250;
@@ -58,7 +57,7 @@ public class TrackingClient {
     private volatile long ffbDuration;
 
 
-    public TrackingClient(String ip, @NonNull ConnectionListener listener) {
+    public TrackingClient(String ip, @NonNull TelemetryListener listener) {
         this.ip = ip;
         this.listener = listener;
     }
@@ -124,7 +123,7 @@ public class TrackingClient {
 
     public void start(String ip, int port) {
         forceUpdate(ip, port);
-        startSender();
+        taskRunner.executeAsync(new UDPClientTask());
     }
 
     public void pauseByUser() {
@@ -149,17 +148,12 @@ public class TrackingClient {
         stop();
         isPaused = false;
         isPausedByUser = false;
-        sender = new UDPClientTask();
-        sender.execute();
+
+        taskRunner.executeAsync(new UDPClientTask());
     }
 
     public void stop() {
         running = false;
-        sender = null;
-        if (clientSocket != null && !clientSocket.isClosed()) {
-            clientSocket.close();
-            clientSocket = null;
-        }
     }
 
     public void forceUpdate(String ip, int port) {
@@ -167,21 +161,15 @@ public class TrackingClient {
         this.port = port;
     }
 
-    private void startSender() {
-        sender = new UDPClientTask();
-        sender.execute();
-    }
+    public class UDPClientTask implements Runnable {
 
-    public class UDPClientTask extends AsyncTask<Void, Integer, Void> {
-
-        public UDPClientTask() {
-            super();
-        }
+        private static final int RECEIVE_TIMEOUT = 600;
+        private DatagramSocket clientSocket;
 
         @Override
-        protected Void doInBackground(Void... voids) {
-            Log.d("TAG", "Execution started");
+        public void run() {
             running = true;
+            Log.d("TAG", "Execution started");
 
             try {
                 clientSocket = new DatagramSocket();
@@ -198,10 +186,11 @@ public class TrackingClient {
                     }
                 } catch (SocketTimeoutException e) {
                     running = false;
-                    return null;
+                    return;
                 }
 
-                listener.onConnectionChanged(ConnectionListener.CONNECTED);
+                taskRunner.postToMainThread(() ->
+                        listener.onConnectionChanged(TrackingClient.CONNECTED));
 
                 //Here we know that hello from server received and we can send data
                 int tries = 0;
@@ -218,20 +207,19 @@ public class TrackingClient {
                         if (++tries > 2) {
                             running = false;
                         }
-                        continue;
                     }
                 }
                 clientSocket.close();
                 clientSocket = null;
-                listener.onConnectionChanged(ConnectionListener.NOT_CONNECTED);
+                taskRunner.postToMainThread(() ->
+                        listener.onConnectionChanged(TrackingClient.NOT_CONNECTED));
             } catch (Exception e) {
                 Log.d("TAG", "Exception: " + e.toString());
                 running = false;
-                listener.onConnectionChanged(ConnectionListener.NOT_CONNECTED);
+                taskRunner.postToMainThread(() ->
+                        listener.onConnectionChanged(TrackingClient.NOT_CONNECTED));
             }
-            return null;
         }
-
 
         /* Helpful local methods */
         private String makeStringToSend(boolean paused) {
@@ -256,7 +244,7 @@ public class TrackingClient {
             boolean newTelIsParking = Boolean.parseBoolean(elements[1]);
             if (newTelIsParking != telWasParking) {
                 telWasParking = newTelIsParking;
-                listener.onParkingUpdate(newTelIsParking);
+                taskRunner.postToMainThread(() -> listener.onParkingUpdate(newTelIsParking));
             }
 
             //Blinkers
@@ -267,14 +255,15 @@ public class TrackingClient {
                 telWasLeftBlinker = newTelLeftBlinker;
                 telWasRightBlinker = newTelRightBlinker;
 
-                listener.onBlinkersUpdate(newTelLeftBlinker, newTelRightBlinker);
+                taskRunner.postToMainThread(() ->
+                        listener.onBlinkersUpdate(newTelLeftBlinker, newTelRightBlinker));
             }
 
             //Lights
             int newTelLightsState = Integer.parseInt(elements[4]);
             if (newTelLightsState != telPrevLightsState) {
                 telPrevLightsState = newTelLightsState;
-                listener.onLightsUpdate(newTelLightsState);
+                taskRunner.postToMainThread(() -> listener.onLightsUpdate(newTelLightsState));
             }
 
             ffbDuration = Long.parseLong(elements[5]);
