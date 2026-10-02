@@ -58,6 +58,26 @@
 
     <androidx.preference.PreferenceCategory
         app:iconSpaceReserved="false"
+        app:title="@string/pedals">
+        <androidx.preference.ListPreference
+            app:defaultValue="digital"
+            app:dialogTitle="@string/pedal_mode_title"
+            app:entries="@array/pedal_mode_entries"
+            app:entryValues="@array/pedal_mode_values"
+            app:iconSpaceReserved="false"
+            app:key="pedalMode"
+            app:summary="@string/pedal_mode_summary"
+            app:title="@string/pedal_mode_title" />
+        <androidx.preference.SwitchPreference
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:key="throttleLock"
+            app:summary="@string/throttle_lock_summary"
+            app:title="@string/throttle_lock_title" />
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        app:iconSpaceReserved="false"
         app:title="@string/additionally">
 
         <androidx.preference.Preference

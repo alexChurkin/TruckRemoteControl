@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Изменения в версии</string>
-    <string name="version_changes_text">Исправлено для работы на новейший Android-устройствах; добавлены новые анимации. Для корректной работы РЕКОМЕНДУЕТСЯ загрузить самую последнюю версию Truck Remote Server на ваш ПК / ноутбук.</string>
+    <string name="version_changes_text">Аналагавыя педалі (заціснiце і вядзіце, каб задаць сілу), фіксацыя газу (правядзіце ўбок, утрымліваючы газ) і хуткія дзеянні: рухавік, прычэп, дворнікі, маячкі і іншае. Для іх абнавіце Truck Remote Server на ПК.</string>
 
     <string name="searching_on_local">Поиск серверов в локальной сети…</string>
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
@@ -86,4 +86,25 @@
     <string name="how_to_use_text_2">Круиз-контроль</string>
     <string name="how_to_use_text_3">Круиз-контроль включается с помощью свайпа вверх по кнопке газа. Отключить его можно нажатием на тормоз или повторным свайпом.</string>
     <string name="how_to_use_text_4">Приятного управления!</string>
+
+    <string name="actions">Хуткія дзеянні</string>
+    <string name="action_engine">Рухавік</string>
+    <string name="action_trailer">Прычэп</string>
+    <string name="action_activate">Дзеянне</string>
+    <string name="action_light_horn">Міргнуць фарамі</string>
+    <string name="action_wipers">Дворнікі</string>
+    <string name="action_beacon">Маячкі</string>
+    <string name="action_diff_lock">Блок. дыф.</string>
+    <string name="action_lift_axle">Пад\'ём восі</string>
+
+    <string name="pedals">Педалі</string>
+    <string name="pedal_mode_title">Рэжым педаляў</string>
+    <string name="pedal_mode_summary">Аналагавы: заціснiце педаль і вядзіце ўверх-уніз, каб задаць сілу (у гульні прызначце восі Y і Z vJoy на газ і тормаз)</string>
+    <string-array name="pedal_mode_entries">
+        <item>Лічбавы (націск да ўпору)</item>
+        <item>Аналагавы (сіла націску)</item>
+    </string-array>
+    <string name="throttle_lock_title">Фіксацыя газу</string>
+    <string name="throttle_lock_summary">Утрымліваючы газ, правядзіце пальцам убок — узровень газу зафіксуецца. Дакраніцеся да газу або тормазу, каб адпусціць</string>
+    <string name="analog_pedals_unavailable">Для аналагавых педаляў уключыце восі Y і Z у vJoy на ПК. Пакуль выкарыстоўваюцца клавішы</string>
 </resources>

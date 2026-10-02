@@ -14,4 +14,9 @@ public interface PrefConsts {
 
     String FORCE_FEEDBACK = "useFFB";
     String USE_PNEUMATIC_SIGNAL = "pneumaticSignal";
+    String DEAD_ZONE = "deadzone";
+
+    String PEDAL_MODE = "pedalMode";
+    String PEDAL_MODE_ANALOG = "analog";
+    String THROTTLE_LOCK = "throttleLock";
 }

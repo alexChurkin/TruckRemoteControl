@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Изменения в версии</string>
-    <string name="version_changes_text">Исправлено для работы на новейший Android-устройствах; добавлены новые анимации. Для корректной работы РЕКОМЕНДУЕТСЯ загрузить самую последнюю версию Truck Remote Server на ваш ПК / ноутбук.</string>
+    <string name="version_changes_text">Аналогові педалі (затисніть і ведіть, щоб задати силу), фіксація газу (проведіть убік, утримуючи газ) і швидкі дії: двигун, причіп, двірники, маячки та інше. Для них оновіть Truck Remote Server на ПК.</string>
 
     <string name="searching_on_local">Поиск серверов в локальной сети…</string>
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
@@ -86,4 +86,25 @@
     <string name="how_to_use_text_2">Круиз-контроль</string>
     <string name="how_to_use_text_3">Круиз-контроль включается с помощью свайпа вверх по кнопке газа. Отключить его можно нажатием на тормоз или повторным свайпом.</string>
     <string name="how_to_use_text_4">Приятного управления!</string>
+
+    <string name="actions">Швидкі дії</string>
+    <string name="action_engine">Двигун</string>
+    <string name="action_trailer">Причіп</string>
+    <string name="action_activate">Дія</string>
+    <string name="action_light_horn">Моргнути фарами</string>
+    <string name="action_wipers">Двірники</string>
+    <string name="action_beacon">Маячки</string>
+    <string name="action_diff_lock">Блок. диф.</string>
+    <string name="action_lift_axle">Підйом осі</string>
+
+    <string name="pedals">Педалі</string>
+    <string name="pedal_mode_title">Режим педалей</string>
+    <string name="pedal_mode_summary">Аналоговий: затисніть педаль і ведіть вгору-вниз, щоб задати силу (у грі призначте осі Y і Z vJoy на газ і гальмо)</string>
+    <string-array name="pedal_mode_entries">
+        <item>Цифровий (натискання до упору)</item>
+        <item>Аналоговий (сила натискання)</item>
+    </string-array>
+    <string name="throttle_lock_title">Фіксація газу</string>
+    <string name="throttle_lock_summary">Утримуючи газ, проведіть пальцем убік — рівень газу зафіксується. Торкніться газу або гальма, щоб відпустити</string>
+    <string name="analog_pedals_unavailable">Для аналогових педалей увімкніть осі Y і Z у vJoy на ПК. Поки використовуються клавіші</string>
 </resources>

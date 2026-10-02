@@ -3,9 +3,9 @@
     <string name="app_name" translatable="false">Truck Remote</string>
     <string name="github_link" translatable="false">https://github.com/alexChurkin/TruckRemoteControl</string>
 
-    <integer name="version">14</integer>
+    <integer name="version">15</integer>
     <string name="version_changes_title">New in this version</string>
-    <string name="version_changes_text">Updated to work on the newest Android devices; new animations added. It is RECOMMENDED to download the latest version of Truck Remote Server to your PC / laptop.</string>
+    <string name="version_changes_text">Analog pedals (hold and drag to set the force), throttle lock (swipe sideways while holding gas) and quick actions: engine, trailer, wipers, beacon and more. Update Truck Remote Server on your PC to use them.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -90,4 +90,30 @@
     <string name="how_to_use_text_2">Cruise control</string>
     <string name="how_to_use_text_3">You can enable cruise control by swiping gas up and disable it by swipe or touching break.</string>
     <string name="how_to_use_text_4">Enjoy your driving!</string>
+
+    <string name="actions">Quick actions</string>
+    <string name="action_engine">Engine</string>
+    <string name="action_trailer">Trailer</string>
+    <string name="action_activate">Activate</string>
+    <string name="action_light_horn">Flash lights</string>
+    <string name="action_wipers">Wipers</string>
+    <string name="action_beacon">Beacon</string>
+    <string name="action_diff_lock">Diff lock</string>
+    <string name="action_lift_axle">Lift axle</string>
+
+    <string name="pedals">Pedals</string>
+    <string name="pedal_mode_title">Pedal mode</string>
+    <string name="pedal_mode_summary">Analog: hold the pedal and drag up or down to set the force (bind vJoy Y and Z axes to gas and brake in the game)</string>
+    <string-array name="pedal_mode_entries">
+        <item>Digital (full press)</item>
+        <item>Analog (press force)</item>
+    </string-array>
+    <string name="throttle_lock_title">Throttle lock</string>
+    <string name="throttle_lock_summary">While holding gas, swipe sideways to keep its level. Touch gas or brake to release</string>
+    <string name="analog_pedals_unavailable">Analog pedals need Y and Z axes enabled in vJoy on the PC. Keys are used for now</string>
+    <string name="gas_locked" translatable="false">🔒 %1$d%%</string>
+    <string-array name="pedal_mode_values" translatable="false">
+        <item>digital</item>
+        <item>analog</item>
+    </string-array>
 </resources>

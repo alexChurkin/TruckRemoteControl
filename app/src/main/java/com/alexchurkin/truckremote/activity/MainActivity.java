@@ -1,11 +1,15 @@
 package com.alexchurkin.truckremote.activity;
 
 import static com.alexchurkin.truckremote.PrefConsts.CALIBRATION_OFFSET;
+import static com.alexchurkin.truckremote.PrefConsts.DEAD_ZONE;
 import static com.alexchurkin.truckremote.PrefConsts.FORCE_FEEDBACK;
 import static com.alexchurkin.truckremote.PrefConsts.GUIDE_SHOWED;
 import static com.alexchurkin.truckremote.PrefConsts.LAST_SHOWED_VERSION_INFO;
+import static com.alexchurkin.truckremote.PrefConsts.PEDAL_MODE;
+import static com.alexchurkin.truckremote.PrefConsts.PEDAL_MODE_ANALOG;
 import static com.alexchurkin.truckremote.PrefConsts.PORT;
 import static com.alexchurkin.truckremote.PrefConsts.SPECIFIED_IP;
+import static com.alexchurkin.truckremote.PrefConsts.THROTTLE_LOCK;
 import static com.alexchurkin.truckremote.PrefConsts.USE_PNEUMATIC_SIGNAL;
 import static com.alexchurkin.truckremote.PrefConsts.USE_SPECIFIED_SERVER;
 import static com.alexchurkin.truckremote.helpers.ActivityTools.isReverseLandscape;
@@ -27,7 +31,9 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
 import android.util.Patterns;
+import android.util.TypedValue;
 import android.view.GestureDetector;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -38,11 +44,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.alexchurkin.truckremote.PedalHandler;
+import com.alexchurkin.truckremote.PedalLevelView;
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.TrackingClient;
 import com.alexchurkin.truckremote.dialog.MenuDialogFragment;
@@ -57,7 +66,21 @@ public class MainActivity extends AppCompatActivity implements
         View.OnClickListener,
         View.OnTouchListener,
         TrackingClient.ConnectionListener,
+        PedalHandler.Listener,
         MenuDialogFragment.ItemClickListener {
+
+    //Horizontal swipe distance on gas which locks the throttle
+    private static final float THROTTLE_LOCK_DISTANCE_DP = 70f;
+
+    //View ids of additional actions and corresponding TrackingClient actions
+    private static final int[] ACTION_VIEW_IDS = {
+            R.id.actionEngine, R.id.actionTrailer, R.id.actionActivate, R.id.actionLightHorn,
+            R.id.actionWipers, R.id.actionBeacon, R.id.actionDiffLock, R.id.actionLiftAxle};
+    private static final int[] ACTION_CODES = {
+            TrackingClient.ACTION_ENGINE, TrackingClient.ACTION_TRAILER,
+            TrackingClient.ACTION_ACTIVATE, TrackingClient.ACTION_LIGHT_HORN,
+            TrackingClient.ACTION_WIPERS, TrackingClient.ACTION_BEACON,
+            TrackingClient.ACTION_DIFF_LOCK, TrackingClient.ACTION_LIFT_AXLE};
 
     private static boolean hasMenuShowed;
 
@@ -75,6 +98,10 @@ public class MainActivity extends AppCompatActivity implements
     private AppCompatImageButton mButtonParking, mButtonLights, mButtonHorn;
     private ConstraintLayout mBreakLayout, mGasLayout;
     private AppCompatImageView mGasImage;
+    private PedalLevelView mBreakLevelView, mGasLevelView;
+    private AppCompatTextView mGasLockLabel;
+    private View mActionsButton, mActionsPanel;
+    private View mEngineAction, mTrailerAction, mWipersAction, mBeaconAction;
 
     private Animation gasCruiseAnim;
     private Animation parkingOnAnim, parkingOffAnim;
@@ -84,7 +111,9 @@ public class MainActivity extends AppCompatActivity implements
 
     private TrackingClient client;
     private boolean isConnectedToServer;
-    private boolean breakPressed, gasPressed;
+    private PedalHandler breakPedal, gasPedal;
+    private boolean analogPedalsMode;
+    private boolean analogUnavailableWarned;
 
     private float lastReceivedYValue, calibrationOffset;
     private boolean wasRedOnBefore = false;
@@ -144,6 +173,25 @@ public class MainActivity extends AppCompatActivity implements
         mBreakLayout = findViewById(R.id.breakLayout);
         mGasLayout = findViewById(R.id.gasLayout);
         mGasImage = mGasLayout.findViewById(R.id.gasImage);
+        mBreakLevelView = findViewById(R.id.breakLevelView);
+        mGasLevelView = findViewById(R.id.gasLevelView);
+        mGasLockLabel = findViewById(R.id.gasLockLabel);
+        mBreakLevelView.setFillColor(getResources().getColor(R.color.indicatorRed, getTheme()));
+        mGasLevelView.setFillColor(getResources().getColor(R.color.indicatorGreen, getTheme()));
+
+        float lockDistancePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                THROTTLE_LOCK_DISTANCE_DP, getResources().getDisplayMetrics());
+        breakPedal = new PedalHandler(this, lockDistancePx);
+        gasPedal = new PedalHandler(this, lockDistancePx);
+
+        mActionsButton = findViewById(R.id.actionsButton);
+        mActionsPanel = findViewById(R.id.actionsPanel);
+        mActionsButton.setOnClickListener(this);
+        for (int viewId : ACTION_VIEW_IDS) findViewById(viewId).setOnClickListener(this);
+        mEngineAction = findViewById(R.id.actionEngine);
+        mTrailerAction = findViewById(R.id.actionTrailer);
+        mWipersAction = findViewById(R.id.actionWipers);
+        mBeaconAction = findViewById(R.id.actionBeacon);
 
         //Animations
         gasCruiseAnim = AnimationUtils.loadAnimation(this, R.anim.gas_cruise);
@@ -202,8 +250,10 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        breakPressed = false;
-        gasPressed = false;
+        analogPedalsMode = PEDAL_MODE_ANALOG.equals(prefs.getString(PEDAL_MODE, ""));
+        breakPedal.configure(analogPedalsMode, false);
+        gasPedal.configure(analogPedalsMode, prefs.getBoolean(THROTTLE_LOCK, true));
+        releasePedals();
         client.resume();
 
         useFFB = prefs.getBoolean(FORCE_FEEDBACK, false);
@@ -219,6 +269,8 @@ public class MainActivity extends AppCompatActivity implements
         if (isConnectedToServer) {
             mSensorManager.unregisterListener(this, mSensor);
         }
+        //Locked throttle mustn't come back after returning to the app
+        releasePedals();
         client.pause();
     }
 
@@ -262,7 +314,20 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(View view) {
         int id = view.getId();
 
-        if (id == R.id.buttonLeftSignal) {
+        for (int i = 0; i < ACTION_VIEW_IDS.length; i++) {
+            if (id == ACTION_VIEW_IDS[i]) {
+                if (!isConnectedToServer || client.isPausedByUser()) return;
+                client.clickAction(ACTION_CODES[i]);
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                return;
+            }
+        }
+
+        if (id == R.id.actionsButton) {
+            mActionsPanel.setVisibility(mActionsPanel.getVisibility() == View.VISIBLE
+                    ? View.GONE : View.VISIBLE);
+
+        } else if (id == R.id.buttonLeftSignal) {
             if (client.isPausedByUser()) return;
             client.clickLeftBlinker();
 
@@ -294,6 +359,7 @@ public class MainActivity extends AppCompatActivity implements
             if (isConnectedToServer) {
                 boolean newState = !client.isPaused();
                 if (newState) {
+                    releasePedals();
                     client.pauseByUser();
                     mPauseButton.setImageResource(R.drawable.pause_btn_paused);
                     AdManager.tryShowFullscreenAd(this);
@@ -417,18 +483,12 @@ public class MainActivity extends AppCompatActivity implements
         int id = view.getId();
 
         if (id == R.id.breakLayout) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                breakPressed = true;
-            } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                breakPressed = false;
-            }
+            //Braking always releases the locked throttle
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) gasPedal.unlock();
+            handlePedalTouch(breakPedal, view, event);
 
         } else if (id == R.id.gasLayout) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                gasPressed = true;
-            } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                gasPressed = false;
-            }
+            handlePedalTouch(gasPedal, view, event);
             cruiseGestureDetector.onTouchEvent(event);
 
         } else if (id == R.id.buttonHorn) {
@@ -445,8 +505,74 @@ public class MainActivity extends AppCompatActivity implements
             }
 
         }
-        client.provideMotionState(breakPressed, gasPressed);
         return false;
+    }
+
+    private void handlePedalTouch(PedalHandler pedal, View view, MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                pedal.onDown(event.getX(), event.getY(), view.getHeight());
+                warnIfAnalogUnavailable();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                pedal.onMove(event.getX(), event.getY());
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                pedal.onUp();
+                break;
+        }
+    }
+
+    private void warnIfAnalogUnavailable() {
+        if (analogPedalsMode && isConnectedToServer && !analogUnavailableWarned
+                && !client.isAnalogPedalsAvailable()) {
+            analogUnavailableWarned = true;
+            showToastWithOffset(R.string.analog_pedals_unavailable);
+        }
+    }
+
+    private void releasePedals() {
+        breakPedal.release();
+        gasPedal.release();
+        sendMotionState();
+        updatePedalViews();
+    }
+
+    //Analog levels are used when the server supports them, keys otherwise
+    private void sendMotionState() {
+        boolean analog = analogPedalsMode && client.isAnalogPedalsAvailable();
+        float breakLevel = breakPedal.getLevel();
+        float gasLevel = gasPedal.getLevel();
+        client.provideMotionState(!analog && breakLevel > 0, !analog && gasLevel > 0,
+                analog ? breakLevel : 0f, analog ? gasLevel : 0f);
+    }
+
+    private void updatePedalViews() {
+        mBreakLevelView.setVisibility(analogPedalsMode ? View.VISIBLE : View.INVISIBLE);
+        mBreakLevelView.setState(breakPedal.getLevel(), false);
+
+        boolean gasLocked = gasPedal.isLocked();
+        mGasLevelView.setVisibility(analogPedalsMode || gasLocked ? View.VISIBLE : View.INVISIBLE);
+        mGasLevelView.setState(gasPedal.getLevel(), gasLocked);
+
+        mGasLockLabel.setVisibility(gasLocked ? View.VISIBLE : View.GONE);
+        if (gasLocked) {
+            mGasLockLabel.setText(
+                    getString(R.string.gas_locked, Math.round(gasPedal.getLevel() * 100)));
+        }
+    }
+
+    @Override
+    public void onPedalChanged(PedalHandler pedal) {
+        sendMotionState();
+        updatePedalViews();
+    }
+
+    @Override
+    public void onPedalLockChanged(PedalHandler pedal, boolean locked) {
+        mGasLayout.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        updatePedalViews();
     }
 
 
@@ -462,6 +588,8 @@ public class MainActivity extends AppCompatActivity implements
                     showToastWithOffset(R.string.connection_lost);
                     mSensorManager.unregisterListener(this, mSensor);
                     mButtonHorn.setOnTouchListener(null);
+                    releasePedals();
+                    onVehicleStateUpdate(false, false, false, false);
                     break;
                 case TrackingClient.ConnectionListener.CONNECTED:
                     mConnectionIndicator.setImageResource(R.drawable.connection_indicator_green);
@@ -469,6 +597,7 @@ public class MainActivity extends AppCompatActivity implements
                             + " " + client.getSocketInetHostAddress());
                     mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
                     mButtonHorn.setOnTouchListener(this);
+                    analogUnavailableWarned = false;
                     break;
             }
         });
@@ -537,6 +666,23 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onVehicleStateUpdate(boolean engineOn, boolean trailerAttached,
+                                     boolean wipersOn, boolean beaconOn) {
+        runOnUiThread(() -> {
+            mEngineAction.setActivated(engineOn);
+            mTrailerAction.setActivated(trailerAttached);
+            mWipersAction.setActivated(wipersOn);
+            mBeaconAction.setActivated(beaconOn);
+        });
+    }
+
+    @Override
+    public void onAnalogPedalsAvailabilityChanged(boolean available) {
+        //Pedals state should be sent in the right form (axes or keys)
+        runOnUiThread(this::sendMotionState);
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
@@ -550,7 +696,7 @@ public class MainActivity extends AppCompatActivity implements
             float receivedYValue = event.values[1] + calibrationOffset;
             lastReceivedYValue = receivedYValue;
             float realYValue = isReverseLandscape(this) ? (-receivedYValue) : receivedYValue;
-            if (prefs.getBoolean("deadZone", false)) {
+            if (prefs.getBoolean(DEAD_ZONE, false)) {
                 realYValue = applyDeadZoneY(realYValue);
             }
             client.provideAccelerometerY(realYValue);

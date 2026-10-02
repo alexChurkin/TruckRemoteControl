@@ -6,6 +6,12 @@
     <color name="indicatorRed">#DA4343</color>
     <color name="indicatorGreen">#2CC75F</color>
 
+    <color name="lockedAmber">#FFB300</color>
+    <color name="actionsPanel">#E62E2E2E</color>
+    <color name="actionItem">#3A3A3A</color>
+    <color name="actionItemPressed">#555555</color>
+    <color name="actionItemActive">#1E7A3F</color>
+
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>

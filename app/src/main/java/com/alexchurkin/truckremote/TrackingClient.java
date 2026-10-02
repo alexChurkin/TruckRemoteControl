@@ -10,6 +10,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.Locale;
 
 public class TrackingClient {
 
@@ -26,7 +27,25 @@ public class TrackingClient {
         void onLightsUpdate(int lightsMode);
 
         void onBlinkersUpdate(boolean leftBlinker, boolean rightBlinker);
+
+        //Called when any of these values changes (sent by server 1.3+)
+        void onVehicleStateUpdate(boolean engineOn, boolean trailerAttached,
+                                  boolean wipersOn, boolean beaconOn);
+
+        //Analog pedals require Y and Z axes enabled in vJoy on the server
+        void onAnalogPedalsAvailabilityChanged(boolean available);
     }
+
+    //Additional actions; their order must match the order on the server
+    public static final int ACTION_ENGINE = 0;
+    public static final int ACTION_TRAILER = 1;
+    public static final int ACTION_ACTIVATE = 2;
+    public static final int ACTION_WIPERS = 3;
+    public static final int ACTION_DIFF_LOCK = 4;
+    public static final int ACTION_LIFT_AXLE = 5;
+    public static final int ACTION_BEACON = 6;
+    public static final int ACTION_LIGHT_HORN = 7;
+    private static final int ACTIONS_COUNT = 8;
 
     private UDPClientTask sender;
     private DatagramSocket clientSocket;
@@ -41,6 +60,9 @@ public class TrackingClient {
     //Data from user input
     private volatile float y;
     private volatile boolean breakPressed, gasPressed;
+    private volatile float breakLevel, gasLevel;
+    //Every click increases action's counter, so the server can't miss a click
+    private final int[] actionCounters = new int[ACTIONS_COUNT];
     private volatile boolean turnLeftClick, turnRightClick, emergencySignalClick;
     private volatile boolean parkingBreakClick;
     private volatile boolean lightsClick;
@@ -53,6 +75,9 @@ public class TrackingClient {
     private volatile boolean telWasRightBlinker;
     private volatile boolean telWasLeftBlinker;
     private volatile int telPrevLightsState;
+    private boolean telVehicleStateReceived;
+    private boolean telWasTrailerAttached, telWasWipersOn, telWasBeaconOn;
+    private volatile boolean telWasAnalogAvailable;
 
 
     private volatile long ffbDuration;
@@ -83,9 +108,23 @@ public class TrackingClient {
         this.y = y;
     }
 
-    public void provideMotionState(boolean breakPressed, boolean gasPressed) {
+    //Pressed values are used by keyboard emulation, levels (0..1) by analog axes
+    public void provideMotionState(boolean breakPressed, boolean gasPressed,
+                                   float breakLevel, float gasLevel) {
         this.breakPressed = breakPressed;
         this.gasPressed = gasPressed;
+        this.breakLevel = breakLevel;
+        this.gasLevel = gasLevel;
+    }
+
+    public void clickAction(int action) {
+        synchronized (actionCounters) {
+            actionCounters[action]++;
+        }
+    }
+
+    public boolean isAnalogPedalsAvailable() {
+        return telWasAnalogAvailable;
     }
 
     public void changeHornState(int hornState) {
@@ -182,6 +221,9 @@ public class TrackingClient {
         protected Void doInBackground(Void... voids) {
             Log.d("TAG", "Execution started");
             running = true;
+            //New server may be different
+            telVehicleStateReceived = false;
+            telWasAnalogAvailable = false;
 
             try {
                 clientSocket = new DatagramSocket();
@@ -235,22 +277,27 @@ public class TrackingClient {
 
         /* Helpful local methods */
         private String makeStringToSend(boolean paused) {
-            return !paused ?
-                    y + "," + breakPressed + "," + gasPressed + ","
-                            + turnLeftClick + "," + turnRightClick + "," + emergencySignalClick + ","
-                            + parkingBreakClick + "," + lightsClick + ","
-                            + hornState + "," + cruiseSlide
-                    : "paused";
+            if (paused) return "paused";
+
+            StringBuilder builder = new StringBuilder(128)
+                    .append(y).append(',').append(breakPressed).append(',').append(gasPressed).append(',')
+                    .append(turnLeftClick).append(',').append(turnRightClick).append(',')
+                    .append(emergencySignalClick).append(',')
+                    .append(parkingBreakClick).append(',').append(lightsClick).append(',')
+                    .append(hornState).append(',').append(cruiseSlide).append(',')
+                    .append(String.format(Locale.ROOT, "%.3f,%.3f", gasLevel, breakLevel));
+            synchronized (actionCounters) {
+                for (int counter : actionCounters) builder.append(',').append(counter);
+            }
+            return builder.toString();
         }
 
         private void processServerResponse(String serverResponse) {
             String[] elements = serverResponse.split(",");
 
             boolean newTelIsEngineOn = Boolean.parseBoolean(elements[0]);
-            if (newTelIsEngineOn != telWasEngineOn) {
-                telWasEngineOn = newTelIsEngineOn;
-                //TODO
-            }
+            boolean newEngineStateChanged = newTelIsEngineOn != telWasEngineOn;
+            telWasEngineOn = newTelIsEngineOn;
 
             //Parking
             boolean newTelIsParking = Boolean.parseBoolean(elements[1]);
@@ -278,6 +325,28 @@ public class TrackingClient {
             }
 
             ffbDuration = Long.parseLong(elements[5]);
+
+            //Additional state from newer servers
+            boolean newTrailerAttached = elements.length > 6 && "1".equals(elements[6]);
+            boolean newWipersOn = elements.length > 7 && "1".equals(elements[7]);
+            boolean newBeaconOn = elements.length > 8 && "1".equals(elements[8]);
+            boolean newAnalogAvailable = elements.length > 9 && "1".equals(elements[9]);
+
+            if (!telVehicleStateReceived || newEngineStateChanged
+                    || newTrailerAttached != telWasTrailerAttached
+                    || newWipersOn != telWasWipersOn || newBeaconOn != telWasBeaconOn) {
+                telVehicleStateReceived = true;
+                telWasTrailerAttached = newTrailerAttached;
+                telWasWipersOn = newWipersOn;
+                telWasBeaconOn = newBeaconOn;
+                listener.onVehicleStateUpdate(telWasEngineOn, newTrailerAttached,
+                        newWipersOn, newBeaconOn);
+            }
+
+            if (newAnalogAvailable != telWasAnalogAvailable) {
+                telWasAnalogAvailable = newAnalogAvailable;
+                listener.onAnalogPedalsAvailabilityChanged(newAnalogAvailable);
+            }
         }
 
         /* Helpful network operations */
@@ -314,7 +383,7 @@ public class TrackingClient {
         }
 
         private String receiveText() throws IOException {
-            byte[] receiveData = new byte[64];
+            byte[] receiveData = new byte[256];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             clientSocket.receive(receivePacket);
             return new String(receiveData, 0, receivePacket.getLength());
