@@ -45,19 +45,6 @@
     <string name="deadzone_title">Мёртвая зона</string>
     <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
 
-    <string name="profile_title">Профиль по умолчанию</string>
-    <string name="profile_summary">Позволяет сохранять состояние кнопок в нескольких игровых профилях / играх</string>
-    <string-array name="profile_variants">
-        <item>Профиль 1</item>
-        <item>Профиль 2</item>
-        <item>Всегда спрашивать</item>
-    </string-array>
-    <string-array name="profile_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string name="what_profile_title">Какой профиль использовать?</string>
 
     <string name="additionally">Дополнительно</string>
     <string name="remove_ads">Отключить рекламу</string>
@@ -78,7 +65,7 @@
     <string name="how_to_run_text">Первым шагом необходимо загрузить Truck Remote Server и запустить его на компьютере, где установлена игра. Вы можете сделать это по следующей ссылке: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">В программе вы можете настроить порт и чувствительность движения так, как вам удобно. Затем необходимо запустить игру и включить управление с помощью клавиатуры и vJoy.</string>
     <string name="how_to_run_text_3">Важно использовать только упрощенную автоматическую КПП! Рекомендуется также увеличить \"Чувствительность руля\" и \"Нелинейность управления\", как на этом скриншоте:</string>
-    <string name="how_to_run_text_4">При использовании обратной связи рекомендуется отключить в игре все виды обратной связи, кроме столкновения (50%), ударов подвески (~15%) и поверхности под колёсами (~10%).</string>
+    <string name="how_to_run_text_4" formatted="false">При использовании обратной связи рекомендуется отключить в игре все виды обратной связи, кроме столкновения (50%), ударов подвески (~15%) и поверхности под колёсами (~10%).</string>
     <string name="how_to_run_text_5">Убедитесь, что все клавиши в настройках управления установлены стандартно, начните игру и проследуйте к следующему шагу инструкции.</string>
 
     <string name="how_to_use">• Как использовать?</string>
@@ -107,4 +94,7 @@
     <string name="throttle_lock_title">Фіксацыя газу</string>
     <string name="throttle_lock_summary">Утрымліваючы газ, правядзіце пальцам убок — узровень газу зафіксуецца. Дакраніцеся да газу або тормазу, каб адпусціць</string>
     <string name="analog_pedals_unavailable">Для аналагавых педаляў уключыце восі Y і Z у vJoy на ПК. Пакуль выкарыстоўваюцца клавішы</string>
+    <string name="back">Назад</string>
+    <string name="server_port_invalid">Порт павінен быць ад 10000 да 65535</string>
+    <string name="server_ip_invalid">Увядзіце IP-адрас, напрыклад 192.168.1.10</string>
 </resources>

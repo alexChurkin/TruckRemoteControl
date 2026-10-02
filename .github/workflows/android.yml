@@ -2,7 +2,7 @@ name: Android
 
 on:
   push:
-    branches: [ master, 'claude/**' ]
+    branches: [ master ]
   pull_request:
 
 concurrency:
@@ -24,11 +24,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - name: Build and check
-        run: ./gradlew --stacktrace assembleDebug lintDebug testDebugUnitTest
+        run: ./gradlew --continue ktlintCheck assembleDebug lintDebug testDebugUnitTest
 
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: reports
           path: app/build/reports/

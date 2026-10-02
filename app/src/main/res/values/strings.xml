@@ -49,19 +49,6 @@
     <string name="deadzone_title">Dead zone</string>
     <string name="deadzone_summary">Enables a dead zone to prevent from moving so slightly</string>
 
-    <string name="profile_title">Default profile</string>
-    <string name="profile_summary">Allows you to save state of buttons for several game profiles / games</string>
-    <string-array name="profile_variants">
-        <item>Profile 1</item>
-        <item>Profile 2</item>
-        <item>Always ask</item>
-    </string-array>
-    <string-array name="profile_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string name="what_profile_title">What profile to use?</string>
 
     <string name="additionally">Additionally</string>
     <string name="remove_ads">Remove Ads</string>
@@ -82,7 +69,7 @@
     <string name="how_to_run_text">First, you need to download &amp; install Truck Remote Server and run it on your computer. You can do it by this link: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">As you can see, you can specify connection port and steering sensitivity as you want. Then you need to start the game and select Keyboard + vJoy in Controls.</string>
     <string name="how_to_run_text_3">It\'s important to use only \"Simple Automatic\" transmission and set \"Steering sensitivity\" and \"Steering non-linearity\" as follows:</string>
-    <string name="how_to_run_text_4">When using force feedback, it is also recommended to disable all types of feedback in the game, except for the Collisions (50%), Bumps (~15%) and Terrain (~10%).</string>
+    <string name="how_to_run_text_4" formatted="false">When using force feedback, it is also recommended to disable all types of feedback in the game, except for the Collisions (50%), Bumps (~15%) and Terrain (~10%).</string>
     <string name="how_to_run_text_5">Make sure all keys in the control settings are set as standard. Enter the game and proceed to the next step.</string>
 
     <string name="how_to_use">• How to use?</string>
@@ -112,8 +99,7 @@
     <string name="throttle_lock_summary">While holding gas, swipe sideways to keep its level. Touch gas or brake to release</string>
     <string name="analog_pedals_unavailable">Analog pedals need Y and Z axes enabled in vJoy on the PC. Keys are used for now</string>
     <string name="gas_locked" translatable="false">🔒 %1$d%%</string>
-    <string-array name="pedal_mode_values" translatable="false">
-        <item>digital</item>
-        <item>analog</item>
-    </string-array>
+    <string name="back">Back</string>
+    <string name="server_port_invalid">Port must be from 10000 to 65535</string>
+    <string name="server_ip_invalid">Enter an IP address like 192.168.1.10</string>
 </resources>

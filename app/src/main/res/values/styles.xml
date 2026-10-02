@@ -2,6 +2,11 @@
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar" />
 
+    <!-- Compose screens draw everything themselves -->
+    <style name="AppTheme.Compose" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/backgroundMain</item>
+    </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

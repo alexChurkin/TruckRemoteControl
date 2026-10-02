@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.alexchurkin.truckremote.WithInsetsConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.alexchurkin.truckremote.ui.widget.WithInsetsConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootView"
     android:layout_width="match_parent"
@@ -46,7 +46,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:srcCompat="@drawable/pedal_break" />
 
-            <com.alexchurkin.truckremote.PedalLevelView
+            <com.alexchurkin.truckremote.ui.widget.PedalLevelView
                 android:id="@+id/breakLevelView"
                 android:layout_width="8dp"
                 android:layout_height="160dp"
@@ -101,7 +101,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/pedal_gas" />
 
-            <com.alexchurkin.truckremote.PedalLevelView
+            <com.alexchurkin.truckremote.ui.widget.PedalLevelView
                 android:id="@+id/gasLevelView"
                 android:layout_width="8dp"
                 android:layout_height="160dp"
@@ -280,4 +280,4 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
-</com.alexchurkin.truckremote.WithInsetsConstraintLayout>
+</com.alexchurkin.truckremote.ui.widget.WithInsetsConstraintLayout>
