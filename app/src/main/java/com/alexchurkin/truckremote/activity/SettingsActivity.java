@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.fragment.SettingsFragment;
+import com.alexchurkin.truckremote.helpers.ActivityTools;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -17,6 +18,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_container);
+        ActivityTools.applySystemBarsPadding(findViewById(R.id.container));
         requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -29,7 +31,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
+            getOnBackPressedDispatcher().onBackPressed();
             return false;
         } else return super.onOptionsItemSelected(item);
     }

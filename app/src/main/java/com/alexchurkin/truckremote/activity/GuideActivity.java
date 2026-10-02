@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.alexchurkin.truckremote.R;
 import com.alexchurkin.truckremote.fragment.GuideFragment;
+import com.alexchurkin.truckremote.helpers.ActivityTools;
 
 import static com.alexchurkin.truckremote.fragment.GuideFragment.GUIDE_NUMBER;
 
@@ -24,6 +25,7 @@ public class GuideActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guide);
+        ActivityTools.applySystemBarsPadding(findViewById(R.id.guide_root));
         mButtonPrev = findViewById(R.id.buttonPrev);
         mButtonNext = findViewById(R.id.buttonNext);
 

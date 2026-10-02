@@ -6,6 +6,9 @@ import android.view.Surface;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 public class ActivityTools {
 
@@ -20,6 +23,17 @@ public class ActivityTools {
             flags = flags | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
         activity.getWindow().getDecorView().setSystemUiVisibility(flags);
+    }
+
+    //Since targetSdk 35 activities are always drawn edge-to-edge, so the content should be
+    //padded by system bars manually (top inset is handled by the action bar)
+    public static void applySystemBarsPadding(View view) {
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+                    | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(insets.left, v.getPaddingTop(), insets.right, insets.bottom);
+            return windowInsets;
+        });
     }
 
     public static boolean isReverseLandscape(AppCompatActivity activity) {

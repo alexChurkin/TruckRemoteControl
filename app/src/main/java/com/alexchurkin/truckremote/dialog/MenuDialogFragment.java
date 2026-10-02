@@ -113,7 +113,8 @@ public class MenuDialogFragment extends DialogFragment implements View.OnClickLi
     public void setMaxPeekHeight() {
         requireNonNull(getDialog()).setOnShowListener(dialog -> {
             BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) dialog;
-            FrameLayout bottomSheet = bottomSheetDialog.findViewById(R.id.design_bottom_sheet);
+            FrameLayout bottomSheet = bottomSheetDialog.findViewById(
+                    com.google.android.material.R.id.design_bottom_sheet);
             assert bottomSheet != null;
             BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
             behavior.setPeekHeight(bottomSheet.getHeight());

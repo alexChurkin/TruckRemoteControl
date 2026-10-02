@@ -13,20 +13,22 @@ import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsResult;
+import com.android.billingclient.api.QueryPurchasesParams;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class BillingMan implements LifecycleObserver,
+public class BillingMan implements DefaultLifecycleObserver,
         BillingClientStateListener, PurchasesUpdatedListener, PurchasesResponseListener {
 
     public static final String PREF_AD_OFF = "prefadsetting";
@@ -77,8 +79,8 @@ public class BillingMan implements LifecycleObserver,
 
     private BillingClient billingClient;
 
-    //Here we will store sku details we got (for requesting the billing flow later)
-    private final HashMap<String, SkuDetails> skuDetails = new HashMap<>();
+    //Here we will store product details we got (for requesting the billing flow later)
+    private final HashMap<String, ProductDetails> productDetails = new HashMap<>();
 
     //Stores SKU -> Its state
     private final HashMap<String, Integer> localSkusStates = new HashMap<>();
@@ -101,8 +103,7 @@ public class BillingMan implements LifecycleObserver,
         //If billing has purchases to acknowledge,
         //Connection will be opened on app startup
         if (!Prefs.getBoolean(PREF_ACKNOWLEDGED, true)) {
-            billingClient = BillingClient.newBuilder(app)
-                    .enablePendingPurchases().setListener(this).build();
+            billingClient = createBillingClient();
             billingClient.startConnection(this);
             logD("* Starting billing connection... (purpose: acknowledgement) (init)");
         }
@@ -110,24 +111,30 @@ public class BillingMan implements LifecycleObserver,
 
     /* LifecycleEvents of SettingsFragment */
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    public void onCreate() {
+    private BillingClient createBillingClient() {
+        return BillingClient.newBuilder(app)
+                .enablePendingPurchases(PendingPurchasesParams.newBuilder()
+                        .enableOneTimeProducts().build())
+                .setListener(this).build();
+    }
+
+    @Override
+    public void onCreate(@NonNull LifecycleOwner owner) {
         logD(">> onCreate");
         if (billingClient == null) {
-            billingClient = BillingClient.newBuilder(app).enablePendingPurchases()
-                    .setListener(this).build();
+            billingClient = createBillingClient();
             billingClient.startConnection(this);
             logD("* Starting billing connection... (onCreate)");
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    public void onStart() {
+    @Override
+    public void onStart(@NonNull LifecycleOwner owner) {
         logD(">> onStart");
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    public void onResume() {
+    @Override
+    public void onResume(@NonNull LifecycleOwner owner) {
         logD(">> onResume");
         try {
             logD("* Querying purchases... (onResume)");
@@ -137,8 +144,8 @@ public class BillingMan implements LifecycleObserver,
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    public void onDestroy() {
+    @Override
+    public void onDestroy(@NonNull LifecycleOwner owner) {
         logD(">> onDestroy");
         uiHandler.removeCallbacksAndMessages(null);
         if (billingClient != null) {
@@ -167,8 +174,8 @@ public class BillingMan implements LifecycleObserver,
             logThreadD();
             reconnectMilliseconds = RECONNECT_TIMER_START_MILLISECONDS;
 
-            //Let's query our skus from Google Play (to start purchase dialog later)
-            querySkuDetails();
+            //Let's query our products from Google Play (to start purchase dialog later)
+            queryProductDetails();
             //And query info about purchases user have
             //(purchases may have different states, not only PURCHASED!)
             queryPurchases();
@@ -180,20 +187,22 @@ public class BillingMan implements LifecycleObserver,
         }
     }
 
-    //-> SKU Details came from Google Play
-    private void onSkuDetails(BillingResult result, List<SkuDetails> skuDetailsList) {
+    //-> Product Details came from Google Play
+    private void onProductDetails(@NonNull BillingResult result,
+                                  @NonNull QueryProductDetailsResult detailsResult) {
         if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-            if (skuDetailsList != null && !skuDetailsList.isEmpty()) {
-                for (SkuDetails skuDetails : skuDetailsList) {
-                    this.skuDetails.put(skuDetails.getSku(), skuDetails);
+            List<ProductDetails> detailsList = detailsResult.getProductDetailsList();
+            if (!detailsList.isEmpty()) {
+                for (ProductDetails details : detailsList) {
+                    productDetails.put(details.getProductId(), details);
                 }
             } else {
-                logD("* skuDetailsList is null or empty! Check that " +
-                        "your SKUs are correctly published in GP Console.");
+                logD("* productDetailsList is empty! Check that " +
+                        "your products are correctly published in GP Console.");
             }
         } else {
-            logD("* Problem getting SKU Details. " +
-                    "Debug message: ${result.debugMessage}");
+            logD("* Problem getting Product Details. " +
+                    "Debug message: " + result.getDebugMessage());
         }
     }
 
@@ -253,7 +262,7 @@ public class BillingMan implements LifecycleObserver,
         //Non-empty purchases list came from Google Play
         else {
             for (Purchase purchase : purchases) {
-                List<String> pSkus = purchase.getSkus();
+                List<String> pSkus = purchase.getProducts();
                 for (String purchaseSku : pSkus) {
                     logD("* -- Can see SKU: " + purchaseSku);
                     int newSkuState = skuStateFromPurchase(purchase);
@@ -283,12 +292,12 @@ public class BillingMan implements LifecycleObserver,
                     if (!purchase.isAcknowledged()) {
                         logD("* And not acknowledged. Acknowledging...");
                         Prefs.putBoolean(PREF_ACKNOWLEDGED, false);
-                        skusToAcknowledge.addAll(purchase.getSkus());
+                        skusToAcknowledge.addAll(purchase.getProducts());
                         //Acknowledging (PREF_ACKNOWLEDGED updates after every acknowledge)
                         acknowledgePurchase(purchase);
                     } else {
                         logD("* And acknowledged");
-                        skusToAcknowledge.removeAll(purchase.getSkus());
+                        skusToAcknowledge.removeAll(purchase.getProducts());
                     }
                 }
             }
@@ -326,13 +335,17 @@ public class BillingMan implements LifecycleObserver,
 
     @MainThread
     public void launchPurchaseFlow(Activity activity, String sku) {
-        SkuDetails details = skuDetails.get(sku);
+        ProductDetails details = productDetails.get(sku);
 
-        if (details == null) {
+        if (details == null || billingClient == null) {
             logD("Launching  purchase flow failed: unknown SKU");
         } else {
+            BillingFlowParams.ProductDetailsParams productParams =
+                    BillingFlowParams.ProductDetailsParams.newBuilder()
+                            .setProductDetails(details)
+                            .build();
             BillingFlowParams flowParams = BillingFlowParams.newBuilder()
-                    .setSkuDetails(details)
+                    .setProductDetailsParamsList(Collections.singletonList(productParams))
                     .build();
             billingClient.launchBillingFlow(activity, flowParams);
             Prefs.putBoolean(PREF_ACKNOWLEDGED, false);
@@ -342,18 +355,25 @@ public class BillingMan implements LifecycleObserver,
 
     /* ......................................................................... */
 
-    //Step 1 after connection - querying SKU details for future purchases
-    private void querySkuDetails() {
-        SkuDetailsParams.Builder pBuilder = SkuDetailsParams.newBuilder()
-                .setSkusList(inAppSKUs).setType(BillingClient.SkuType.INAPP);
-        billingClient.querySkuDetailsAsync(pBuilder.build(), this::onSkuDetails);
+    //Step 1 after connection - querying product details for future purchases
+    private void queryProductDetails() {
+        List<QueryProductDetailsParams.Product> products = new ArrayList<>();
+        for (String sku : inAppSKUs) {
+            products.add(QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(sku)
+                    .setProductType(BillingClient.ProductType.INAPP)
+                    .build());
+        }
+        QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                .setProductList(products).build();
+        billingClient.queryProductDetailsAsync(params, this::onProductDetails);
     }
 
     //Step 2 after connection - querying active purchases
     private void queryPurchases() {
         if (billingClient != null) {
-            billingClient.queryPurchasesAsync(
-                    BillingClient.SkuType.INAPP, this);
+            billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder()
+                    .setProductType(BillingClient.ProductType.INAPP).build(), this);
         }
     }
 
@@ -364,7 +384,7 @@ public class BillingMan implements LifecycleObserver,
         billingClient.acknowledgePurchase(params, result -> {
             if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                 logD("* Purchase was acknowledged: " + purchase);
-                skusToAcknowledge.removeAll(purchase.getSkus());
+                skusToAcknowledge.removeAll(purchase.getProducts());
 
                 //After every success acknowledgement we will update this value
                 Prefs.putBoolean(PREF_ACKNOWLEDGED, skusToAcknowledge.isEmpty());
