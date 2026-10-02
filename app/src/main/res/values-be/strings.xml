@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Изменения в версии</string>
-    <string name="version_changes_text">Исправлено для работы на новейший Android-устройствах; добавлены новые анимации. Для корректной работы РЕКОМЕНДУЕТСЯ загрузить самую последнюю версию Truck Remote Server на ваш ПК / ноутбук.</string>
+    <string name="version_changes_text">Аналагавыя педалі (заціснiце і вядзіце, каб задаць сілу), фіксацыя газу (правядзіце ўбок, утрымліваючы газ) і хуткія дзеянні: рухавік, прычэп, дворнікі, маячкі і іншае. Для іх абнавіце Truck Remote Server на ПК.</string>
 
     <string name="searching_on_local">Поиск серверов в локальной сети…</string>
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
@@ -45,19 +45,6 @@
     <string name="deadzone_title">Мёртвая зона</string>
     <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
 
-    <string name="profile_title">Профиль по умолчанию</string>
-    <string name="profile_summary">Позволяет сохранять состояние кнопок в нескольких игровых профилях / играх</string>
-    <string-array name="profile_variants">
-        <item>Профиль 1</item>
-        <item>Профиль 2</item>
-        <item>Всегда спрашивать</item>
-    </string-array>
-    <string-array name="profile_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string name="what_profile_title">Какой профиль использовать?</string>
 
     <string name="additionally">Дополнительно</string>
     <string name="remove_ads">Отключить рекламу</string>
@@ -78,7 +65,7 @@
     <string name="how_to_run_text">Первым шагом необходимо загрузить Truck Remote Server и запустить его на компьютере, где установлена игра. Вы можете сделать это по следующей ссылке: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">В программе вы можете настроить порт и чувствительность движения так, как вам удобно. Затем необходимо запустить игру и включить управление с помощью клавиатуры и vJoy.</string>
     <string name="how_to_run_text_3">Важно использовать только упрощенную автоматическую КПП! Рекомендуется также увеличить \"Чувствительность руля\" и \"Нелинейность управления\", как на этом скриншоте:</string>
-    <string name="how_to_run_text_4">При использовании обратной связи рекомендуется отключить в игре все виды обратной связи, кроме столкновения (50%), ударов подвески (~15%) и поверхности под колёсами (~10%).</string>
+    <string name="how_to_run_text_4" formatted="false">При использовании обратной связи рекомендуется отключить в игре все виды обратной связи, кроме столкновения (50%), ударов подвески (~15%) и поверхности под колёсами (~10%).</string>
     <string name="how_to_run_text_5">Убедитесь, что все клавиши в настройках управления установлены стандартно, начните игру и проследуйте к следующему шагу инструкции.</string>
 
     <string name="how_to_use">• Как использовать?</string>
@@ -86,4 +73,28 @@
     <string name="how_to_use_text_2">Круиз-контроль</string>
     <string name="how_to_use_text_3">Круиз-контроль включается с помощью свайпа вверх по кнопке газа. Отключить его можно нажатием на тормоз или повторным свайпом.</string>
     <string name="how_to_use_text_4">Приятного управления!</string>
+
+    <string name="actions">Хуткія дзеянні</string>
+    <string name="action_engine">Рухавік</string>
+    <string name="action_trailer">Прычэп</string>
+    <string name="action_activate">Дзеянне</string>
+    <string name="action_light_horn">Міргнуць фарамі</string>
+    <string name="action_wipers">Дворнікі</string>
+    <string name="action_beacon">Маячкі</string>
+    <string name="action_diff_lock">Блок. дыф.</string>
+    <string name="action_lift_axle">Пад\'ём восі</string>
+
+    <string name="pedals">Педалі</string>
+    <string name="pedal_mode_title">Рэжым педаляў</string>
+    <string name="pedal_mode_summary">Аналагавы: заціснiце педаль і вядзіце ўверх-уніз, каб задаць сілу (у гульні прызначце восі Y і Z vJoy на газ і тормаз)</string>
+    <string-array name="pedal_mode_entries">
+        <item>Лічбавы (націск да ўпору)</item>
+        <item>Аналагавы (сіла націску)</item>
+    </string-array>
+    <string name="throttle_lock_title">Фіксацыя газу</string>
+    <string name="throttle_lock_summary">Утрымліваючы газ, правядзіце пальцам убок — узровень газу зафіксуецца. Дакраніцеся да газу або тормазу, каб адпусціць</string>
+    <string name="analog_pedals_unavailable">Для аналагавых педаляў уключыце восі Y і Z у vJoy на ПК. Пакуль выкарыстоўваюцца клавішы</string>
+    <string name="back">Назад</string>
+    <string name="server_port_invalid">Порт павінен быць ад 10000 да 65535</string>
+    <string name="server_ip_invalid">Увядзіце IP-адрас, напрыклад 192.168.1.10</string>
 </resources>

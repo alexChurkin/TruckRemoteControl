@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.alexchurkin.truckremote.WithInsetsConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.alexchurkin.truckremote.ui.widget.WithInsetsConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootView"
     android:layout_width="match_parent"
@@ -37,6 +37,7 @@
                 app:srcCompat="@drawable/connection_indicator_red" />
 
             <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/breakImage"
                 android:layout_width="wrap_content"
                 android:layout_height="200dp"
                 android:layout_marginStart="60dp"
@@ -44,6 +45,15 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:srcCompat="@drawable/pedal_break" />
+
+            <com.alexchurkin.truckremote.ui.widget.PedalLevelView
+                android:id="@+id/breakLevelView"
+                android:layout_width="8dp"
+                android:layout_height="160dp"
+                android:layout_marginStart="14dp"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@id/breakImage"
+                app:layout_constraintStart_toEndOf="@id/breakImage" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -90,6 +100,33 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/pedal_gas" />
+
+            <com.alexchurkin.truckremote.ui.widget.PedalLevelView
+                android:id="@+id/gasLevelView"
+                android:layout_width="8dp"
+                android:layout_height="160dp"
+                android:layout_marginEnd="14dp"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@id/gasImage"
+                app:layout_constraintEnd_toStartOf="@id/gasImage" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/gasLockLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/lock_label_background"
+                android:paddingStart="8dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="3dp"
+                android:textColor="@color/black"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@id/gasLevelView"
+                app:layout_constraintEnd_toEndOf="@id/gasLevelView"
+                app:layout_constraintStart_toStartOf="@id/gasLevelView" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.appcompat.widget.LinearLayoutCompat>
@@ -169,4 +206,78 @@
         app:layout_constraintTop_toBottomOf="@+id/buttonRightSignal"
         app:srcCompat="@drawable/lights_off" />
 
-</com.alexchurkin.truckremote.WithInsetsConstraintLayout>
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/actionsButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="12dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:contentDescription="@string/actions"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/ic_actions" />
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/actionsPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/actions_panel_background"
+        android:orientation="vertical"
+        android:padding="4dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/actionsButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actionEngine"
+                style="@style/ActionItem"
+                android:text="@string/action_engine" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actionTrailer"
+                style="@style/ActionItem"
+                android:text="@string/action_trailer" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actionActivate"
+                style="@style/ActionItem"
+                android:text="@string/action_activate" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actionLightHorn"
+                style="@style/ActionItem"
+                android:text="@string/action_light_horn" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actionWipers"
+                style="@style/ActionItem"
+                android:text="@string/action_wipers" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actionBeacon"
+                style="@style/ActionItem"
+                android:text="@string/action_beacon" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actionDiffLock"
+                style="@style/ActionItem"
+                android:text="@string/action_diff_lock" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actionLiftAxle"
+                style="@style/ActionItem"
+                android:text="@string/action_lift_axle" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</com.alexchurkin.truckremote.ui.widget.WithInsetsConstraintLayout>

@@ -1,0 +1,57 @@
+package com.alexchurkin.truckremote.util
+
+import android.app.Activity
+import android.app.Dialog
+import android.view.Surface
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updatePadding
+
+fun Window.hideSystemBars() {
+    WindowCompat.getInsetsController(this, decorView).apply {
+        hide(WindowInsetsCompat.Type.systemBars())
+        systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
+}
+
+fun Activity.enterFullscreen() = window.hideSystemBars()
+
+val Activity.isReverseLandscape: Boolean
+    get() = ContextCompat.getDisplayOrDefault(this).rotation == Surface.ROTATION_270
+
+/**
+ * Shows a dialog over a fullscreen activity without showing system bars:
+ * the window is not focusable while it is being shown, so the bars stay hidden.
+ */
+fun Dialog.showKeepingFullscreen() {
+    val window = window
+    if (window == null) {
+        show()
+        return
+    }
+    window.setFlags(
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+    )
+    show()
+    window.hideSystemBars()
+    window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+}
+
+// Since targetSdk 35 activities are drawn edge-to-edge, so content is padded by system bars manually
+// (top inset is handled by the action bar)
+fun View.applySystemBarsPadding() {
+    ViewCompat.setOnApplyWindowInsetsListener(this) { view, windowInsets ->
+        val insets = windowInsets.getInsets(
+            WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout(),
+        )
+        view.updatePadding(left = insets.left, right = insets.right, bottom = insets.bottom)
+        windowInsets
+    }
+}

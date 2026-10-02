@@ -1,0 +1,32 @@
+package com.alexchurkin.truckremote
+
+import android.app.Application
+import android.content.Context
+import com.alexchurkin.truckremote.ads.AdManager
+import com.alexchurkin.truckremote.billing.BillingManager
+import com.alexchurkin.truckremote.settings.AppSettings
+import com.alexchurkin.truckremote.util.Toaster
+
+class TruckRemoteApp : Application() {
+
+    lateinit var settings: AppSettings
+        private set
+
+    lateinit var billing: BillingManager
+        private set
+
+    lateinit var ads: AdManager
+        private set
+
+    override fun onCreate() {
+        super.onCreate()
+        settings = AppSettings.create(this)
+        Toaster.initialize(this)
+        billing = BillingManager(this, settings)
+        ads = AdManager(settings)
+        ads.initialize(this)
+    }
+}
+
+val Context.app: TruckRemoteApp
+    get() = applicationContext as TruckRemoteApp
