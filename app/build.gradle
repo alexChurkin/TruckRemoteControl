@@ -2,8 +2,14 @@ plugins {
     id 'com.android.application'
 }
 
+//Real AdMob ids are kept out of the repository; test ids are used without the file
 def props = new Properties()
-file("ad.properties").withInputStream { props.load(it) }
+def adPropertiesFile = file("ad.properties")
+if (adPropertiesFile.exists()) {
+    adPropertiesFile.withInputStream { props.load(it) }
+}
+props.putIfAbsent("admobAppId", "ca-app-pub-3940256099942544~3347511713")
+props.putIfAbsent("interstitialAdId", "ca-app-pub-3940256099942544/1033173712")
 
 android {
     namespace 'com.alexchurkin.truckremote'
