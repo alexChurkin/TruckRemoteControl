@@ -66,7 +66,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         set(value) = prefs.edit { putInt(KEY_STEERING_MAX_ANGLE, value) }
 
     var steeringExponent: Float
-        get() = prefs.getFloat(KEY_STEERING_EXPONENT, STEERING_EXPONENT_RANGE.start)
+        get() = prefs.getFloat(KEY_STEERING_EXPONENT, DEFAULT_STEERING_EXPONENT)
             .coerceIn(STEERING_EXPONENT_RANGE)
         set(value) = prefs.edit { putFloat(KEY_STEERING_EXPONENT, value) }
 
@@ -107,6 +107,9 @@ class AppSettings(private val prefs: SharedPreferences) {
         val STEERING_DEAD_ZONE_RANGE = 0..15
         val STEERING_MAX_ANGLE_RANGE = 20..90
         val STEERING_EXPONENT_RANGE = 1f..3f
+
+        // A bit smoother near the center than the linear curve of previous versions
+        const val DEFAULT_STEERING_EXPONENT = 1.5f
 
         private const val KEY_PORT = "serverPort"
         private const val KEY_USE_SPECIFIED_SERVER = "defaultServer"

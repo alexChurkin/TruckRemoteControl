@@ -15,7 +15,9 @@ import com.alexchurkin.truckremote.data.sensor.TiltReading
 import com.alexchurkin.truckremote.data.sensor.TiltSensor
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.PedalMode
+import com.alexchurkin.truckremote.domain.SteeringCurve
 import com.alexchurkin.truckremote.testing.FakeSharedPreferences
+import kotlin.math.pow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -271,6 +273,12 @@ class MainViewModelTest {
 
         viewModel.setForeground(true)
         connect()
+        // The default curve is smoother near the center (exponent 1.5)
+        val g = SteeringCurve.GRAVITY
+        tilt.readings.tryEmit(TiltReading(3f, reverseLandscape = false))
+        assertEquals((3f / g).pow(1.5f) * g, controller.state.steering, 0.001f)
+
+        settings.steeringExponent = 1f
         tilt.readings.tryEmit(TiltReading(3f, reverseLandscape = false))
         assertEquals(3f, controller.state.steering, 0.001f)
 
