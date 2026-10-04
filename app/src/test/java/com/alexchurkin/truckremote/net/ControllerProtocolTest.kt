@@ -11,8 +11,8 @@ class ControllerProtocolTest {
     @Test
     fun `default state is encoded in server field order`() {
         assertEquals(
-            "0.0,false,false,false,false,false,false,false,0,false,0.000,0.000,0,0,0,0,0,0,0,0",
-            ControllerProtocol.encode(ControllerState()),
+            "0.0,false,false,false,false,false,false,false,0,false,0.000,0.000,0,0,0,0,0,0,0,0,#7",
+            ControllerProtocol.encode(ControllerState(), sequence = 7),
         )
     }
 
@@ -26,14 +26,16 @@ class ControllerProtocolTest {
             brakeLevel = 0.25f,
             actionCounters = listOf(1, 2, 0, 0, 0, 0, 0, 3),
         )
-        val parts = ControllerProtocol.encode(state).split(',')
+        val parts = ControllerProtocol.encode(state, sequence = 1).split(',')
 
         assertEquals("-1.5", parts[0])
         assertEquals("true", parts[2])
         assertEquals("2", parts[8])
         assertEquals("0.600", parts[10])
         assertEquals("0.250", parts[11])
-        assertEquals(listOf("1", "2", "0", "0", "0", "0", "0", "3"), parts.drop(12))
+        assertEquals(listOf("1", "2", "0", "0", "0", "0", "0", "3"), parts.subList(12, 20))
+        // Sequence is the last field: old servers read only the fields they know
+        assertEquals("#1", parts.last())
     }
 
     @Test
@@ -58,6 +60,17 @@ class ControllerProtocolTest {
         assertFalse(state.wipersOn)
         assertTrue(state.beaconOn)
         assertTrue(state.analogPedalsAvailable)
+    }
+
+    @Test
+    fun `sequence number of the server is read from the last field`() {
+        val state = ControllerProtocol.decodeServerMessage("True,False,False,False,1,0,0,0,0,1,#4242")!!
+
+        assertEquals(4242L, state.sequence)
+        assertTrue(state.analogPedalsAvailable)
+        assertNull(ControllerProtocol.decodeServerMessage("True,False,False,False,1,0")!!.sequence)
+        // Sequence alone doesn't make a message
+        assertNull(ControllerProtocol.decodeServerMessage("True,False,False,False,1,#5"))
     }
 
     @Test

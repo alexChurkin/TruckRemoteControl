@@ -7,7 +7,7 @@
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
     <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
     <string name="connected_to_server_at">Подключен к серверу</string>
-    <string name="connection_lost">Соединение с сервером прервано</string>
+    <string name="connection_lost">Сувязь страчана, перападключаемся…</string>
     <string name="def_server_ip_not_correct">Стандартный сервер указан некорректно!</string>
     <string name="trying_to_connect">Попытка подключения…</string>
 
@@ -107,4 +107,7 @@
     <string name="purchase_returned">Пакупка вернута, рэклама зноў уключана</string>
     <string name="purchase_not_found">На гэтым акаўнце Google не знойдзена пакупкі адключэння рэкламы</string>
     <string name="purchase_check_failed">Не ўдалося праверыць пакупкі. Праверце злучэнне з Google Play і паспрабуйце яшчэ раз</string>
+    <string name="server_not_found_title">Сервер не знойдзены</string>
+    <string name="server_not_found_text">Пошук працягваецца ў фоне. Праверце, што:\n\n• Truck Remote Server запушчаны на ПК\n• тэлефон і ПК падключаны да адной сеткі (гасцявыя сеткі Wi-Fi часта не даюць прыладам бачыць адна адну)\n• сервер дазволены ў брандмаўэры Windows (сервер прапануе гэта пры першым запуску)\n• порт у праграме і на серверы супадае\n\nМожна таксама ўказаць IP-адрас сервера (ён паказаны ў акне сервера) у наладах.</string>
+    <string name="link_quality">Страты пакетаў: %1$s, разкід затрымкі: %2$d мс</string>
 </resources>

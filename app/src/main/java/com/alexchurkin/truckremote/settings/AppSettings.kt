@@ -38,6 +38,11 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_SPECIFIED_IP, null).orEmpty()
         set(value) = prefs.edit { putString(KEY_SPECIFIED_IP, value) }
 
+    // The server found by the search last time: it is asked directly during the next search
+    var lastServerIp: String?
+        get() = prefs.getString(KEY_LAST_SERVER_IP, null)
+        set(value) = prefs.edit { putString(KEY_LAST_SERVER_IP, value) }
+
     var forceFeedback: Boolean
         get() = prefs.getBoolean(KEY_FORCE_FEEDBACK, false)
         set(value) = prefs.edit { putBoolean(KEY_FORCE_FEEDBACK, value) }
@@ -107,6 +112,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_USE_SPECIFIED_SERVER = "defaultServer"
         private const val KEY_SPECIFIED_IP = "serverIP"
         private const val KEY_FORCE_FEEDBACK = "useFFB"
+        private const val KEY_LAST_SERVER_IP = "lastServerIp"
         private const val KEY_PNEUMATIC_HORN = "pneumaticSignal"
         private const val KEY_DEAD_ZONE = "deadzone"
         private const val LEGACY_DEAD_ZONE = 6

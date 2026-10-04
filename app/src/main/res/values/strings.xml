@@ -11,7 +11,7 @@
     <string name="signal_strength">Wi-Fi signal strength:</string>
     <string name="no_wifi_conn_detected">No Wi-Fi connection detected!</string>
     <string name="connected_to_server_at">Connected to server at</string>
-    <string name="connection_lost">Lost connection to server!</string>
+    <string name="connection_lost">Connection lost, reconnecting…</string>
     <string name="def_server_ip_not_correct">Default server isn\'t specified correctly!</string>
     <string name="trying_to_connect">Trying to connect…</string>
 
@@ -112,4 +112,7 @@
     <string name="purchase_returned">The purchase was refunded, ads are enabled again</string>
     <string name="purchase_not_found">No ad removal purchase was found on this Google account</string>
     <string name="purchase_check_failed">Couldn\'t check the purchases. Check the connection to Google Play and try again</string>
+    <string name="server_not_found_title">Server not found</string>
+    <string name="server_not_found_text">The search goes on in the background. Please check that:\n\n• Truck Remote Server is running on the PC\n• the phone and the PC are connected to the same network (guest Wi-Fi networks often don\'t let devices see each other)\n• the server is allowed in Windows Firewall (the server offers it on the first start)\n• the port is the same in the app and in the server\n\nYou can also enter the server IP address (shown in the server window) in Settings.</string>
+    <string name="link_quality">Packet loss: %1$s, jitter: %2$d ms</string>
 </resources>

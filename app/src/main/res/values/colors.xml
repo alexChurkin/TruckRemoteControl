@@ -5,6 +5,7 @@
     <color name="backgroundGray">#313131</color>
     <color name="indicatorRed">#DA4343</color>
     <color name="indicatorGreen">#2CC75F</color>
+    <color name="indicatorYellow">#FFB300</color>
 
     <color name="lockedAmber">#FFB300</color>
     <color name="actionsPanel">#E62E2E2E</color>

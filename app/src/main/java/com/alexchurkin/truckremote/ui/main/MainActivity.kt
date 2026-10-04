@@ -30,8 +30,10 @@ import com.alexchurkin.truckremote.app
 import com.alexchurkin.truckremote.control.PedalHandler
 import com.alexchurkin.truckremote.control.SteeringCurve
 import com.alexchurkin.truckremote.databinding.ActivityMainBinding
+import com.alexchurkin.truckremote.net.ConnectionState
 import com.alexchurkin.truckremote.net.ControllerAction
 import com.alexchurkin.truckremote.net.HornState
+import com.alexchurkin.truckremote.net.LinkQuality
 import com.alexchurkin.truckremote.net.LowLatencyWifiLock
 import com.alexchurkin.truckremote.net.ServerState
 import com.alexchurkin.truckremote.net.TrackingClient
@@ -68,8 +70,10 @@ class MainActivity :
     private lateinit var gasPedal: PedalHandler
     private lateinit var cruiseGestureDetector: GestureDetector
 
+    // Connected or resuming a session (controls work)
     private var isConnected = false
     private var searchingByBroadcast = false
+    private var notFoundHintShown = false
 
     @Volatile
     private var shownServerState: ServerState? = null
@@ -233,9 +237,10 @@ class MainActivity :
         if (!isWifiEnabled()) Toaster.show(R.string.no_wifi_conn_detected)
 
         searchingByBroadcast = !useSpecifiedServer
+        notFoundHintShown = false
         if (!useSpecifiedServer) {
             Toaster.show(R.string.searching_on_local)
-            client.start(null, settings.serverPort)
+            client.start(null, settings.serverPort, knownIp = settings.lastServerIp)
             return
         }
 
@@ -380,22 +385,67 @@ class MainActivity :
 
     /* Server events (network thread) */
 
-    override fun onConnectionChanged(connected: Boolean) = runOnUiThread {
-        isConnected = connected
-        if (connected) {
-            analogUnavailableWarned = false
-            binding.connectionIndicator.setImageResource(R.drawable.connection_indicator_green)
-            Toaster.show("${getString(R.string.connected_to_server_at)} ${client.serverAddress}")
-            registerTiltSensor()
-            reportConnected()
-        } else {
-            binding.connectionIndicator.setImageResource(R.drawable.connection_indicator_red)
-            Toaster.show(R.string.connection_lost)
-            sensorManager.unregisterListener(this)
-            releasePedals()
-            shownServerState = null
-            showActionStates(engineOn = false, trailerAttached = false, wipersOn = false, beaconOn = false)
+    override fun onConnectionStateChanged(state: ConnectionState) = runOnUiThread {
+        val wasConnected = isConnected
+        isConnected = state == ConnectionState.Connected || state == ConnectionState.Resuming
+        showConnectionIndicator(state, client.lastLinkQuality)
+
+        when {
+            // Resumed session: nothing has changed for the user
+            isConnected && wasConnected -> Unit
+
+            isConnected -> {
+                analogUnavailableWarned = false
+                Toaster.show("${getString(R.string.connected_to_server_at)} ${client.serverAddress}")
+                if (searchingByBroadcast) settings.lastServerIp = client.serverAddress
+                registerTiltSensor()
+                reportConnected()
+            }
+
+            else -> {
+                if (wasConnected) {
+                    sensorManager.unregisterListener(this)
+                    releasePedals()
+                    // The truck state is unknown without the server: nothing is shown as turned on
+                    showServerState(shownServerState, UNKNOWN_SERVER_STATE)
+                    shownServerState = null
+                }
+                when (state) {
+                    ConnectionState.Lost -> Toaster.show(R.string.connection_lost)
+                    ConnectionState.NotFound -> showServerNotFoundHint()
+                    else -> Unit
+                }
+            }
         }
+    }
+
+    override fun onLinkQuality(quality: LinkQuality) = runOnUiThread {
+        showConnectionIndicator(client.connectionState, quality)
+    }
+
+    // Green: good link, yellow: bad link or resuming, red: no connection
+    private fun showConnectionIndicator(state: ConnectionState, quality: LinkQuality?) {
+        binding.connectionIndicator.setImageResource(
+            when {
+                state == ConnectionState.Resuming -> R.drawable.connection_indicator_yellow
+                state != ConnectionState.Connected -> R.drawable.connection_indicator_red
+                quality != null && !quality.isGood -> R.drawable.connection_indicator_yellow
+                else -> R.drawable.connection_indicator_green
+            },
+        )
+    }
+
+    // Once per connection attempt: the search goes on in background
+    private fun showServerNotFoundHint() {
+        if (notFoundHintShown || isFinishing) return
+        notFoundHintShown = true
+        AlertDialog.Builder(this)
+            .setTitle(R.string.server_not_found_title)
+            .setMessage(R.string.server_not_found_text)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.settings) { _, _ -> startActivity(Intent(this, SettingsActivity::class.java)) }
+            .create()
+            .showKeepingFullscreen()
     }
 
     private fun reportConnected() = Analytics.report(
@@ -539,10 +589,17 @@ class MainActivity :
     }
 
     private fun showSignalStrength() {
-        if (isWifiEnabled()) {
-            Toaster.show("${getString(R.string.signal_strength)} ${wifiRssi()} dBm")
-        } else {
+        if (!isWifiEnabled()) {
             Toaster.show(R.string.no_wifi_conn_detected)
+            return
+        }
+        val signal = "${getString(R.string.signal_strength)} ${wifiRssi()} dBm"
+        val quality = client.lastLinkQuality?.takeIf { isConnected }
+        if (quality == null) {
+            Toaster.show(signal)
+        } else {
+            val loss = quality.lossPercent?.let { "$it%" } ?: "—"
+            Toaster.show("$signal\n${getString(R.string.link_quality, loss, quality.jitterMs)}")
         }
     }
 
@@ -577,6 +634,15 @@ class MainActivity :
     }
 
     private companion object {
+        val UNKNOWN_SERVER_STATE = ServerState(
+            engineOn = false,
+            parkingBrake = false,
+            leftBlinker = false,
+            rightBlinker = false,
+            lightsMode = LIGHTS_OFF,
+            ffbDurationMs = 0,
+        )
+
         // Horizontal swipe distance on gas which locks the throttle
         const val THROTTLE_LOCK_DISTANCE_DP = 70f
         const val CRUISE_MIN_VELOCITY = 1.5f

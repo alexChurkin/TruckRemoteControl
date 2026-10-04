@@ -55,6 +55,8 @@ data class ServerState(
     val wipersOn: Boolean = false,
     val beaconOn: Boolean = false,
     val analogPedalsAvailable: Boolean = false,
+    // Number of the message, sent by server 1.4+ (lets the controller measure packet loss)
+    val sequence: Long? = null,
 )
 
 object ControllerProtocol {
@@ -65,7 +67,15 @@ object ControllerProtocol {
 
     private const val SERVER_BASE_FIELDS = 6
 
-    fun encode(state: ControllerState): String = buildString(capacity = 128) {
+    /*
+     * Messages of both sides may end with a tagged sequence number ("#123").
+     * It is the last field, so previous versions (which read fields by their positions) ignore it.
+     * The server drops controller messages that came out of order (UDP may reorder packets),
+     * otherwise an old toggle value would make an extra click.
+     */
+    private const val SEQUENCE_TAG = '#'
+
+    fun encode(state: ControllerState, sequence: Long): String = buildString(capacity = 136) {
         append(state.steering).append(',')
         append(state.brakePressed).append(',')
         append(state.gasPressed).append(',')
@@ -78,11 +88,14 @@ object ControllerProtocol {
         append(state.cruiseClick).append(',')
         append(String.format(Locale.ROOT, "%.3f,%.3f", state.gasLevel, state.brakeLevel))
         state.actionCounters.forEach { append(',').append(it) }
+        append(',').append(SEQUENCE_TAG).append(sequence)
     }
 
     // Returns null if the message is malformed
     fun decodeServerMessage(message: String): ServerState? {
-        val parts = message.trim().split(',')
+        val allParts = message.trim().split(',')
+        val sequence = allParts.last().takeIf { it.startsWith(SEQUENCE_TAG) }?.drop(1)?.toLongOrNull()
+        val parts = if (sequence != null) allParts.dropLast(1) else allParts
         if (parts.size < SERVER_BASE_FIELDS) return null
 
         fun flag(index: Int) = parts.getOrNull(index) == "1"
@@ -98,6 +111,7 @@ object ControllerProtocol {
             wipersOn = flag(7),
             beaconOn = flag(8),
             analogPedalsAvailable = flag(9),
+            sequence = sequence,
         )
     }
 
