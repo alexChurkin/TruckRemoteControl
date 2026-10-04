@@ -39,9 +39,10 @@
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/breakImage"
                 android:layout_width="wrap_content"
-                android:layout_height="200dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="60dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="37dp"
+                android:adjustViewBounds="true"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:srcCompat="@drawable/pedal_break" />
@@ -50,10 +51,10 @@
                 android:id="@+id/breakLevelView"
                 android:layout_width="8dp"
                 android:layout_height="160dp"
-                android:layout_marginStart="14dp"
+                android:layout_marginEnd="14dp"
                 android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="@id/breakImage"
-                app:layout_constraintStart_toEndOf="@id/breakImage" />
+                app:layout_constraintEnd_toStartOf="@id/breakImage" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -94,9 +95,10 @@
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/gasImage"
                 android:layout_width="wrap_content"
-                android:layout_height="200dp"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="60dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="41dp"
+                android:adjustViewBounds="true"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/pedal_gas" />
@@ -105,10 +107,10 @@
                 android:id="@+id/gasLevelView"
                 android:layout_width="8dp"
                 android:layout_height="160dp"
-                android:layout_marginEnd="14dp"
+                android:layout_marginStart="14dp"
                 android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="@id/gasImage"
-                app:layout_constraintEnd_toStartOf="@id/gasImage" />
+                app:layout_constraintStart_toEndOf="@id/gasImage" />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/gasLockLabel"

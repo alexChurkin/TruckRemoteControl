@@ -38,6 +38,8 @@ import com.alexchurkin.truckremote.net.TrackingClient
 import com.alexchurkin.truckremote.settings.PedalMode
 import com.alexchurkin.truckremote.ui.guide.GuideActivity
 import com.alexchurkin.truckremote.ui.settings.SettingsActivity
+import com.alexchurkin.truckremote.ui.widget.PedalHinge
+import com.alexchurkin.truckremote.ui.widget.showPedalPress
 import com.alexchurkin.truckremote.util.Toaster
 import com.alexchurkin.truckremote.util.enterFullscreen
 import com.alexchurkin.truckremote.util.isReverseLandscape
@@ -317,6 +319,9 @@ class MainActivity :
 
         gasLockLabel.isVisible = gasLocked
         if (gasLocked) gasLockLabel.text = getString(R.string.gas_locked, (gasPedal.level * 100).roundToInt())
+
+        breakImage.showPedalPress(brakePedal.level, PedalHinge.Top)
+        gasImage.showPedalPress(gasPedal.level, PedalHinge.Bottom)
     }
 
     override fun onPedalChanged(pedal: PedalHandler) {
