@@ -52,17 +52,12 @@
 
 
     <string name="additionally">Дополнительно</string>
-    <string name="remove_ads">Отключить рекламу</string>
-    <string name="purchase_success">Покупка успешно завершена</string>
-    <string name="purchase_restored">Покупка успешно восстановлена</string>
-    <string name="purchase_returned">Покупка возвращена</string>
-    <string name="purchase_cancelled">Покупка отменена</string>
 
 
     <string name="github_page">Исходный код на GitHub</string>
     <string name="about_app">О приложении</string>
     <string name="version">Версия</string>
-    <string name="about_app_text">Это приложение предназначено для использования в качестве руля в симуляторах грузовиков (например, Euro Truck Simulator 2, American Truck Simulator).\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkinapps@gmail.com\n\nВ приложении использованы иконки с ресурса\nhttp://icons8.com</string>
+    <string name="about_app_text">Это приложение предназначено для использования в качестве руля в симуляторах грузовиков (например, Euro Truck Simulator 2, American Truck Simulator).\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkinapps@gmail.com\n\nЗначкі, бібліятэкі і іх ліцэнзіі — у «Налады → Старонняе ПЗ і ліцэнзіі».</string>
     <string name="close">Закрыть</string>
 
     <string name="guide">Инструкция</string>
@@ -102,4 +97,14 @@
     <string name="back">Назад</string>
     <string name="server_port_invalid">Порт павінен быць ад 10000 да 65535</string>
     <string name="server_ip_invalid">Увядзіце IP-адрас, напрыклад 192.168.1.10</string>
+    <string name="third_party_title">Старонняе ПЗ і ліцэнзіі</string>
+    <string name="third_party_summary">Значкі і бібліятэкі, якія выкарыстоўваюцца ў праграме</string>
+    <string name="restore_purchase_title">Аднавіць адключэнне рэкламы</string>
+    <string name="restore_purchase_summary">Калі вы раней куплялі адключэнне рэкламы на гэтым акаўнце Google</string>
+    <string name="ads_removed_title">Рэклама адключана</string>
+    <string name="ads_removed_summary">Дзякуй за падтрымку праграмы!</string>
+    <string name="purchase_restored">Пакупка адноўлена, рэклама адключана</string>
+    <string name="purchase_returned">Пакупка вернута, рэклама зноў уключана</string>
+    <string name="purchase_not_found">На гэтым акаўнце Google не знойдзена пакупкі адключэння рэкламы</string>
+    <string name="purchase_check_failed">Не ўдалося праверыць пакупкі. Праверце злучэнне з Google Play і паспрабуйце яшчэ раз</string>
 </resources>

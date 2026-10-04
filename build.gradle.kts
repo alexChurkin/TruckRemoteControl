@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.aboutlibraries) apply false
 }
 
 // ktlint is run directly (as recommended by ktlint), it doesn't depend on Kotlin/AGP plugin internals

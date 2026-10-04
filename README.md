@@ -28,6 +28,13 @@ Release build uses these values from `~/.gradle/gradle.properties` or environmen
   They can also be set in `app/ad.properties` (`interstitialAdId`, `appMetricaApiKey`); debug builds always use
   the demo ad unit and no analytics
 
+## Third-party software
+
+Licenses of all dependencies are collected at build time (AboutLibraries plugin) and shown in
+Settings → Third-party software and licenses. Icons and other assets that aren't Gradle dependencies
+must be described in `app/config/libraries` (and `app/config/licenses` for a license unknown to SPDX).
+New icons must have a free license (e.g. MIT, Apache 2.0).
+
 ## License
 
     Copyright 2021 Alex Churkin.

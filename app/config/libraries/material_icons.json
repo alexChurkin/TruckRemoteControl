@@ -1,0 +1,9 @@
+{
+  "uniqueId": "com.google:material-design-icons",
+  "name": "Material Design Icons",
+  "description": "Icons of the menu, settings and guide (Wi-Fi, calibration, disconnect, guide, settings, arrows, quick actions button).",
+  "website": "https://fonts.google.com/icons",
+  "developers": [{ "name": "Google", "organisationUrl": "https://google.com" }],
+  "scm": { "url": "https://github.com/google/material-design-icons" },
+  "licenses": ["Apache-2.0"]
+}

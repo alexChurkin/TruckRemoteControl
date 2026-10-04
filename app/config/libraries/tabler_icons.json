@@ -1,0 +1,10 @@
+{
+  "uniqueId": "io.tabler:tabler-icons",
+  "artifactVersion": "3.48.0",
+  "name": "Tabler Icons",
+  "description": "Icons of the quick actions panel: engine, caravan, hand-click, bulb, wiper, urgent, car-4wd, arrow-bar-to-up. Converted to Android vector drawables without changes of the shapes.",
+  "website": "https://tabler.io/icons",
+  "developers": [{ "name": "Paweł Kuna", "organisationUrl": "https://tabler.io" }],
+  "scm": { "url": "https://github.com/tabler/tabler-icons" },
+  "licenses": ["MIT"]
+}

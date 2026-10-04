@@ -25,6 +25,8 @@ class TruckRemoteApp : Application() {
         settings = AppSettings.create(this)
         Toaster.initialize(this)
         billing = BillingManager(this, settings)
+        // Restores ads removal bought earlier (e.g. after reinstalling) before an ad is shown
+        billing.checkPurchases()
         ads = AdManager(settings)
         ads.initialize(this)
     }

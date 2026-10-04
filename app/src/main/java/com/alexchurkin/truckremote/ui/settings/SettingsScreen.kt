@@ -2,16 +2,25 @@
 
 package com.alexchurkin.truckremote.ui.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -43,15 +52,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -61,9 +76,18 @@ import com.alexchurkin.truckremote.billing.BillingEvent
 import com.alexchurkin.truckremote.settings.AppSettings
 import com.alexchurkin.truckremote.settings.PedalMode
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
+import com.mikepenz.aboutlibraries.Libs
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
+import com.mikepenz.aboutlibraries.ui.compose.variant.LibraryActionKind
+import com.mikepenz.aboutlibraries.util.withContext
 import kotlin.math.roundToInt
 
-// Open dialog is kept in saved state, so it survives rotation together with the typed text
+// Shown page and open dialog are kept in saved state, so they survive rotation together with the typed text
+private enum class SettingsPage {
+    Main,
+    Licenses,
+}
+
 private enum class SettingsDialog {
     None,
     Port,
@@ -83,7 +107,7 @@ data class SettingsActions(
     val onSteeringExponentChange: (Float) -> Unit = {},
     val onPedalModeChange: (PedalMode) -> Unit = {},
     val onThrottleLockChange: (Boolean) -> Unit = {},
-    val onRemoveAds: () -> Unit = {},
+    val onRestorePurchase: () -> Unit = {},
     val onOpenGithub: () -> Unit = {},
 )
 
@@ -91,7 +115,7 @@ data class SettingsActions(
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
-    onRemoveAds: () -> Unit,
+    onRestorePurchase: () -> Unit,
     onOpenGithub: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -105,7 +129,7 @@ fun SettingsScreen(
         }
     }
 
-    val actions = remember(viewModel, onBack, onRemoveAds, onOpenGithub) {
+    val actions = remember(viewModel, onBack, onRestorePurchase, onOpenGithub) {
         SettingsActions(
             onBack = onBack,
             onServerPortChange = viewModel::setServerPort,
@@ -118,7 +142,7 @@ fun SettingsScreen(
             onSteeringExponentChange = viewModel::setSteeringExponent,
             onPedalModeChange = viewModel::setPedalMode,
             onThrottleLockChange = viewModel::setThrottleLock,
-            onRemoveAds = onRemoveAds,
+            onRestorePurchase = onRestorePurchase,
             onOpenGithub = onOpenGithub,
         )
     }
@@ -134,10 +158,10 @@ fun SettingsScreen(
 @get:StringRes
 private val BillingEvent.messageRes: Int
     get() = when (this) {
-        BillingEvent.Purchased -> R.string.purchase_success
         BillingEvent.Restored -> R.string.purchase_restored
         BillingEvent.Returned -> R.string.purchase_returned
-        BillingEvent.Cancelled -> R.string.purchase_cancelled
+        BillingEvent.NotFound -> R.string.purchase_not_found
+        BillingEvent.Failed -> R.string.purchase_check_failed
     }
 
 @Composable
@@ -147,16 +171,30 @@ private fun SettingsContent(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
+    var page by rememberSaveable { mutableStateOf(SettingsPage.Main) }
     var dialog by rememberSaveable { mutableStateOf(SettingsDialog.None) }
+    // Hoisted, so the position is kept while the licenses are shown
+    val mainListState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val onNavigateBack = { if (page == SettingsPage.Licenses) page = SettingsPage.Main else actions.onBack() }
+
+    BackHandler(enabled = page == SettingsPage.Licenses) { page = SettingsPage.Main }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        // Landscape: content must not go under the display cutout and the navigation bar on a side
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.settings)) },
+                title = {
+                    Text(
+                        stringResource(
+                            if (page == SettingsPage.Licenses) R.string.third_party_title else R.string.settings,
+                        ),
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = actions.onBack) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_back),
                             contentDescription = stringResource(R.string.back),
@@ -168,12 +206,18 @@ private fun SettingsContent(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        SettingsList(
-            state = state,
-            actions = actions,
-            onOpenDialog = { dialog = it },
-            contentPadding = innerPadding,
-        )
+        when (page) {
+            SettingsPage.Main -> SettingsList(
+                state = state,
+                actions = actions,
+                listState = mainListState,
+                onOpenDialog = { dialog = it },
+                onOpenLicenses = { page = SettingsPage.Licenses },
+                contentPadding = innerPadding,
+            )
+
+            SettingsPage.Licenses -> LicensesList(contentPadding = innerPadding)
+        }
 
         when (dialog) {
             SettingsDialog.None -> Unit
@@ -211,20 +255,22 @@ private fun SettingsContent(
 private fun SettingsList(
     state: SettingsUiState,
     actions: SettingsActions,
+    listState: LazyListState,
     onOpenDialog: (SettingsDialog) -> Unit,
+    onOpenLicenses: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier.fillMaxSize(), contentPadding = contentPadding) {
-        item { SectionHeader(R.string.connection) }
-        item {
+    LazyColumn(modifier = modifier.fillMaxSize(), state = listState, contentPadding = contentPadding) {
+        centeredItem { SectionHeader(R.string.connection) }
+        centeredItem {
             ClickableItem(
                 title = stringResource(R.string.server_port_title),
                 summary = state.serverPort.toString(),
                 onClick = { onOpenDialog(SettingsDialog.Port) },
             )
         }
-        item {
+        centeredItem {
             SwitchItem(
                 title = stringResource(R.string.connect_to_default_on_startup_title),
                 summary = stringResource(
@@ -238,7 +284,7 @@ private fun SettingsList(
                 onCheckedChange = actions.onUseSpecifiedServerChange,
             )
         }
-        item {
+        centeredItem {
             ClickableItem(
                 title = stringResource(R.string.def_server_ip_title),
                 summary = state.serverIp.ifEmpty { stringResource(R.string.def_server_ip_summary) },
@@ -247,8 +293,8 @@ private fun SettingsList(
             )
         }
 
-        item { SectionHeader(R.string.control) }
-        item {
+        centeredItem { SectionHeader(R.string.control) }
+        centeredItem {
             SwitchItem(
                 title = stringResource(R.string.ffb_text),
                 summary = stringResource(R.string.ffb_summary),
@@ -256,7 +302,7 @@ private fun SettingsList(
                 onCheckedChange = actions.onForceFeedbackChange,
             )
         }
-        item {
+        centeredItem {
             SwitchItem(
                 title = stringResource(R.string.use_pneumatic_signal_text),
                 summary = stringResource(R.string.use_pneumatic_signal_summary),
@@ -264,7 +310,7 @@ private fun SettingsList(
                 onCheckedChange = actions.onPneumaticHornChange,
             )
         }
-        item {
+        centeredItem {
             val range = AppSettings.STEERING_DEAD_ZONE_RANGE
             SliderItem(
                 title = stringResource(R.string.steering_dead_zone_title),
@@ -275,7 +321,7 @@ private fun SettingsList(
                 onValueChange = { actions.onSteeringDeadZoneChange(it.roundToInt()) },
             )
         }
-        item {
+        centeredItem {
             val range = AppSettings.STEERING_MAX_ANGLE_RANGE
             SliderItem(
                 title = stringResource(R.string.steering_max_angle_title),
@@ -286,7 +332,7 @@ private fun SettingsList(
                 onValueChange = { actions.onSteeringMaxAngleChange(it.roundToInt()) },
             )
         }
-        item {
+        centeredItem {
             val range = AppSettings.STEERING_EXPONENT_RANGE
             SliderItem(
                 title = stringResource(R.string.steering_curve_title),
@@ -304,9 +350,9 @@ private fun SettingsList(
             )
         }
 
-        item { SectionHeader(R.string.pedals) }
-        item { PedalModeItem(mode = state.pedalMode, onModeChange = actions.onPedalModeChange) }
-        item {
+        centeredItem { SectionHeader(R.string.pedals) }
+        centeredItem { PedalModeItem(mode = state.pedalMode, onModeChange = actions.onPedalModeChange) }
+        centeredItem {
             SwitchItem(
                 title = stringResource(R.string.throttle_lock_title),
                 summary = stringResource(R.string.throttle_lock_summary),
@@ -315,12 +361,30 @@ private fun SettingsList(
             )
         }
 
-        item { SectionHeader(R.string.additionally) }
-        if (!state.adsRemoved) {
-            item { ClickableItem(title = stringResource(R.string.remove_ads), onClick = actions.onRemoveAds) }
+        centeredItem { SectionHeader(R.string.additionally) }
+        centeredItem {
+            if (state.adsRemoved) {
+                InfoItem(
+                    title = stringResource(R.string.ads_removed_title),
+                    summary = stringResource(R.string.ads_removed_summary),
+                )
+            } else {
+                ClickableItem(
+                    title = stringResource(R.string.restore_purchase_title),
+                    summary = stringResource(R.string.restore_purchase_summary),
+                    onClick = actions.onRestorePurchase,
+                )
+            }
         }
-        item { ClickableItem(title = stringResource(R.string.github_page), onClick = actions.onOpenGithub) }
-        item {
+        centeredItem { ClickableItem(title = stringResource(R.string.github_page), onClick = actions.onOpenGithub) }
+        centeredItem {
+            ClickableItem(
+                title = stringResource(R.string.third_party_title),
+                summary = stringResource(R.string.third_party_summary),
+                onClick = onOpenLicenses,
+            )
+        }
+        centeredItem {
             ClickableItem(
                 title = stringResource(R.string.about_app),
                 summary = "${stringResource(R.string.version)} ${BuildConfig.VERSION_NAME}",
@@ -328,6 +392,54 @@ private fun SettingsList(
             )
         }
     }
+}
+
+// In landscape the list would be too wide to read, so its items have a limited width
+private fun LazyListScope.centeredItem(content: @Composable () -> Unit) = item {
+    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        Box(modifier = Modifier.widthIn(max = MAX_CONTENT_WIDTH).fillMaxWidth()) { content() }
+    }
+}
+
+// Licenses of the libraries are collected at build time (AboutLibraries plugin), icons are described in app/config
+@Composable
+private fun LicensesList(contentPadding: PaddingValues, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    // Icons are shown first: they are what the app itself is made of, libraries follow alphabetically
+    val libraries = remember {
+        val libs = Libs.Builder().withContext(context).build()
+        libs.copy(libraries = libs.libraries.sortedBy { it.uniqueId !in ICON_SETS })
+    }
+    // License text is shown in the app (works offline, survives rotation); a link is opened only without the text
+    var dialogLibraryId by rememberSaveable { mutableStateOf<String?>(null) }
+    val dialogLibrary = libraries.libraries.firstOrNull { it.uniqueId == dialogLibraryId }
+
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        LibrariesContainer(
+            libraries = libraries,
+            dialogLibrary = dialogLibrary,
+            sheetLibrary = null,
+            onDialogLibraryChange = { dialogLibraryId = it?.uniqueId },
+            onSheetLibraryChange = {},
+            modifier = Modifier.widthIn(max = MAX_CONTENT_WIDTH).fillMaxSize(),
+            contentPadding = contentPadding,
+            onActionClick = { library, kind ->
+                val hasText = library.licenses.any { !it.licenseContent.isNullOrBlank() }
+                if (kind == LibraryActionKind.License && hasText) dialogLibraryId = library.uniqueId
+                kind == LibraryActionKind.License && hasText
+            },
+            licenseDialogConfirmText = stringResource(R.string.close),
+        )
+    }
+}
+
+@Composable
+private fun InfoItem(title: String, summary: String, modifier: Modifier = Modifier) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(summary) },
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -394,7 +506,8 @@ private fun SliderItem(
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var current by remember(value) { mutableFloatStateOf(value) }
+    // Survives rotation while dragging
+    var current by rememberSaveable(value) { mutableFloatStateOf(value) }
     Column(modifier = modifier.padding(bottom = 8.dp)) {
         ListItem(
             headlineContent = { Text(title) },
@@ -446,17 +559,22 @@ private fun TextInputDialog(
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    // Typed text survives rotation
-    var text by rememberSaveable { mutableStateOf(initialValue) }
+    // Typed text and the cursor survive rotation; the cursor starts at the end to continue typing
+    var field by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(initialValue, selection = TextRange(initialValue.length)))
+    }
+    val text = field.text
     val error = errorRes(text)
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(focusRequester) { focusRequester.requestFocus() }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
             OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
+                value = field,
+                onValueChange = { field = it },
                 singleLine = true,
                 isError = error != null,
                 supportingText = if (error != null) {
@@ -465,6 +583,8 @@ private fun TextInputDialog(
                     null
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { if (error == null) onConfirm(text) }),
+                modifier = Modifier.focusRequester(focusRequester),
             )
         },
         confirmButton = {
@@ -498,6 +618,10 @@ private fun AboutDialog(onDismiss: () -> Unit) {
 private const val DISABLED_ALPHA = 0.38f
 private const val MAX_ANGLE_STEP = 5
 private const val EXPONENT_STEP = 0.1f
+private val MAX_CONTENT_WIDTH = 640.dp
+
+// Ids from app/config/libraries
+private val ICON_SETS = setOf("io.tabler:tabler-icons", "com.google:material-design-icons", "com.icons8:icons")
 
 @Preview
 @Composable

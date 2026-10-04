@@ -17,7 +17,6 @@ class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        lifecycle.addObserver(app.billing)
         // Not on every rotation
         if (savedInstanceState == null) app.ads.tryShowFullscreenAd(this)
 
@@ -26,7 +25,7 @@ class SettingsActivity : ComponentActivity() {
                 SettingsScreen(
                     viewModel = viewModel(factory = SettingsViewModel.Factory),
                     onBack = ::finish,
-                    onRemoveAds = { app.billing.launchPurchaseFlow(this) },
+                    onRestorePurchase = app.billing::restorePurchase,
                     onOpenGithub = ::openGithub,
                 )
             }

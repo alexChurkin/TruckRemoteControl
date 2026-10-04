@@ -40,11 +40,13 @@
 
         <activity
             android:name=".ui.settings.SettingsActivity"
+            android:screenOrientation="fullSensor"
             android:label="@string/settings"
             android:theme="@style/AppTheme.Compose" />
 
         <activity
             android:name=".ui.guide.GuideActivity"
+            android:screenOrientation="fullSensor"
             android:label="@string/guide"
             android:theme="@style/AppTheme" />
     </application>

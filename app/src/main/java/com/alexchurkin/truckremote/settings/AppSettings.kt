@@ -89,10 +89,6 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_ADS_REMOVED, false)
         set(value) = prefs.edit { putBoolean(KEY_ADS_REMOVED, value) }
 
-    var purchasesAcknowledged: Boolean
-        get() = prefs.getBoolean(KEY_PURCHASES_ACKNOWLEDGED, true)
-        set(value) = prefs.edit { putBoolean(KEY_PURCHASES_ACKNOWLEDGED, value) }
-
     // Emits on every change of any preference
     fun changes(): Flow<Unit> = callbackFlow {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> trySend(Unit) }
@@ -123,7 +119,6 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_GUIDE_SHOWN = "guideShowed"
         private const val KEY_LAST_RELEASE_NOTES = "releaseVersionText"
         private const val KEY_ADS_REMOVED = "prefadsetting"
-        private const val KEY_PURCHASES_ACKNOWLEDGED = "prefacknowledged"
 
         // The same file as PreferenceManager.getDefaultSharedPreferences() used before
         fun create(context: Context) = AppSettings(

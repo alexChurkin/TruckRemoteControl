@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.aboutlibraries)
 }
 
 // Secrets are kept out of the repository. They come from Gradle properties (~/.gradle/gradle.properties)
@@ -110,7 +111,18 @@ dependencies {
 
     implementation(libs.yandex.ads)
     implementation(libs.appmetrica)
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.billing)
 
     testImplementation(libs.junit)
+}
+
+// Assets that aren't dependencies (icons) are described in config/libraries
+aboutLibraries {
+    collect {
+        configPath = file("config")
+        // Licenses are taken from the dependencies' POM files only, the build doesn't depend on GitHub API
+        fetchRemoteLicense = false
+    }
 }

@@ -236,47 +236,57 @@
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actionEngine"
                 style="@style/ActionItem"
-                android:text="@string/action_engine" />
+                android:text="@string/action_engine"
+                app:drawableTopCompat="@drawable/ic_action_engine" />
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actionTrailer"
                 style="@style/ActionItem"
-                android:text="@string/action_trailer" />
+                android:text="@string/action_trailer"
+                app:drawableTopCompat="@drawable/ic_action_trailer" />
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actionActivate"
                 style="@style/ActionItem"
-                android:text="@string/action_activate" />
+                android:text="@string/action_activate"
+                app:drawableTopCompat="@drawable/ic_action_activate" />
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actionLightHorn"
                 style="@style/ActionItem"
-                android:text="@string/action_light_horn" />
+                android:text="@string/action_light_horn"
+                app:drawableTopCompat="@drawable/ic_action_light_horn" />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actionWipers"
                 style="@style/ActionItem"
-                android:text="@string/action_wipers" />
+                android:text="@string/action_wipers"
+                app:drawableTopCompat="@drawable/ic_action_wipers" />
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actionBeacon"
                 style="@style/ActionItem"
-                android:text="@string/action_beacon" />
+                android:text="@string/action_beacon"
+                app:drawableTopCompat="@drawable/ic_action_beacon" />
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actionDiffLock"
                 style="@style/ActionItem"
-                android:text="@string/action_diff_lock" />
+                android:text="@string/action_diff_lock"
+                app:drawableTopCompat="@drawable/ic_action_diff_lock" />
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actionLiftAxle"
                 style="@style/ActionItem"
-                android:text="@string/action_lift_axle" />
+                android:text="@string/action_lift_axle"
+                app:drawableTopCompat="@drawable/ic_action_lift_axle" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
