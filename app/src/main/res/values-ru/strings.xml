@@ -30,25 +30,25 @@
     <string name="server_port_summary">Порт, используемый для всех видов подключений</string>
     <string name="server_port_dialog_title">Порт сервера</string>
 
-    <string name="connect_to_default_on_startup_title">Использовать стандартный сервер</string>
-    <string name="connect_to_default_on_startup_summary_off">Подключение к указанному серверу при запуске отключено</string>
-    <string name="connect_to_default_on_startup_summary_on">Подключение к указанному серверу производится при запуске</string>
+    <string name="connect_to_default_on_startup_title">Подключаться по IP-адресу</string>
+    <string name="connect_to_default_on_startup_summary_off">При запуске приложение ищет сервер в локальной сети</string>
+    <string name="connect_to_default_on_startup_summary_on">При запуске приложение подключается к серверу по адресу ниже</string>
 
     <string name="def_server_ip_title">IP-адрес сервера</string>
-    <string name="def_server_ip_summary">IP-адрес стандартного сервера</string>
+    <string name="def_server_ip_summary">Не указан. Адрес показан в окне Truck Remote Server</string>
 
     <string name="control">Управление</string>
-    <string name="ffb_text">Обратная связь</string>
-    <string name="ffb_summary">Вибрация при столкновениях</string>
+    <string name="ffb_text">Вибрация</string>
+    <string name="ffb_summary">Телефон вибрирует при столкновениях в игре (обратная связь)</string>
     <string name="use_pneumatic_signal_text">Пневмосигнал</string>
-    <string name="use_pneumatic_signal_summary">Использовать пневматический сигнал вместо обычного</string>
+    <string name="use_pneumatic_signal_summary">Кнопка сигнала включает пневматический сигнал вместо обычного</string>
     <string name="steering_dead_zone_title">Мёртвая зона руля</string>
-    <string name="steering_dead_zone_summary">Наклон у центра, который не учитывается: %1$d°</string>
-    <string name="steering_max_angle_title">Угол поворота</string>
-    <string name="steering_max_angle_summary">Руль до упора при наклоне %1$d°</string>
-    <string name="steering_curve_title">Отклик руля</string>
-    <string name="steering_curve_linear">Линейный</string>
-    <string name="steering_curve_summary">Мягче в центре: %1$.1f</string>
+    <string name="steering_dead_zone_summary">Небольшой наклон у центра не учитывается: до %1$d°</string>
+    <string name="steering_max_angle_title">Наклон для полного поворота</string>
+    <string name="steering_max_angle_summary">Руль поворачивается до упора при наклоне %1$d°</string>
+    <string name="steering_curve_title">Кривая руля</string>
+    <string name="steering_curve_linear">Линейная</string>
+    <string name="steering_curve_summary">Плавнее у центра: %1$.1f</string>
 
 
     <string name="additionally">Дополнительно</string>
@@ -112,4 +112,7 @@
     <string name="server_not_found_text">Поиск продолжается в фоне. Проверьте, что:\n\n• Truck Remote Server запущен на ПК\n• телефон и ПК подключены к одной сети (гостевые сети Wi-Fi часто не дают устройствам видеть друг друга)\n• сервер разрешён в брандмауэре Windows (сервер предлагает это при первом запуске)\n• порт в приложении и на сервере совпадает\n\nМожно также указать IP-адрес сервера (он показан в окне сервера) в настройках.</string>
     <string name="link_quality">Потери пакетов: %1$s, разброс задержки: %2$d мс</string>
     <string name="license_open_link">Открыть в браузере</string>
+    <string name="steering_dead_zone_off">Выключена</string>
+    <string name="language_title">Язык</string>
+    <string name="language_system">Как в системе</string>
 </resources>

@@ -8,9 +8,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
@@ -19,6 +21,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,6 +35,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -74,6 +79,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alexchurkin.truckremote.BuildConfig
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.billing.BillingEvent
+import com.alexchurkin.truckremote.settings.AppLanguage
 import com.alexchurkin.truckremote.settings.AppSettings
 import com.alexchurkin.truckremote.settings.PedalMode
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
@@ -97,6 +103,7 @@ private enum class SettingsDialog {
     None,
     Port,
     ServerIp,
+    Language,
     About,
 }
 
@@ -251,6 +258,16 @@ private fun SettingsContent(
                 onDismiss = { dialog = SettingsDialog.None },
             )
 
+            SettingsDialog.Language -> LanguageDialog(
+                current = AppLanguage.current(),
+                onSelect = { language ->
+                    dialog = SettingsDialog.None
+                    // Screens are recreated in the new language
+                    language.apply()
+                },
+                onDismiss = { dialog = SettingsDialog.None },
+            )
+
             SettingsDialog.About -> AboutDialog(onDismiss = { dialog = SettingsDialog.None })
         }
     }
@@ -319,7 +336,14 @@ private fun SettingsList(
             val range = AppSettings.STEERING_DEAD_ZONE_RANGE
             SliderItem(
                 title = stringResource(R.string.steering_dead_zone_title),
-                summary = { stringResource(R.string.steering_dead_zone_summary, it.roundToInt()) },
+                summary = {
+                    val degrees = it.roundToInt()
+                    if (degrees == 0) {
+                        stringResource(R.string.steering_dead_zone_off)
+                    } else {
+                        stringResource(R.string.steering_dead_zone_summary, degrees)
+                    }
+                },
                 value = state.steeringDeadZone.toFloat(),
                 valueRange = range.first.toFloat()..range.last.toFloat(),
                 steps = range.last - range.first - 1,
@@ -367,6 +391,13 @@ private fun SettingsList(
         }
 
         centeredItem { SectionHeader(R.string.additionally) }
+        centeredItem {
+            ClickableItem(
+                title = stringResource(R.string.language_title),
+                summary = AppLanguage.current().label(),
+                onClick = { onOpenDialog(SettingsDialog.Language) },
+            )
+        }
         centeredItem {
             if (state.adsRemoved) {
                 InfoItem(
@@ -656,6 +687,45 @@ private fun TextInputDialog(
             }
         },
         dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.cancel)) }
+        },
+    )
+}
+
+@Composable
+private fun AppLanguage.label(): String = nativeName ?: stringResource(R.string.language_system)
+
+// Material 3 simple dialog: choosing an option applies it at once
+@Composable
+private fun LanguageDialog(current: AppLanguage, onSelect: (AppLanguage) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.language_title)) },
+        text = {
+            Column(modifier = Modifier.selectableGroup()) {
+                AppLanguage.entries.forEach { language ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .selectable(
+                                selected = language == current,
+                                role = Role.RadioButton,
+                                onClick = { onSelect(language) },
+                            ),
+                    ) {
+                        RadioButton(selected = language == current, onClick = null)
+                        Text(
+                            text = language.label(),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 16.dp),
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.cancel)) }
         },
     )

@@ -25,33 +25,33 @@
     <string name="calibration_completed">Калибровка завершена</string>
     <string name="calibration_reset">Калибровка успешно сброшена</string>
 
-    <string name="connection">Подключение</string>
+    <string name="connection">Падключэнне</string>
     <string name="server_port_title">Порт сервера</string>
     <string name="server_port_summary">Порт, используемый для всех видов подключений</string>
     <string name="server_port_dialog_title">Порт сервера</string>
 
-    <string name="connect_to_default_on_startup_title">Использовать стандартный сервер</string>
-    <string name="connect_to_default_on_startup_summary_off">Подключение к указанному серверу при запуске отключено</string>
-    <string name="connect_to_default_on_startup_summary_on">Подключение к указанному серверу производится при запуске</string>
+    <string name="connect_to_default_on_startup_title">Падключацца па IP-адрасе</string>
+    <string name="connect_to_default_on_startup_summary_off">Пры запуску праграма шукае сервер у лакальнай сетцы</string>
+    <string name="connect_to_default_on_startup_summary_on">Пры запуску праграма падключаецца да сервера па адрасе ніжэй</string>
 
-    <string name="def_server_ip_title">IP-адрес сервера</string>
-    <string name="def_server_ip_summary">IP-адрес стандартного сервера</string>
+    <string name="def_server_ip_title">IP-адрас сервера</string>
+    <string name="def_server_ip_summary">Не ўказаны. Адрас паказаны ў акне Truck Remote Server</string>
 
-    <string name="control">Управление</string>
-    <string name="ffb_text">Обратная связь</string>
-    <string name="ffb_summary">Вибрация при столкновениях</string>
-    <string name="use_pneumatic_signal_text">Пневмосигнал</string>
-    <string name="use_pneumatic_signal_summary">Использовать пневматический сигнал вместо обычного</string>
+    <string name="control">Кіраванне</string>
+    <string name="ffb_text">Вібрацыя</string>
+    <string name="ffb_summary">Тэлефон вібруе пры сутыкненнях у гульні (зваротная сувязь)</string>
+    <string name="use_pneumatic_signal_text">Пнеўмасігнал</string>
+    <string name="use_pneumatic_signal_summary">Кнопка сігналу ўключае пнеўматычны сігнал замест звычайнага</string>
     <string name="steering_dead_zone_title">Мёртвая зона руля</string>
-    <string name="steering_dead_zone_summary">Нахіл каля цэнтра, які не ўлічваецца: %1$d°</string>
-    <string name="steering_max_angle_title">Вугал павароту</string>
-    <string name="steering_max_angle_summary">Руль да ўпору пры нахіле %1$d°</string>
-    <string name="steering_curve_title">Водгук руля</string>
-    <string name="steering_curve_linear">Лінейны</string>
-    <string name="steering_curve_summary">Мякчэй у цэнтры: %1$.1f</string>
+    <string name="steering_dead_zone_summary">Невялікі нахіл каля цэнтра не ўлічваецца: да %1$d°</string>
+    <string name="steering_max_angle_title">Нахіл для поўнага павароту</string>
+    <string name="steering_max_angle_summary">Руль паварочваецца да ўпору пры нахіле %1$d°</string>
+    <string name="steering_curve_title">Крывая руля</string>
+    <string name="steering_curve_linear">Лінейная</string>
+    <string name="steering_curve_summary">Плаўней каля цэнтра: %1$.1f</string>
 
 
-    <string name="additionally">Дополнительно</string>
+    <string name="additionally">Дадаткова</string>
 
 
     <string name="github_page">Исходный код на GitHub</string>
@@ -112,4 +112,7 @@
     <string name="server_not_found_text">Пошук працягваецца ў фоне. Праверце, што:\n\n• Truck Remote Server запушчаны на ПК\n• тэлефон і ПК падключаны да адной сеткі (гасцявыя сеткі Wi-Fi часта не даюць прыладам бачыць адна адну)\n• сервер дазволены ў брандмаўэры Windows (сервер прапануе гэта пры першым запуску)\n• порт у праграме і на серверы супадае\n\nМожна таксама ўказаць IP-адрас сервера (ён паказаны ў акне сервера) у наладах.</string>
     <string name="link_quality">Страты пакетаў: %1$s, разкід затрымкі: %2$d мс</string>
     <string name="license_open_link">Адкрыць у браўзеры</string>
+    <string name="steering_dead_zone_off">Выключана</string>
+    <string name="language_title">Мова</string>
+    <string name="language_system">Як у сістэме</string>
 </resources>

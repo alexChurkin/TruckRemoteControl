@@ -3,16 +3,17 @@ package com.alexchurkin.truckremote.ui.settings
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.app
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 
-class SettingsActivity : ComponentActivity() {
+// AppCompat applies the language chosen in the app on Android 12 and older
+class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

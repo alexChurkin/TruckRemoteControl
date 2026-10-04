@@ -30,32 +30,32 @@
     <string name="calibration_reset">Calibration was successfully reset</string>
 
     <string name="connection">Connection</string>
-    <string name="server_port_title">Default server port</string>
+    <string name="server_port_title">Server port</string>
     <string name="server_port_summary">Port used for all kinds of connections</string>
     <string name="server_port_dialog_title">Server port</string>
 
-    <string name="connect_to_default_on_startup_title">Connect to a specific server on startup</string>
-    <string name="connect_to_default_on_startup_summary_off">Connecting to a specific server will not be attempted on startup</string>
-    <string name="connect_to_default_on_startup_summary_on">Connecting to a specific server will be attempted on startup</string>
+    <string name="connect_to_default_on_startup_title">Connect by IP address</string>
+    <string name="connect_to_default_on_startup_summary_off">On startup the app searches for the server in the local network</string>
+    <string name="connect_to_default_on_startup_summary_on">On startup the app connects to the server at the address below</string>
 
     <string name="def_server_ip_title">Server IP address</string>
-    <string name="def_server_ip_summary">Specified server IP address</string>
+    <string name="def_server_ip_summary">Not set. The address is shown in the Truck Remote Server window</string>
 
-    <string name="control">Control</string>
-    <string name="ffb_text">Force feedback</string>
-    <string name="ffb_summary">Collision vibration</string>
-    <string name="use_pneumatic_signal_text">Pneumatic signal</string>
-    <string name="use_pneumatic_signal_summary">Using the pneumatic signal instead of a horn</string>
+    <string name="control">Controls</string>
+    <string name="ffb_text">Vibration</string>
+    <string name="ffb_summary">The phone vibrates on collisions in the game (force feedback)</string>
+    <string name="use_pneumatic_signal_text">Air horn</string>
+    <string name="use_pneumatic_signal_summary">The horn button sounds the air horn instead of the regular one</string>
     <string name="steering_dead_zone_title">Steering dead zone</string>
-    <string name="steering_dead_zone_summary">Tilt that is ignored near the center: %1$d°</string>
-    <string name="steering_max_angle_title">Steering angle</string>
-    <string name="steering_max_angle_summary">Full lock at %1$d° of tilt</string>
-    <string name="steering_curve_title">Steering response</string>
+    <string name="steering_dead_zone_summary">Small tilts near the center are ignored: up to %1$d°</string>
+    <string name="steering_max_angle_title">Tilt for full lock</string>
+    <string name="steering_max_angle_summary">The wheel is turned all the way at %1$d° of tilt</string>
+    <string name="steering_curve_title">Steering curve</string>
     <string name="steering_curve_linear">Linear</string>
-    <string name="steering_curve_summary">Softer center: %1$.1f</string>
+    <string name="steering_curve_summary">Smoother near the center: %1$.1f</string>
 
 
-    <string name="additionally">Additionally</string>
+    <string name="additionally">More</string>
 
 
     <string name="github_page">Source code on GitHub</string>
@@ -97,7 +97,7 @@
         <item>Analog (press force)</item>
     </string-array>
     <string name="throttle_lock_title">Throttle lock</string>
-    <string name="throttle_lock_summary">While holding gas, swipe sideways to keep its level. Touch gas or brake to release</string>
+    <string name="throttle_lock_summary">While holding the gas, swipe sideways to keep its level. Touch the gas or the brake to release it</string>
     <string name="analog_pedals_unavailable">Analog pedals need Y and Z axes enabled in vJoy on the PC. Keys are used for now</string>
     <string name="gas_locked" translatable="false">🔒 %1$d%%</string>
     <string name="back">Back</string>
@@ -117,4 +117,7 @@
     <string name="server_not_found_text">The search goes on in the background. Please check that:\n\n• Truck Remote Server is running on the PC\n• the phone and the PC are connected to the same network (guest Wi-Fi networks often don\'t let devices see each other)\n• the server is allowed in Windows Firewall (the server offers it on the first start)\n• the port is the same in the app and in the server\n\nYou can also enter the server IP address (shown in the server window) in Settings.</string>
     <string name="link_quality">Packet loss: %1$s, jitter: %2$d ms</string>
     <string name="license_open_link">Open in browser</string>
+    <string name="steering_dead_zone_off">Off</string>
+    <string name="language_title">Language</string>
+    <string name="language_system">System default</string>
 </resources>
