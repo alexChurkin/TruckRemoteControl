@@ -36,13 +36,14 @@ class PedalHandlerTest {
     }
 
     @Test
-    fun `analog level follows vertical drag and is clamped`() {
+    fun `analog level starts from zero, follows vertical drag and is clamped`() {
         pedal.configure(analog = true, lockAllowed = false)
         pedal.onDown(0f, 500f, viewHeight = 1000)
-        assertEquals(0.5f, pedal.level, DELTA)
+        assertEquals(0f, pedal.level, DELTA)
+        assertTrue("Touched pedal is active at zero level", pedal.isActive)
         // 120 px of 600 px travel
         pedal.onMove(0f, 380f)
-        assertEquals(0.7f, pedal.level, DELTA)
+        assertEquals(0.2f, pedal.level, DELTA)
         pedal.onMove(0f, 2000f)
         assertEquals(0f, pedal.level, DELTA)
         pedal.onMove(0f, -2000f)
@@ -59,15 +60,15 @@ class PedalHandlerTest {
 
         pedal.onMove(620f, 440f)
         assertTrue(pedal.isLocked)
-        assertEquals(0.6f, pedal.level, DELTA)
+        assertEquals(0.1f, pedal.level, DELTA)
         pedal.onMove(620f, 0f)
-        assertEquals("Level is fixed while locked", 0.6f, pedal.level, DELTA)
+        assertEquals("Level is fixed while locked", 0.1f, pedal.level, DELTA)
         pedal.onUp()
-        assertEquals("Level is kept after release", 0.6f, pedal.level, DELTA)
+        assertEquals("Level is kept after release", 0.1f, pedal.level, DELTA)
 
         pedal.onDown(100f, 700f, viewHeight = 1000)
         assertFalse(pedal.isLocked)
-        assertEquals("Continues from the locked level", 0.6f, pedal.level, DELTA)
+        assertEquals("Continues from the locked level", 0.1f, pedal.level, DELTA)
         assertEquals(listOf(true, false), lockChanges)
     }
 

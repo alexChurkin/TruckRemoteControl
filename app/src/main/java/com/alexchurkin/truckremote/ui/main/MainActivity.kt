@@ -181,8 +181,9 @@ class MainActivity :
         gasLockLabel.isVisible = pedals.gasLocked
         if (pedals.gasLocked) gasLockLabel.text = getString(R.string.gas_locked, (pedals.gasLevel * 100).roundToInt())
 
-        breakImage.showPedalPress(pedals.brakeLevel, PedalHinge.Top)
-        gasImage.showPedalPress(pedals.gasLevel, PedalHinge.Bottom)
+        // An analog pedal follows the finger, a digital one is pressed down smoothly
+        breakImage.showPedalPress(pedals.brakeLevel, PedalHinge.Top, animated = !pedals.analog)
+        gasImage.showPedalPress(pedals.gasLevel, PedalHinge.Bottom, animated = !pedals.analog)
     }
 
     // The first state is shown without animations (e.g. after the screen is recreated)

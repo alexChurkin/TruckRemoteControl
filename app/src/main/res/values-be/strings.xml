@@ -87,7 +87,7 @@
     <string name="pedals">Педалі</string>
     <string name="pedal_mode_title">Рэжым педаляў</string>
     <string name="pedal_mode_summary_digital">Лічбавы: педаль націснута цалкам, пакуль вы яе кранаеце (клавішы-стрэлкі ў гульні)</string>
-    <string name="pedal_mode_summary_analog">Аналагавы: заціснiце педаль і вядзіце ўверх-уніз, каб задаць сілу (у гульні прызначце восі Y і Z vJoy на газ і тормаз)</string>
+    <string name="pedal_mode_summary_analog">Аналагавы: дакраніцеся да педалі і вядзіце ўверх, каб націснуць мацней, уніз — каб адпусціць (у гульні прызначце восі Y і Z vJoy на газ і тормаз)</string>
     <string-array name="pedal_mode_entries">
         <item>Лічбавы</item>
         <item>Аналагавы</item>

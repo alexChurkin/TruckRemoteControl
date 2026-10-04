@@ -75,7 +75,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         set(value) = prefs.edit { putString(KEY_PEDAL_MODE, value.prefValue) }
 
     var throttleLock: Boolean
-        get() = prefs.getBoolean(KEY_THROTTLE_LOCK, true)
+        get() = prefs.getBoolean(KEY_THROTTLE_LOCK, false)
         set(value) = prefs.edit { putBoolean(KEY_THROTTLE_LOCK, value) }
 
     var calibrationOffset: Float

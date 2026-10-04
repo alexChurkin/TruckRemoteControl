@@ -91,7 +91,7 @@
     <string name="pedals">Pedals</string>
     <string name="pedal_mode_title">Pedal mode</string>
     <string name="pedal_mode_summary_digital">Digital: the pedal is fully pressed while you touch it (arrow keys in the game)</string>
-    <string name="pedal_mode_summary_analog">Analog: hold the pedal and drag up or down to set the force (bind vJoy Y and Z axes to gas and brake in the game)</string>
+    <string name="pedal_mode_summary_analog">Analog: touch the pedal and drag up to press it harder, down to release (bind vJoy Y and Z axes to gas and brake in the game)</string>
     <string-array name="pedal_mode_entries">
         <item>Digital (full press)</item>
         <item>Analog (press force)</item>

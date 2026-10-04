@@ -127,7 +127,14 @@ class TrackingClient(private val listener: Listener) {
     private inner class Session(private val ip: String?, private val knownIp: String?, private val port: Int) {
         @Volatile
         private var running = true
-        private val socket = DatagramSocket().apply { soTimeout = HANDSHAKE_TIMEOUT_MS }
+
+        // Android ties a socket to the network it was first used on: after that network is gone
+        // (e.g. Wi-Fi reconnected) sending fails with ENETUNREACH forever, so the socket is recreated then
+        @Volatile
+        private var socket = DatagramSocket().apply { soTimeout = HANDSHAKE_TIMEOUT_MS }
+
+        @Volatile
+        private var sendFailed = false
         private var mainThread: Thread? = null
 
         private val meter = LinkQualityMeter()
@@ -195,6 +202,13 @@ class TrackingClient(private val listener: Listener) {
 
         // Hello is repeated a few times: UDP packets may be lost
         private fun handshake(): Boolean {
+            if (sendFailed) {
+                sendFailed = false
+                logD("Sending failed, the socket is recreated")
+                socket.close()
+                if (!running) return false
+                socket = DatagramSocket()
+            }
             if (socket.isConnected) socket.disconnect()
             val addresses = targetAddresses()
             socket.broadcast = ip == null
@@ -210,6 +224,7 @@ class TrackingClient(private val listener: Listener) {
                         socket.send(DatagramPacket(hello, hello.size, address, port))
                     } catch (e: IOException) {
                         logD("Can't send hello to $address: $e")
+                        sendFailed = true
                     }
                 }
                 try {
@@ -298,6 +313,7 @@ class TrackingClient(private val listener: Listener) {
             } catch (e: IOException) {
                 // E.g. the network is unavailable for a moment: the receiver decides when the connection is lost
                 logD("Send error: $e")
+                sendFailed = true
             }
             return if (paused) PAUSED_INTERVAL_MS else SEND_INTERVAL_MS
         }

@@ -87,7 +87,7 @@
     <string name="pedals">Педали</string>
     <string name="pedal_mode_title">Режим педалей</string>
     <string name="pedal_mode_summary_digital">Цифровой: педаль нажата полностью, пока вы её касаетесь (клавиши-стрелки в игре)</string>
-    <string name="pedal_mode_summary_analog">Аналоговый: зажмите педаль и ведите вверх-вниз, чтобы задать силу (в игре назначьте оси Y и Z vJoy на газ и тормоз)</string>
+    <string name="pedal_mode_summary_analog">Аналоговый: коснитесь педали и ведите вверх, чтобы нажать сильнее, вниз — чтобы отпустить (в игре назначьте оси Y и Z vJoy на газ и тормоз)</string>
     <string-array name="pedal_mode_entries">
         <item>Цифровой</item>
         <item>Аналоговый</item>

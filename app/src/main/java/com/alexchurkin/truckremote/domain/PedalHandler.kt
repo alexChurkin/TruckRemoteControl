@@ -5,7 +5,7 @@ import kotlin.math.abs
 /**
  * Touch logic of a pedal.
  * Digital mode: pedal is fully pressed while it is touched.
- * Analog mode: touch starts with [START_LEVEL], vertical drag changes the level.
+ * Analog mode: touch starts with zero level, dragging up presses the pedal harder, dragging down releases it.
  * Lock (gas only): horizontal swipe while holding keeps the current level after release;
  * the next touch of the pedal unlocks it and continues from the locked level.
  */
@@ -57,7 +57,7 @@ class PedalHandler(private val listener: Listener, var lockDistancePx: Float) {
         downLevel = when {
             !isAnalog -> 1f
             wasLocked -> currentLevel
-            else -> START_LEVEL
+            else -> 0f
         }
         currentLevel = downLevel
         listener.onPedalChanged(this)
@@ -107,8 +107,6 @@ class PedalHandler(private val listener: Listener, var lockDistancePx: Float) {
     }
 
     private companion object {
-        const val START_LEVEL = 0.5f
-
         // Part of the pedal area height that changes the level from 0 to 1
         const val TRAVEL_HEIGHT_PART = 0.6f
     }

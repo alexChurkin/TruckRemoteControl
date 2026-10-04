@@ -359,8 +359,9 @@ class MainViewModel(
         val gasLevel = gasPedal.level
         controller.updateState {
             it.copy(
-                brakePressed = !analog && brakeLevel > 0,
-                gasPressed = !analog && gasLevel > 0,
+                // Without analog axes the key is pressed while the pedal is touched (an analog touch starts from 0)
+                brakePressed = !analog && brakePedal.isActive,
+                gasPressed = !analog && gasPedal.isActive,
                 brakeLevel = if (analog) brakeLevel else 0f,
                 gasLevel = if (analog) gasLevel else 0f,
             )

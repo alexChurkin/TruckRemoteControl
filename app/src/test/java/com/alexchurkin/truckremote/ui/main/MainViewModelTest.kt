@@ -179,7 +179,9 @@ class MainViewModelTest {
         // The server starts supporting axes: the same press is sent as a level
         controller.truckState.value = TRUCK.copy(analogPedalsAvailable = true)
         assertFalse(controller.state.gasPressed)
-        assertEquals(0.5f, controller.state.gasLevel)
+        assertEquals(0f, controller.state.gasLevel)
+        viewModel.onPedalMove(Pedal.Gas, 0f, 380f)
+        assertEquals(0.2f, controller.state.gasLevel, 0.001f)
     }
 
     @Test
@@ -196,15 +198,30 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `throttle lock is off by default`() {
+        settings.pedalMode = PedalMode.Analog
+        connect(TRUCK.copy(analogPedalsAvailable = true))
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
+        viewModel.onPedalMove(Pedal.Gas, LOCK_DISTANCE + 1, 200f)
+        viewModel.onPedalUp(Pedal.Gas)
+
+        assertFalse(viewModel.state.value.pedals.gasLocked)
+        assertEquals(0f, controller.state.gasLevel)
+    }
+
+    @Test
     fun `brake releases the locked throttle`() = runTest {
         settings.pedalMode = PedalMode.Analog
+        settings.throttleLock = true
         val effects = collectEffects()
         connect(TRUCK.copy(analogPedalsAvailable = true))
         viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
-        viewModel.onPedalMove(Pedal.Gas, LOCK_DISTANCE + 1, 500f)
+        viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
+        viewModel.onPedalMove(Pedal.Gas, LOCK_DISTANCE + 1, 200f)
         viewModel.onPedalUp(Pedal.Gas)
         assertTrue(viewModel.state.value.pedals.gasLocked)
-        assertEquals(0.5f, controller.state.gasLevel)
+        assertEquals(0.5f, controller.state.gasLevel, 0.001f)
         assertTrue(MainEffect.ThrottleLockChanged in effects)
 
         viewModel.onPedalDown(Pedal.Brake, 0f, 500f, 1000)
