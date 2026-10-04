@@ -78,10 +78,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alexchurkin.truckremote.BuildConfig
 import com.alexchurkin.truckremote.R
-import com.alexchurkin.truckremote.billing.BillingEvent
-import com.alexchurkin.truckremote.settings.AppLanguage
-import com.alexchurkin.truckremote.settings.AppSettings
-import com.alexchurkin.truckremote.settings.PedalMode
+import com.alexchurkin.truckremote.data.billing.BillingEvent
+import com.alexchurkin.truckremote.data.settings.AppLanguage
+import com.alexchurkin.truckremote.data.settings.AppSettings
+import com.alexchurkin.truckremote.data.settings.PedalMode
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.Library
@@ -127,7 +127,6 @@ data class SettingsActions(
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
-    onRestorePurchase: () -> Unit,
     onOpenGithub: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -141,7 +140,7 @@ fun SettingsScreen(
         }
     }
 
-    val actions = remember(viewModel, onBack, onRestorePurchase, onOpenGithub) {
+    val actions = remember(viewModel, onBack, onOpenGithub) {
         SettingsActions(
             onBack = onBack,
             onServerPortChange = viewModel::setServerPort,
@@ -154,7 +153,7 @@ fun SettingsScreen(
             onSteeringExponentChange = viewModel::setSteeringExponent,
             onPedalModeChange = viewModel::setPedalMode,
             onThrottleLockChange = viewModel::setThrottleLock,
-            onRestorePurchase = onRestorePurchase,
+            onRestorePurchase = viewModel::restorePurchase,
             onOpenGithub = onOpenGithub,
         )
     }

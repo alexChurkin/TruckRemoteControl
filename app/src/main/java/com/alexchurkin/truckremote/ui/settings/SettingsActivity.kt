@@ -19,14 +19,13 @@ class SettingsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         // Not on every rotation
-        if (savedInstanceState == null) app.ads.tryShowFullscreenAd(this)
+        if (savedInstanceState == null) app.container.ads.tryShowFullscreenAd(this)
 
         setContent {
             TruckRemoteTheme {
                 SettingsScreen(
                     viewModel = viewModel(factory = SettingsViewModel.Factory),
                     onBack = ::finish,
-                    onRestorePurchase = app.billing::restorePurchase,
                     onOpenGithub = ::openGithub,
                 )
             }

@@ -12,11 +12,11 @@
     <string name="no_wifi_conn_detected">No Wi-Fi connection detected!</string>
     <string name="connected_to_server_at">Connected to server at</string>
     <string name="connection_lost">Connection lost, reconnecting…</string>
-    <string name="def_server_ip_not_correct">Default server isn\'t specified correctly!</string>
+    <string name="def_server_ip_not_correct">The server IP address isn\'t specified correctly!</string>
     <string name="trying_to_connect">Trying to connect…</string>
 
     <string name="auto_connect">Auto connect</string>
-    <string name="default_connect">Connect to the default server</string>
+    <string name="default_connect">Connect by IP address</string>
     <string name="disconnect">Disconnect</string>
     <string name="calibration">Calibration</string>
     <string name="settings">Settings</string>
@@ -73,9 +73,9 @@
     <string name="how_to_run_text_5">Make sure all keys in the control settings are set as standard. Enter the game and proceed to the next step.</string>
 
     <string name="how_to_use">• How to use?</string>
-    <string name="how_to_use_text_1">Ensure that your phone/tablet is connected to the same network as the computer. Connect your Truck Remote Control app to the Server app on your computer. This can be done automatically or manually. You can configure a standard ip/server in the settings.</string>
+    <string name="how_to_use_text_1">Make sure that your phone or tablet is connected to the same network as the computer. Connect Truck Remote Control to the server on your computer: it can be found automatically, or you can set its IP address in the settings.</string>
     <string name="how_to_use_text_2">Cruise control</string>
-    <string name="how_to_use_text_3">You can enable cruise control by swiping gas up and disable it by swipe or touching break.</string>
+    <string name="how_to_use_text_3">Turn cruise control on by swiping up on the gas pedal, turn it off by swiping again or touching the brake.</string>
     <string name="how_to_use_text_4">Enjoy your driving!</string>
 
     <string name="actions">Quick actions</string>

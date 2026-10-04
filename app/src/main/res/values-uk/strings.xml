@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="version_changes_title">Изменения в версии</string>
+    <string name="version_changes_title">Зміни у версії</string>
     <string name="version_changes_text">Аналогові педалі (затисніть і ведіть, щоб задати силу), фіксація газу (проведіть убік, утримуючи газ) і швидкі дії: двигун, причіп, двірники, маячки та інше. Для них оновіть Truck Remote Server на ПК.</string>
 
-    <string name="searching_on_local">Поиск серверов в локальной сети…</string>
-    <string name="signal_strength">Сила Wi-Fi сигнала:</string>
-    <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
-    <string name="connected_to_server_at">Подключен к серверу</string>
+    <string name="searching_on_local">Пошук серверів у локальній мережі…</string>
+    <string name="signal_strength">Сила сигналу Wi-Fi:</string>
+    <string name="no_wifi_conn_detected">Підключення Wi-Fi не виявлено!</string>
+    <string name="connected_to_server_at">Підключено до сервера</string>
     <string name="connection_lost">Зв’язок втрачено, перепідключаємося…</string>
-    <string name="def_server_ip_not_correct">Стандартный сервер указан некорректно!</string>
-    <string name="trying_to_connect">Попытка подключения…</string>
+    <string name="def_server_ip_not_correct">IP-адресу сервера вказано неправильно!</string>
+    <string name="trying_to_connect">Спроба підключення…</string>
 
-    <string name="auto_connect">Подключиться автоматически</string>
-    <string name="default_connect">Подключиться к стандартному серверу</string>
-    <string name="disconnect">Отключиться</string>
-    <string name="calibration">Калибровка</string>
-    <string name="settings">Настройки</string>
-    <string name="start_guide">Инструкция</string>
+    <string name="auto_connect">Підключитися автоматично</string>
+    <string name="default_connect">Підключитися за IP-адресою</string>
+    <string name="disconnect">Відключитися</string>
+    <string name="calibration">Калібрування</string>
+    <string name="settings">Налаштування</string>
+    <string name="start_guide">Інструкція</string>
 
     <string-array name="calibration_items">
-        <item>Калибровать</item>
-        <item>Сбросить калибровку</item>
+        <item>Калібрувати</item>
+        <item>Скинути калібрування</item>
     </string-array>
-    <string name="calibration_completed">Калибровка завершена</string>
-    <string name="calibration_reset">Калибровка успешно сброшена</string>
+    <string name="calibration_completed">Калібрування завершено</string>
+    <string name="calibration_reset">Калібрування скинуто</string>
 
     <string name="connection">Підключення</string>
     <string name="server_port_title">Порт сервера</string>
-    <string name="server_port_summary">Порт, используемый для всех видов подключений</string>
+    <string name="server_port_summary">Порт, що використовується для всіх видів підключень</string>
     <string name="server_port_dialog_title">Порт сервера</string>
 
     <string name="connect_to_default_on_startup_title">Підключатися за IP-адресою</string>
@@ -54,25 +54,25 @@
     <string name="additionally">Додатково</string>
 
 
-    <string name="github_page">Исходный код на GitHub</string>
-    <string name="about_app">О приложении</string>
-    <string name="version">Версия</string>
-    <string name="about_app_text">Это приложение предназначено для использования в качестве руля в симуляторах грузовиков (например, Euro Truck Simulator 2, American Truck Simulator).\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkinapps@gmail.com\n\nЗначки, бібліотеки та їхні ліцензії — у «Налаштування → Стороннє ПЗ і ліцензії».</string>
-    <string name="close">Закрыть</string>
+    <string name="github_page">Вихідний код на GitHub</string>
+    <string name="about_app">Про застосунок</string>
+    <string name="version">Версія</string>
+    <string name="about_app_text">Цей застосунок призначений для використання як кермо в симуляторах вантажівок (наприклад, Euro Truck Simulator 2, American Truck Simulator).\n\nРозробка: Олександр Чуркін\n\nЗв’язатися:\nchurkinapps@gmail.com\n\nЗначки, бібліотеки та їхні ліцензії — у «Налаштування → Стороннє ПЗ і ліцензії».</string>
+    <string name="close">Закрити</string>
 
-    <string name="guide">Инструкция</string>
-    <string name="how_to_run">• Как запустить?</string>
-    <string name="how_to_run_text">Первым шагом необходимо загрузить Truck Remote Server и запустить его на компьютере, где установлена игра. Вы можете сделать это по следующей ссылке: https://github.com/alexChurkin/TruckRemoteServer .</string>
-    <string name="how_to_run_text_2">В программе вы можете настроить порт и чувствительность движения так, как вам удобно. Затем необходимо запустить игру и включить управление с помощью клавиатуры и vJoy.</string>
-    <string name="how_to_run_text_3">Важно использовать только упрощенную автоматическую КПП! Рекомендуется также увеличить \"Чувствительность руля\" и \"Нелинейность управления\", как на этом скриншоте:</string>
-    <string name="how_to_run_text_4" formatted="false">При использовании обратной связи рекомендуется отключить в игре все виды обратной связи, кроме столкновения (50%), ударов подвески (~15%) и поверхности под колёсами (~10%).</string>
-    <string name="how_to_run_text_5">Убедитесь, что все клавиши в настройках управления установлены стандартно, начните игру и проследуйте к следующему шагу инструкции.</string>
+    <string name="guide">Інструкція</string>
+    <string name="how_to_run">• Як запустити?</string>
+    <string name="how_to_run_text">Спершу завантажте Truck Remote Server і запустіть його на комп’ютері, де встановлено гру. Зробити це можна за посиланням: https://github.com/alexChurkin/TruckRemoteServer .</string>
+    <string name="how_to_run_text_2">У програмі можна налаштувати порт і чутливість керма так, як вам зручно. Потім запустіть гру й увімкніть керування за допомогою клавіатури та vJoy.</string>
+    <string name="how_to_run_text_3">Важливо використовувати лише спрощену автоматичну КПП! Також рекомендується збільшити \"Чутливість керма\" і \"Нелінійність керування\", як на цьому знімку екрана:</string>
+    <string name="how_to_run_text_4" formatted="false">Якщо використовуєте вібрацію, рекомендується вимкнути в грі всі види зворотного зв’язку, крім зіткнень (50%), ударів підвіски (~15%) і поверхні під колесами (~10%).</string>
+    <string name="how_to_run_text_5">Переконайтеся, що всі клавіші в налаштуваннях керування стандартні, почніть гру й перейдіть до наступного кроку інструкції.</string>
 
-    <string name="how_to_use">• Как использовать?</string>
-    <string name="how_to_use_text_1">Убедитесь, что смартфон/планшет подключен к той же сети, что и компьютер. Подключите Truck Remote Control к серверу на вашем компьютере. Это можно сделать автоматически или вручную. Вы можете настроить стандартный IP/сервер в настройках приложения.</string>
-    <string name="how_to_use_text_2">Круиз-контроль</string>
-    <string name="how_to_use_text_3">Круиз-контроль включается с помощью свайпа вверх по кнопке газа. Отключить его можно нажатием на тормоз или повторным свайпом.</string>
-    <string name="how_to_use_text_4">Приятного управления!</string>
+    <string name="how_to_use">• Як користуватися?</string>
+    <string name="how_to_use_text_1">Переконайтеся, що смартфон або планшет підключено до тієї ж мережі, що й комп’ютер. Підключіть Truck Remote Control до сервера на комп’ютері: його можна знайти автоматично або вказати IP-адресу в налаштуваннях.</string>
+    <string name="how_to_use_text_2">Круїз-контроль</string>
+    <string name="how_to_use_text_3">Круїз-контроль вмикається свайпом угору по педалі газу. Вимкнути його можна натисканням на гальмо або повторним свайпом.</string>
+    <string name="how_to_use_text_4">Приємного керування!</string>
 
     <string name="actions">Швидкі дії</string>
     <string name="action_engine">Двигун</string>
@@ -89,8 +89,8 @@
     <string name="pedal_mode_summary_digital">Цифровий: педаль натиснута повністю, поки ви її торкаєтеся (клавіші-стрілки у грі)</string>
     <string name="pedal_mode_summary_analog">Аналоговий: затисніть педаль і ведіть вгору-вниз, щоб задати силу (у грі призначте осі Y і Z vJoy на газ і гальмо)</string>
     <string-array name="pedal_mode_entries">
-        <item>Цифровий (натискання до упору)</item>
-        <item>Аналоговий (сила натискання)</item>
+        <item>Цифровий</item>
+        <item>Аналоговий</item>
     </string-array>
     <string name="throttle_lock_title">Фіксація газу</string>
     <string name="throttle_lock_summary">Утримуючи газ, проведіть пальцем убік — рівень газу зафіксується. Торкніться газу або гальма, щоб відпустити</string>

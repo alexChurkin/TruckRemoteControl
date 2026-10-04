@@ -8,11 +8,11 @@
     <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
     <string name="connected_to_server_at">Подключен к серверу</string>
     <string name="connection_lost">Связь потеряна, переподключаемся…</string>
-    <string name="def_server_ip_not_correct">Стандартный сервер указан некорректно!</string>
+    <string name="def_server_ip_not_correct">IP-адрес сервера указан некорректно!</string>
     <string name="trying_to_connect">Попытка подключения…</string>
 
     <string name="auto_connect">Подключиться автоматически</string>
-    <string name="default_connect">Подключиться к стандартному серверу</string>
+    <string name="default_connect">Подключиться по IP-адресу</string>
     <string name="disconnect">Отключиться</string>
     <string name="calibration">Калибровка</string>
     <string name="settings">Настройки</string>
@@ -69,7 +69,7 @@
     <string name="how_to_run_text_5">Убедитесь, что все клавиши в настройках управления установлены стандартно, начните игру и проследуйте к следующему шагу инструкции.</string>
 
     <string name="how_to_use">• Как использовать?</string>
-    <string name="how_to_use_text_1">Убедитесь, что смартфон/планшет подключен к той же сети, что и компьютер. Подключите Truck Remote Control к серверу на вашем компьютере. Это можно сделать автоматически или вручную. Вы можете настроить стандартный IP/сервер в настройках приложения.</string>
+    <string name="how_to_use_text_1">Убедитесь, что смартфон или планшет подключён к той же сети, что и компьютер. Подключите Truck Remote Control к серверу на компьютере: его можно найти автоматически или указать IP-адрес в настройках.</string>
     <string name="how_to_use_text_2">Круиз-контроль</string>
     <string name="how_to_use_text_3">Круиз-контроль включается с помощью свайпа вверх по кнопке газа. Отключить его можно нажатием на тормоз или повторным свайпом.</string>
     <string name="how_to_use_text_4">Приятного управления!</string>
@@ -89,8 +89,8 @@
     <string name="pedal_mode_summary_digital">Цифровой: педаль нажата полностью, пока вы её касаетесь (клавиши-стрелки в игре)</string>
     <string name="pedal_mode_summary_analog">Аналоговый: зажмите педаль и ведите вверх-вниз, чтобы задать силу (в игре назначьте оси Y и Z vJoy на газ и тормоз)</string>
     <string-array name="pedal_mode_entries">
-        <item>Цифровой (нажатие до упора)</item>
-        <item>Аналоговый (сила нажатия)</item>
+        <item>Цифровой</item>
+        <item>Аналоговый</item>
     </string-array>
     <string name="throttle_lock_title">Фиксация газа</string>
     <string name="throttle_lock_summary">Удерживая газ, проведите пальцем в сторону — уровень газа зафиксируется. Коснитесь газа или тормоза, чтобы отпустить</string>

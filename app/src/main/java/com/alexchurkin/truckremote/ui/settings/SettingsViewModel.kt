@@ -6,10 +6,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.alexchurkin.truckremote.TruckRemoteApp
-import com.alexchurkin.truckremote.billing.BillingEvent
-import com.alexchurkin.truckremote.billing.BillingManager
-import com.alexchurkin.truckremote.settings.AppSettings
-import com.alexchurkin.truckremote.settings.PedalMode
+import com.alexchurkin.truckremote.data.billing.BillingEvent
+import com.alexchurkin.truckremote.data.billing.BillingManager
+import com.alexchurkin.truckremote.data.settings.AppSettings
+import com.alexchurkin.truckremote.data.settings.PedalMode
 import com.alexchurkin.truckremote.util.isValidIpv4
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,7 +36,7 @@ data class SettingsUiState(
  * Settings are stored in SharedPreferences, the screen observes them,
  * so the state is always actual (also after rotation or a change from another screen).
  */
-class SettingsViewModel(private val settings: AppSettings, billing: BillingManager) : ViewModel() {
+class SettingsViewModel(private val settings: AppSettings, private val billing: BillingManager) : ViewModel() {
 
     val state: StateFlow<SettingsUiState> = combine(
         settings.changes().onStart { emit(Unit) },
@@ -82,6 +82,9 @@ class SettingsViewModel(private val settings: AppSettings, billing: BillingManag
         settings.pedalMode = mode
     }
 
+    // The result comes as a billing event
+    fun restorePurchase() = billing.restorePurchase()
+
     fun setThrottleLock(value: Boolean) {
         settings.throttleLock = value
     }
@@ -110,7 +113,7 @@ class SettingsViewModel(private val settings: AppSettings, billing: BillingManag
         val Factory = viewModelFactory {
             initializer {
                 val app = checkNotNull(this[APPLICATION_KEY]) as TruckRemoteApp
-                SettingsViewModel(app.settings, app.billing)
+                SettingsViewModel(app.container.settings, app.container.billing)
             }
         }
     }

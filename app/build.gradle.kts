@@ -116,6 +116,7 @@ dependencies {
     implementation(libs.billing)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
 
 // Assets that aren't dependencies (icons) are described in config/libraries

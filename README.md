@@ -28,6 +28,20 @@ Release build uses these values from `~/.gradle/gradle.properties` or environmen
   They can also be set in `app/ad.properties` (`interstitialAdId`, `appMetricaApiKey`); debug builds always use
   the demo ad unit and no analytics
 
+## Architecture
+
+The app follows the [Android app architecture guide](https://developer.android.com/topic/architecture):
+
+- `data` — data layer: `controller` (UDP client of the server, `ControllerRepository` with the connection
+  and truck state as flows), `settings`, `sensor` (tilt sensor as a flow), `device` (vibration, Wi-Fi),
+  `billing`, `ads`, `analytics`.
+- `domain` — logic without Android dependencies: `SteeringCurve`, `PedalHandler`.
+- `ui` — screens: a view model holds the UI state (`StateFlow`) and one-off effects, the activity
+  only renders the state and passes user actions (unidirectional data flow). The controller screen uses views
+  (fixed landscape, touches of several pedals at once), the settings screen is Jetpack Compose.
+- `di/AppContainer` — manual dependency injection: the app-wide objects are created once,
+  view models get them through their factories (fakes are used in unit tests).
+
 ## Third-party software
 
 Licenses of all dependencies are collected at build time (AboutLibraries plugin) and shown in

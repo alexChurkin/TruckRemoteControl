@@ -2,16 +2,7 @@ package com.alexchurkin.truckremote.ui.main
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.Bundle
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
@@ -19,76 +10,46 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import androidx.activity.viewModels
 import androidx.annotation.AnimRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.alexchurkin.truckremote.R
-import com.alexchurkin.truckremote.analytics.Analytics
 import com.alexchurkin.truckremote.app
-import com.alexchurkin.truckremote.control.PedalHandler
-import com.alexchurkin.truckremote.control.SteeringCurve
+import com.alexchurkin.truckremote.data.controller.ConnectionState
+import com.alexchurkin.truckremote.data.controller.ControllerAction
+import com.alexchurkin.truckremote.data.controller.ServerState
 import com.alexchurkin.truckremote.databinding.ActivityMainBinding
-import com.alexchurkin.truckremote.net.ConnectionState
-import com.alexchurkin.truckremote.net.ControllerAction
-import com.alexchurkin.truckremote.net.HornState
-import com.alexchurkin.truckremote.net.LinkQuality
-import com.alexchurkin.truckremote.net.LowLatencyWifiLock
-import com.alexchurkin.truckremote.net.ServerState
-import com.alexchurkin.truckremote.net.TrackingClient
-import com.alexchurkin.truckremote.settings.PedalMode
 import com.alexchurkin.truckremote.ui.guide.GuideActivity
 import com.alexchurkin.truckremote.ui.settings.SettingsActivity
 import com.alexchurkin.truckremote.ui.widget.PedalHinge
 import com.alexchurkin.truckremote.ui.widget.showPedalPress
 import com.alexchurkin.truckremote.util.Toaster
 import com.alexchurkin.truckremote.util.enterFullscreen
-import com.alexchurkin.truckremote.util.isReverseLandscape
-import com.alexchurkin.truckremote.util.isValidIpv4
 import com.alexchurkin.truckremote.util.showKeepingFullscreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
+/**
+ * Controller screen: renders [MainUiState] and passes touches to [MainViewModel].
+ * The logic (connection, steering, pedals) is in the view model.
+ */
 class MainActivity :
     AppCompatActivity(),
-    SensorEventListener,
-    TrackingClient.Listener,
-    PedalHandler.Listener,
     MenuDialogFragment.Listener {
 
+    private val viewModel: MainViewModel by viewModels { MainViewModel.Factory }
     private lateinit var binding: ActivityMainBinding
-    private val settings by lazy { app.settings }
-    private val client = TrackingClient(this)
-
-    private lateinit var sensorManager: SensorManager
-    private var tiltSensor: Sensor? = null
-    private val wifiLock by lazy { LowLatencyWifiLock(this) }
-    private val vibrator: Vibrator by lazy { obtainVibrator() }
-
-    private lateinit var brakePedal: PedalHandler
-    private lateinit var gasPedal: PedalHandler
     private lateinit var cruiseGestureDetector: GestureDetector
 
-    // Connected or resuming a session (controls work)
-    private var isConnected = false
-    private var searchingByBroadcast = false
-    private var notFoundHintShown = false
-
-    @Volatile
-    private var shownServerState: ServerState? = null
-
-    // Without calibration offset
-    private var lastRawTiltY = 0f
-    private var analogUnavailableWarned = false
-
-    // Settings are cached on resume: sensor events come very often
-    private var calibrationOffset = 0f
-    private var steeringCurve = SteeringCurve(deadZoneDeg = 0, maxAngleDeg = 90, exponent = 1f)
-
-    @Volatile
-    private var useForceFeedback = false
-    private var analogPedalsMode = false
+    // The truck state shown now: only changes are animated
+    private var shownTruck: ServerState? = null
 
     // Every view has its own animation instances: one instance can't run on several views
     private val animations = HashMap<Pair<Int, Int>, Animation>()
@@ -111,29 +72,36 @@ class MainActivity :
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        sensorManager = checkNotNull(ContextCompat.getSystemService(this, SensorManager::class.java))
-        tiltSensor = obtainTiltSensor()
-
-        val lockDistancePx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            THROTTLE_LOCK_DISTANCE_DP,
-            resources.displayMetrics,
+        viewModel.setThrottleLockDistance(
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, THROTTLE_LOCK_DISTANCE_DP, resources.displayMetrics),
         )
-        brakePedal = PedalHandler(this, lockDistancePx)
-        gasPedal = PedalHandler(this, lockDistancePx)
         cruiseGestureDetector = GestureDetector(this, CruiseGestureListener())
-
         setUpViews()
         enterFullscreen()
-        startClient(useSpecifiedServer = settings.useSpecifiedServer)
+        observeViewModel()
 
-        if (!settings.guideShown) {
-            settings.guideShown = true
-            settings.lastShownReleaseNotes = resources.getInteger(R.integer.version)
-            startActivity(Intent(this, GuideActivity::class.java))
-        } else if (settings.lastShownReleaseNotes != resources.getInteger(R.integer.version)) {
-            showReleaseNotesDialog()
+        if (savedInstanceState == null) {
+            when (viewModel.start(releaseNotesVersion())) {
+                StartAction.Guide -> startActivity(Intent(this, GuideActivity::class.java))
+                StartAction.ReleaseNotes -> showReleaseNotesDialog()
+                StartAction.None -> Unit
+            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.setForeground(true)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.setForeground(false)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) enterFullscreen()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -142,303 +110,171 @@ class MainActivity :
         gasLevelView.fillColor = ContextCompat.getColor(this@MainActivity, R.color.indicatorGreen)
 
         breakLayout.setOnTouchListener { view, event ->
-            // Braking always releases the locked throttle
-            if (event.actionMasked == MotionEvent.ACTION_DOWN) gasPedal.unlock()
-            handlePedalTouch(brakePedal, view, event)
+            onPedalTouch(Pedal.Brake, view, event)
             false
         }
         gasLayout.setOnTouchListener { view, event ->
-            handlePedalTouch(gasPedal, view, event)
+            onPedalTouch(Pedal.Gas, view, event)
             cruiseGestureDetector.onTouchEvent(event)
             false
         }
         buttonHorn.setOnTouchListener { _, event -> onHornTouch(event) }
 
-        connectionIndicator.setOnClickListener { showSignalStrength() }
-        pauseButton.setOnClickListener { togglePause() }
+        connectionIndicator.setOnClickListener { showSignalInfo() }
+        pauseButton.setOnClickListener { viewModel.togglePause() }
         settingsButton.setOnClickListener { showMenu() }
-        buttonLeftSignal.setOnClickListener {
-            ifControllable { client.updateState { it.copy(leftSignalClick = !it.leftSignalClick) } }
-        }
-        buttonRightSignal.setOnClickListener {
-            ifControllable { client.updateState { it.copy(rightSignalClick = !it.rightSignalClick) } }
-        }
-        buttonAllSignals.setOnClickListener {
-            ifControllable { client.updateState { it.copy(emergencyClick = !it.emergencyClick) } }
-        }
-        buttonParking.setOnClickListener {
-            ifControllable { client.updateState { it.copy(parkingBrakeClick = !it.parkingBrakeClick) } }
-        }
-        buttonLights.setOnClickListener {
-            ifControllable { client.updateState { it.copy(lightsClick = !it.lightsClick) } }
-        }
+        buttonLeftSignal.setOnClickListener { viewModel.onLeftSignal() }
+        buttonRightSignal.setOnClickListener { viewModel.onRightSignal() }
+        buttonAllSignals.setOnClickListener { viewModel.onEmergencySignal() }
+        buttonParking.setOnClickListener { viewModel.onParkingBrake() }
+        buttonLights.setOnClickListener { viewModel.onLights() }
 
         actionsButton.setOnClickListener { actionsPanel.isVisible = !actionsPanel.isVisible }
         actionViews.forEach { (view, action) ->
             view.setOnClickListener {
-                ifControllable {
-                    client.clickAction(action)
-                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                }
+                if (viewModel.onAction(action)) view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             }
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        calibrationOffset = settings.calibrationOffset
-        steeringCurve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
-        useForceFeedback = settings.forceFeedback
-        analogPedalsMode = settings.pedalMode == PedalMode.Analog
-        brakePedal.configure(analogPedalsMode, lockAllowed = false)
-        gasPedal.configure(analogPedalsMode, lockAllowed = settings.throttleLock)
-        releasePedals()
-        client.resume()
-        wifiLock.acquire()
-        if (isConnected) registerTiltSensor()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sensorManager.unregisterListener(this)
-        // Locked throttle mustn't come back after returning to the app
-        releasePedals()
-        client.pause()
-        wifiLock.release()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        client.stop()
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) enterFullscreen()
-    }
-
-    /*
-     * Gravity sensor isn't affected by shaking and touches of the screen (e.g. pressing pedals).
-     * Without a gyroscope it is only a filtered accelerometer with a delay, so the accelerometer is used then.
-     */
-    private fun obtainTiltSensor(): Sensor? {
-        val hasGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null
-        val gravity = if (hasGyroscope) sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY) else null
-        return gravity ?: sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-    }
-
-    // The state is sent 50 times per second, the game rate is enough
-    private fun registerTiltSensor() {
-        tiltSensor?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
-    }
-
-    private fun startClient(useSpecifiedServer: Boolean) {
-        binding.pauseButton.setImageResource(R.drawable.pause_btn_resumed)
-        if (!isWifiEnabled()) Toaster.show(R.string.no_wifi_conn_detected)
-
-        searchingByBroadcast = !useSpecifiedServer
-        notFoundHintShown = false
-        if (!useSpecifiedServer) {
-            Toaster.show(R.string.searching_on_local)
-            client.start(null, settings.serverPort, knownIp = settings.lastServerIp)
-            return
-        }
-
-        val serverIp = settings.specifiedServerIp
-        if (isValidIpv4(serverIp)) {
-            Toaster.show(R.string.trying_to_connect)
-            client.start(serverIp, settings.serverPort)
-        } else {
-            Toaster.show(R.string.def_server_ip_not_correct)
-        }
-    }
-
-    private inline fun ifControllable(block: () -> Unit) {
-        if (isConnected && !client.isPausedByUser) block()
-    }
-
-    private fun togglePause() {
-        if (!isConnected) return
-        if (client.isPausedByUser) {
-            client.resumeByUser()
-            binding.pauseButton.setImageResource(R.drawable.pause_btn_resumed)
-        } else {
-            releasePedals()
-            client.pauseByUser()
-            binding.pauseButton.setImageResource(R.drawable.pause_btn_paused)
-            app.ads.tryShowFullscreenAd(this)
-        }
-    }
-
-    /* Pedals */
-
-    private fun handlePedalTouch(pedal: PedalHandler, view: View, event: MotionEvent) {
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                pedal.onDown(event.x, event.y, view.height)
-                warnIfAnalogUnavailable()
-            }
-
-            MotionEvent.ACTION_MOVE -> pedal.onMove(event.x, event.y)
-
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> pedal.onUp()
-        }
-    }
-
-    private fun warnIfAnalogUnavailable() {
-        if (analogPedalsMode && isConnected && !analogUnavailableWarned && !client.isAnalogPedalsAvailable) {
-            analogUnavailableWarned = true
-            Toaster.show(R.string.analog_pedals_unavailable)
-        }
-    }
-
-    private fun releasePedals() {
-        brakePedal.release()
-        gasPedal.release()
-        sendPedalsState()
-        updatePedalViews()
-    }
-
-    // Analog levels are used when the server supports them, keys otherwise
-    private fun sendPedalsState() {
-        val analog = analogPedalsMode && client.isAnalogPedalsAvailable
-        val brakeLevel = brakePedal.level
-        val gasLevel = gasPedal.level
-        client.updateState {
-            it.copy(
-                brakePressed = !analog && brakeLevel > 0,
-                gasPressed = !analog && gasLevel > 0,
-                brakeLevel = if (analog) brakeLevel else 0f,
-                gasLevel = if (analog) gasLevel else 0f,
-            )
-        }
-    }
-
-    private fun updatePedalViews() = with(binding) {
-        breakLevelView.visibility = if (analogPedalsMode) View.VISIBLE else View.INVISIBLE
-        breakLevelView.setState(brakePedal.level, locked = false)
-
-        val gasLocked = gasPedal.isLocked
-        gasLevelView.visibility = if (analogPedalsMode || gasLocked) View.VISIBLE else View.INVISIBLE
-        gasLevelView.setState(gasPedal.level, gasLocked)
-
-        gasLockLabel.isVisible = gasLocked
-        if (gasLocked) gasLockLabel.text = getString(R.string.gas_locked, (gasPedal.level * 100).roundToInt())
-
-        breakImage.showPedalPress(brakePedal.level, PedalHinge.Top)
-        gasImage.showPedalPress(gasPedal.level, PedalHinge.Bottom)
-    }
-
-    override fun onPedalChanged(pedal: PedalHandler) {
-        sendPedalsState()
-        updatePedalViews()
-    }
-
-    override fun onPedalLockChanged(pedal: PedalHandler, locked: Boolean) {
-        binding.gasLayout.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-        updatePedalViews()
-    }
-
-    private fun onHornTouch(event: MotionEvent): Boolean {
-        if (!isConnected) return false
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                binding.buttonHorn.startCachedAnimation(R.anim.button_upscale)
-                val horn = if (settings.pneumaticHorn) HornState.Pneumatic else HornState.Horn
-                client.updateState { it.copy(horn = horn) }
-            }
-
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                binding.buttonHorn.startCachedAnimation(R.anim.button_upscale_reverse)
-                client.updateState { it.copy(horn = HornState.Off) }
-            }
-        }
-        return false
-    }
-
-    private inner class CruiseGestureListener : GestureDetector.SimpleOnGestureListener() {
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-            if (e1 == null || !isConnected || client.isPausedByUser) return false
-            val movedX = abs(e1.x - e2.x)
-            val movedY = abs(e1.y - e2.y)
-            val isFastVerticalSwipeUp = velocityY < 0 &&
-                abs(velocityY) / 1000 > CRUISE_MIN_VELOCITY &&
-                movedX / movedY < CRUISE_MAX_SIDEWAYS_RATIO
-            if (isFastVerticalSwipeUp) {
-                client.updateState { it.copy(cruiseClick = !it.cruiseClick) }
-                binding.gasImage.startCachedAnimation(R.anim.gas_cruise)
-            }
-            return false
-        }
-    }
-
-    /* Tilt sensor */
-
-    override fun onSensorChanged(event: SensorEvent) {
-        lastRawTiltY = event.values[1]
-        val y = lastRawTiltY + calibrationOffset
-        val steering = steeringCurve.apply(if (isReverseLandscape) -y else y)
-        client.updateState { it.copy(steering = steering) }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) = Unit
-
-    /* Server events (network thread) */
-
-    override fun onConnectionStateChanged(state: ConnectionState) = runOnUiThread {
-        val wasConnected = isConnected
-        isConnected = state == ConnectionState.Connected || state == ConnectionState.Resuming
-        showConnectionIndicator(state, client.lastLinkQuality)
-
-        when {
-            // Resumed session: nothing has changed for the user
-            isConnected && wasConnected -> Unit
-
-            isConnected -> {
-                analogUnavailableWarned = false
-                Toaster.show("${getString(R.string.connected_to_server_at)} ${client.serverAddress}")
-                if (searchingByBroadcast) settings.lastServerIp = client.serverAddress
-                registerTiltSensor()
-                reportConnected()
-            }
-
-            else -> {
-                if (wasConnected) {
-                    sensorManager.unregisterListener(this)
-                    releasePedals()
-                    // The truck state is unknown without the server: nothing is shown as turned on
-                    showServerState(shownServerState, UNKNOWN_SERVER_STATE)
-                    shownServerState = null
-                }
-                when (state) {
-                    ConnectionState.Lost -> Toaster.show(R.string.connection_lost)
-                    ConnectionState.NotFound -> showServerNotFoundHint()
-                    else -> Unit
-                }
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { viewModel.state.collect(::render) }
+                launch { viewModel.effects.collect(::showEffect) }
             }
         }
     }
 
-    override fun onLinkQuality(quality: LinkQuality) = runOnUiThread {
-        showConnectionIndicator(client.connectionState, quality)
+    /* Rendering */
+
+    private fun render(state: MainUiState) {
+        showConnectionIndicator(state)
+        binding.pauseButton.setImageResource(
+            if (state.pausedByUser) R.drawable.pause_btn_paused else R.drawable.pause_btn_resumed,
+        )
+        showPedals(state.pedals)
+        // The truck state is unknown without the server: nothing is shown as turned on
+        showTruck(state.truck ?: UNKNOWN_TRUCK)
     }
 
     // Green: good link, yellow: bad link or resuming, red: no connection
-    private fun showConnectionIndicator(state: ConnectionState, quality: LinkQuality?) {
+    private fun showConnectionIndicator(state: MainUiState) {
+        val quality = state.linkQuality
         binding.connectionIndicator.setImageResource(
             when {
-                state == ConnectionState.Resuming -> R.drawable.connection_indicator_yellow
-                state != ConnectionState.Connected -> R.drawable.connection_indicator_red
+                state.connection == ConnectionState.Resuming -> R.drawable.connection_indicator_yellow
+                state.connection != ConnectionState.Connected -> R.drawable.connection_indicator_red
                 quality != null && !quality.isGood -> R.drawable.connection_indicator_yellow
                 else -> R.drawable.connection_indicator_green
             },
         )
     }
 
-    // Once per connection attempt: the search goes on in background
+    private fun showPedals(pedals: PedalsUiState) = with(binding) {
+        breakLevelView.visibility = if (pedals.analog) View.VISIBLE else View.INVISIBLE
+        breakLevelView.setState(pedals.brakeLevel, locked = false)
+
+        gasLevelView.visibility = if (pedals.analog || pedals.gasLocked) View.VISIBLE else View.INVISIBLE
+        gasLevelView.setState(pedals.gasLevel, pedals.gasLocked)
+
+        gasLockLabel.isVisible = pedals.gasLocked
+        if (pedals.gasLocked) gasLockLabel.text = getString(R.string.gas_locked, (pedals.gasLevel * 100).roundToInt())
+
+        breakImage.showPedalPress(pedals.brakeLevel, PedalHinge.Top)
+        gasImage.showPedalPress(pedals.gasLevel, PedalHinge.Bottom)
+    }
+
+    // The first state is shown without animations (e.g. after the screen is recreated)
+    private fun showTruck(truck: ServerState) {
+        val previous = shownTruck
+        if (previous == truck) return
+        shownTruck = truck
+        showTruckChanges(previous, truck)
+    }
+
+    private fun showTruckChanges(previous: ServerState?, truck: ServerState) = with(binding) {
+        if (previous?.parkingBrake != truck.parkingBrake) {
+            buttonParking.setImageResource(
+                if (truck.parkingBrake) R.drawable.parking_break_on else R.drawable.parking_break_off,
+            )
+            if (previous != null) {
+                buttonParking.startCachedAnimation(
+                    if (truck.parkingBrake) R.anim.button_upscale else R.anim.button_upscale_reverse,
+                )
+            }
+        }
+
+        if (previous?.lightsMode != truck.lightsMode) showLights(truck.lightsMode, animate = previous != null)
+
+        if (previous == null ||
+            previous.leftBlinker != truck.leftBlinker ||
+            previous.rightBlinker != truck.rightBlinker
+        ) {
+            showBlinkers(previous, truck)
+        }
+
+        actionEngine.isActivated = truck.engineOn
+        actionTrailer.isActivated = truck.trailerAttached
+        actionWipers.isActivated = truck.wipersOn
+        actionBeacon.isActivated = truck.beaconOn
+    }
+
+    private fun showLights(mode: Int, animate: Boolean) = with(binding.buttonLights) {
+        when (mode) {
+            LIGHTS_OFF -> {
+                setImageResource(R.drawable.lights_off)
+                if (animate) startCachedAnimation(R.anim.button_upscale_reverse)
+            }
+
+            LIGHTS_PARKING -> {
+                setImageResource(R.drawable.lights_gab)
+                if (animate) startCachedAnimation(R.anim.button_upscale)
+            }
+
+            LIGHTS_LOW_BEAM -> setImageResource(R.drawable.lights_low)
+
+            else -> setImageResource(R.drawable.lights_high)
+        }
+    }
+
+    private fun showBlinkers(previous: ServerState?, truck: ServerState) = with(binding) {
+        buttonLeftSignal.setImageResource(if (truck.leftBlinker) R.drawable.left_enabled else R.drawable.left_disabled)
+        buttonRightSignal.setImageResource(
+            if (truck.rightBlinker) R.drawable.right_enabled else R.drawable.right_disabled,
+        )
+        val emergencyOn = truck.leftBlinker && truck.rightBlinker
+        val wasEmergencyOn = previous != null && previous.leftBlinker && previous.rightBlinker
+        if (previous == null || emergencyOn != wasEmergencyOn) {
+            buttonAllSignals.setImageResource(if (emergencyOn) R.drawable.emergency_on else R.drawable.emergency_off)
+            if (previous != null) {
+                buttonAllSignals.startCachedAnimation(
+                    if (emergencyOn) R.anim.button_upscale_soft else R.anim.button_upscale_soft_reverse,
+                )
+            }
+        }
+    }
+
+    /* Effects */
+
+    private fun showEffect(effect: MainEffect) {
+        when (effect) {
+            is MainEffect.Message -> Toaster.show(
+                if (effect.suffix == null) getString(effect.text) else "${getString(effect.text)} ${effect.suffix}",
+            )
+
+            MainEffect.ServerNotFound -> showServerNotFoundHint()
+
+            MainEffect.ShowAd -> app.container.ads.tryShowFullscreenAd(this)
+
+            MainEffect.ThrottleLockChanged -> binding.gasLayout.performHapticFeedback(
+                HapticFeedbackConstants.LONG_PRESS,
+            )
+        }
+    }
+
     private fun showServerNotFoundHint() {
-        if (notFoundHintShown || isFinishing) return
-        notFoundHintShown = true
+        if (isFinishing) return
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.server_not_found_title)
             .setMessage(R.string.server_not_found_text)
@@ -448,89 +284,58 @@ class MainActivity :
             .showKeepingFullscreen()
     }
 
-    private fun reportConnected() = Analytics.report(
-        Analytics.EVENT_SERVER_CONNECTED,
-        mapOf(
-            "search" to if (searchingByBroadcast) "broadcast" else "ip",
-            "tilt_sensor" to if (tiltSensor?.type == Sensor.TYPE_GRAVITY) "gravity" else "accelerometer",
-            "pedals" to if (analogPedalsMode) "analog" else "digital",
-        ),
-    )
-
-    override fun onServerState(state: ServerState) {
-        if (useForceFeedback && state.ffbDurationMs > 0) vibrate(state.ffbDurationMs)
-
-        // Only changes are shown, the server sends its state 50 times per second
-        val withoutFfb = state.copy(ffbDurationMs = 0)
-        if (withoutFfb == shownServerState) return
-        val previous = shownServerState
-        shownServerState = withoutFfb
-        runOnUiThread { showServerState(previous, withoutFfb) }
+    private fun showSignalInfo() {
+        val info = viewModel.signalInfo()
+        if (!info.wifiEnabled) {
+            Toaster.show(R.string.no_wifi_conn_detected)
+            return
+        }
+        val signal = "${getString(R.string.signal_strength)} ${info.rssi} dBm"
+        val quality = info.linkQuality
+        if (quality == null) {
+            Toaster.show(signal)
+        } else {
+            val loss = quality.lossPercent?.let { "$it%" } ?: "—"
+            Toaster.show("$signal\n${getString(R.string.link_quality, loss, quality.jitterMs)}")
+        }
     }
 
-    private fun showServerState(previous: ServerState?, state: ServerState) = with(binding) {
-        if (previous?.parkingBrake != state.parkingBrake) {
-            buttonParking.setImageResource(
-                if (state.parkingBrake) R.drawable.parking_break_on else R.drawable.parking_break_off,
-            )
-            buttonParking.startCachedAnimation(
-                if (state.parkingBrake) R.anim.button_upscale else R.anim.button_upscale_reverse,
-            )
+    /* Touches */
+
+    private fun onPedalTouch(pedal: Pedal, view: View, event: MotionEvent) {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> viewModel.onPedalDown(pedal, event.x, event.y, view.height)
+            MotionEvent.ACTION_MOVE -> viewModel.onPedalMove(pedal, event.x, event.y)
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> viewModel.onPedalUp(pedal)
         }
-
-        if (previous?.lightsMode != state.lightsMode) showLights(state.lightsMode)
-
-        if (previous == null ||
-            previous.leftBlinker != state.leftBlinker ||
-            previous.rightBlinker != state.rightBlinker
-        ) {
-            showBlinkers(previous, state)
-        }
-
-        showActionStates(state.engineOn, state.trailerAttached, state.wipersOn, state.beaconOn)
-
-        // Pedals state should be sent in the right form (axes or keys)
-        if (previous?.analogPedalsAvailable != state.analogPedalsAvailable) sendPedalsState()
     }
 
-    private fun showLights(mode: Int) = with(binding.buttonLights) {
-        when (mode) {
-            LIGHTS_OFF -> {
-                setImageResource(R.drawable.lights_off)
-                startCachedAnimation(R.anim.button_upscale_reverse)
+    private fun onHornTouch(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN ->
+                if (viewModel.onHorn(pressed = true)) binding.buttonHorn.startCachedAnimation(R.anim.button_upscale)
+
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
+                if (viewModel.onHorn(pressed = false)) {
+                    binding.buttonHorn.startCachedAnimation(R.anim.button_upscale_reverse)
+                }
+        }
+        return false
+    }
+
+    private inner class CruiseGestureListener : GestureDetector.SimpleOnGestureListener() {
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+            if (e1 == null) return false
+            val movedX = abs(e1.x - e2.x)
+            val movedY = abs(e1.y - e2.y)
+            val isFastVerticalSwipeUp = velocityY < 0 &&
+                abs(velocityY) / 1000 > CRUISE_MIN_VELOCITY &&
+                movedX / movedY < CRUISE_MAX_SIDEWAYS_RATIO
+            if (isFastVerticalSwipeUp && viewModel.onCruiseSwipe()) {
+                binding.gasImage.startCachedAnimation(R.anim.gas_cruise)
             }
-
-            LIGHTS_PARKING -> {
-                setImageResource(R.drawable.lights_gab)
-                startCachedAnimation(R.anim.button_upscale)
-            }
-
-            LIGHTS_LOW_BEAM -> setImageResource(R.drawable.lights_low)
-
-            else -> setImageResource(R.drawable.lights_high)
+            return false
         }
-    }
-
-    private fun showBlinkers(previous: ServerState?, state: ServerState) = with(binding) {
-        buttonLeftSignal.setImageResource(if (state.leftBlinker) R.drawable.left_enabled else R.drawable.left_disabled)
-        buttonRightSignal.setImageResource(
-            if (state.rightBlinker) R.drawable.right_enabled else R.drawable.right_disabled,
-        )
-        val emergencyOn = state.leftBlinker && state.rightBlinker
-        val wasEmergencyOn = previous != null && previous.leftBlinker && previous.rightBlinker
-        if (emergencyOn != wasEmergencyOn) {
-            buttonAllSignals.setImageResource(if (emergencyOn) R.drawable.emergency_on else R.drawable.emergency_off)
-            buttonAllSignals.startCachedAnimation(
-                if (emergencyOn) R.anim.button_upscale_soft else R.anim.button_upscale_soft_reverse,
-            )
-        }
-    }
-
-    private fun showActionStates(engineOn: Boolean, trailerAttached: Boolean, wipersOn: Boolean, beaconOn: Boolean) {
-        binding.actionEngine.isActivated = engineOn
-        binding.actionTrailer.isActivated = trailerAttached
-        binding.actionWipers.isActivated = wipersOn
-        binding.actionBeacon.isActivated = beaconOn
     }
 
     /* Menu and dialogs */
@@ -543,30 +348,22 @@ class MainActivity :
 
     override fun onMenuItemSelected(item: MenuDialogFragment.Item) {
         when (item) {
-            MenuDialogFragment.Item.AutoConnect -> startClient(useSpecifiedServer = false)
-
-            MenuDialogFragment.Item.DefaultConnect -> startClient(useSpecifiedServer = true)
-
-            MenuDialogFragment.Item.Disconnect -> {
-                binding.pauseButton.setImageResource(R.drawable.pause_btn_resumed)
-                client.stop()
-            }
-
+            MenuDialogFragment.Item.AutoConnect -> viewModel.connect(useSpecifiedServer = false)
+            MenuDialogFragment.Item.DefaultConnect -> viewModel.connect(useSpecifiedServer = true)
+            MenuDialogFragment.Item.Disconnect -> viewModel.disconnect()
             MenuDialogFragment.Item.Guide -> startActivity(Intent(this, GuideActivity::class.java))
-
             MenuDialogFragment.Item.Calibration -> showCalibrationDialog()
-
             MenuDialogFragment.Item.Settings -> startActivity(Intent(this, SettingsActivity::class.java))
         }
     }
+
+    private fun releaseNotesVersion() = resources.getInteger(R.integer.version)
 
     private fun showReleaseNotesDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.version_changes_title)
             .setMessage(R.string.version_changes_text)
-            .setPositiveButton(R.string.close) { _, _ ->
-                settings.lastShownReleaseNotes = resources.getInteger(R.integer.version)
-            }
+            .setPositiveButton(R.string.close) { _, _ -> viewModel.onReleaseNotesShown(releaseNotesVersion()) }
             .setCancelable(false)
             .create()
             .showKeepingFullscreen()
@@ -576,58 +373,10 @@ class MainActivity :
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.calibration)
             .setItems(R.array.calibration_items) { _, which ->
-                if (which == 0) {
-                    calibrationOffset = -lastRawTiltY
-                    Toaster.show(R.string.calibration_completed)
-                } else {
-                    calibrationOffset = 0f
-                    Toaster.show(R.string.calibration_reset)
-                }
-                settings.calibrationOffset = calibrationOffset
+                if (which == 0) viewModel.calibrate() else viewModel.resetCalibration()
             }
             .create()
             .showKeepingFullscreen()
-    }
-
-    private fun showSignalStrength() {
-        if (!isWifiEnabled()) {
-            Toaster.show(R.string.no_wifi_conn_detected)
-            return
-        }
-        val signal = "${getString(R.string.signal_strength)} ${wifiRssi()} dBm"
-        val quality = client.lastLinkQuality?.takeIf { isConnected }
-        if (quality == null) {
-            Toaster.show(signal)
-        } else {
-            val loss = quality.lossPercent?.let { "$it%" } ?: "—"
-            Toaster.show("$signal\n${getString(R.string.link_quality, loss, quality.jitterMs)}")
-        }
-    }
-
-    /* System services */
-
-    private fun wifiManager() = ContextCompat.getSystemService(applicationContext, WifiManager::class.java)
-
-    private fun isWifiEnabled() = wifiManager()?.isWifiEnabled == true
-
-    @Suppress("DEPRECATION")
-    private fun wifiRssi() = wifiManager()?.connectionInfo?.rssi ?: 0
-
-    private fun obtainVibrator(): Vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        checkNotNull(ContextCompat.getSystemService(this, VibratorManager::class.java)).defaultVibrator
-    } else {
-        @Suppress("DEPRECATION")
-        checkNotNull(ContextCompat.getSystemService(this, Vibrator::class.java))
-    }
-
-    private fun vibrate(durationMs: Long) {
-        if (!vibrator.hasVibrator()) return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator.vibrate(durationMs)
-        }
     }
 
     private fun View.startCachedAnimation(@AnimRes resId: Int) {
@@ -635,12 +384,12 @@ class MainActivity :
     }
 
     private companion object {
-        val UNKNOWN_SERVER_STATE = ServerState(
+        val UNKNOWN_TRUCK = ServerState(
             engineOn = false,
             parkingBrake = false,
             leftBlinker = false,
             rightBlinker = false,
-            lightsMode = LIGHTS_OFF,
+            lightsMode = 0,
             ffbDurationMs = 0,
         )
 
