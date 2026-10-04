@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
@@ -37,6 +38,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -56,8 +58,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alexchurkin.truckremote.BuildConfig
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.billing.BillingEvent
+import com.alexchurkin.truckremote.settings.AppSettings
 import com.alexchurkin.truckremote.settings.PedalMode
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
+import kotlin.math.roundToInt
 
 // Open dialog is kept in saved state, so it survives rotation together with the typed text
 private enum class SettingsDialog {
@@ -74,7 +78,9 @@ data class SettingsActions(
     val onServerIpChange: (String) -> Unit = {},
     val onForceFeedbackChange: (Boolean) -> Unit = {},
     val onPneumaticHornChange: (Boolean) -> Unit = {},
-    val onDeadZoneChange: (Boolean) -> Unit = {},
+    val onSteeringDeadZoneChange: (Int) -> Unit = {},
+    val onSteeringMaxAngleChange: (Int) -> Unit = {},
+    val onSteeringExponentChange: (Float) -> Unit = {},
     val onPedalModeChange: (PedalMode) -> Unit = {},
     val onThrottleLockChange: (Boolean) -> Unit = {},
     val onRemoveAds: () -> Unit = {},
@@ -107,7 +113,9 @@ fun SettingsScreen(
             onServerIpChange = viewModel::setServerIp,
             onForceFeedbackChange = viewModel::setForceFeedback,
             onPneumaticHornChange = viewModel::setPneumaticHorn,
-            onDeadZoneChange = viewModel::setDeadZone,
+            onSteeringDeadZoneChange = viewModel::setSteeringDeadZone,
+            onSteeringMaxAngleChange = viewModel::setSteeringMaxAngle,
+            onSteeringExponentChange = viewModel::setSteeringExponent,
             onPedalModeChange = viewModel::setPedalMode,
             onThrottleLockChange = viewModel::setThrottleLock,
             onRemoveAds = onRemoveAds,
@@ -257,11 +265,42 @@ private fun SettingsList(
             )
         }
         item {
-            SwitchItem(
-                title = stringResource(R.string.deadzone_title),
-                summary = stringResource(R.string.deadzone_summary),
-                checked = state.deadZone,
-                onCheckedChange = actions.onDeadZoneChange,
+            val range = AppSettings.STEERING_DEAD_ZONE_RANGE
+            SliderItem(
+                title = stringResource(R.string.steering_dead_zone_title),
+                summary = { stringResource(R.string.steering_dead_zone_summary, it.roundToInt()) },
+                value = state.steeringDeadZone.toFloat(),
+                valueRange = range.first.toFloat()..range.last.toFloat(),
+                steps = range.last - range.first - 1,
+                onValueChange = { actions.onSteeringDeadZoneChange(it.roundToInt()) },
+            )
+        }
+        item {
+            val range = AppSettings.STEERING_MAX_ANGLE_RANGE
+            SliderItem(
+                title = stringResource(R.string.steering_max_angle_title),
+                summary = { stringResource(R.string.steering_max_angle_summary, it.roundToInt()) },
+                value = state.steeringMaxAngle.toFloat(),
+                valueRange = range.first.toFloat()..range.last.toFloat(),
+                steps = (range.last - range.first) / MAX_ANGLE_STEP - 1,
+                onValueChange = { actions.onSteeringMaxAngleChange(it.roundToInt()) },
+            )
+        }
+        item {
+            val range = AppSettings.STEERING_EXPONENT_RANGE
+            SliderItem(
+                title = stringResource(R.string.steering_curve_title),
+                summary = {
+                    if (it <= range.start) {
+                        stringResource(R.string.steering_curve_linear)
+                    } else {
+                        stringResource(R.string.steering_curve_summary, it)
+                    }
+                },
+                value = state.steeringExponent,
+                valueRange = range,
+                steps = ((range.endInclusive - range.start) / EXPONENT_STEP).roundToInt() - 1,
+                onValueChange = { actions.onSteeringExponentChange((it / EXPONENT_STEP).roundToInt() * EXPONENT_STEP) },
             )
         }
 
@@ -342,6 +381,34 @@ private fun SwitchItem(
         trailingContent = { Switch(checked = checked, onCheckedChange = null) },
         modifier = modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange),
     )
+}
+
+// The value is saved when dragging is finished, the summary follows the finger
+@Composable
+private fun SliderItem(
+    title: String,
+    summary: @Composable (Float) -> String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    steps: Int,
+    onValueChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var current by remember(value) { mutableFloatStateOf(value) }
+    Column(modifier = modifier.padding(bottom = 8.dp)) {
+        ListItem(
+            headlineContent = { Text(title) },
+            supportingContent = { Text(summary(current)) },
+        )
+        Slider(
+            value = current,
+            onValueChange = { current = it },
+            onValueChangeFinished = { onValueChange(current) },
+            valueRange = valueRange,
+            steps = steps,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+    }
 }
 
 @Composable
@@ -429,6 +496,8 @@ private fun AboutDialog(onDismiss: () -> Unit) {
 }
 
 private const val DISABLED_ALPHA = 0.38f
+private const val MAX_ANGLE_STEP = 5
+private const val EXPONENT_STEP = 0.1f
 
 @Preview
 @Composable
@@ -441,7 +510,9 @@ private fun SettingsPreview() {
                 serverIp = "192.168.1.10",
                 forceFeedback = true,
                 pneumaticHorn = false,
-                deadZone = false,
+                steeringDeadZone = 3,
+                steeringMaxAngle = 60,
+                steeringExponent = 1.5f,
                 pedalMode = PedalMode.Analog,
                 throttleLock = true,
                 adsRemoved = false,

@@ -5,13 +5,25 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// Real AdMob ids are kept out of the repository; test ids are used without the file
+// Secrets are kept out of the repository. They come from Gradle properties (~/.gradle/gradle.properties)
+// or environment variables (CI)
+fun secret(name: String): String? =
+    providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull?.takeIf { it.isNotBlank() }
+
+// Real AdMob ids: ad.properties file or secrets; test ids are used without them
 val adProperties = Properties().apply {
     val file = file("ad.properties")
     if (file.exists()) file.inputStream().use(::load)
 }
-val admobAppId = adProperties.getProperty("admobAppId", "ca-app-pub-3940256099942544~3347511713")
-val interstitialAdId = adProperties.getProperty("interstitialAdId", "ca-app-pub-3940256099942544/1033173712")
+val admobAppId = adProperties.getProperty("admobAppId")
+    ?: secret("TRUCKREMOTE_ADMOB_APP_ID")
+    ?: "ca-app-pub-3940256099942544~3347511713"
+val interstitialAdId = adProperties.getProperty("interstitialAdId")
+    ?: secret("TRUCKREMOTE_INTERSTITIAL_AD_ID")
+    ?: "ca-app-pub-3940256099942544/1033173712"
+
+// Without the keystore the release build is unsigned
+val releaseKeystore = secret("TRUCKREMOTE_KEYSTORE_FILE")
 
 android {
     namespace = "com.alexchurkin.truckremote"
@@ -36,6 +48,17 @@ android {
         viewBinding = true
     }
 
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = secret("TRUCKREMOTE_KEYSTORE_PASSWORD")
+                keyAlias = secret("TRUCKREMOTE_KEY_ALIAS")
+                keyPassword = secret("TRUCKREMOTE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -47,6 +70,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
             buildConfigField("String", "INTERSTITIAL_AD_ID", "\"$interstitialAdId\"")
             buildConfigField("boolean", "USE_LOG", "false")
         }

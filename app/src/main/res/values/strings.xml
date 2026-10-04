@@ -46,8 +46,13 @@
     <string name="ffb_summary">Collision vibration</string>
     <string name="use_pneumatic_signal_text">Pneumatic signal</string>
     <string name="use_pneumatic_signal_summary">Using the pneumatic signal instead of a horn</string>
-    <string name="deadzone_title">Dead zone</string>
-    <string name="deadzone_summary">Enables a dead zone to prevent from moving so slightly</string>
+    <string name="steering_dead_zone_title">Steering dead zone</string>
+    <string name="steering_dead_zone_summary">Tilt that is ignored near the center: %1$d°</string>
+    <string name="steering_max_angle_title">Steering angle</string>
+    <string name="steering_max_angle_summary">Full lock at %1$d° of tilt</string>
+    <string name="steering_curve_title">Steering response</string>
+    <string name="steering_curve_linear">Linear</string>
+    <string name="steering_curve_summary">Softer center: %1$.1f</string>
 
 
     <string name="additionally">Additionally</string>

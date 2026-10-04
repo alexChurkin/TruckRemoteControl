@@ -42,8 +42,13 @@
     <string name="ffb_summary">Вибрация при столкновениях</string>
     <string name="use_pneumatic_signal_text">Пневмосигнал</string>
     <string name="use_pneumatic_signal_summary">Использовать пневматический сигнал вместо обычного</string>
-    <string name="deadzone_title">Мёртвая зона</string>
-    <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
+    <string name="steering_dead_zone_title">Мертва зона керма</string>
+    <string name="steering_dead_zone_summary">Нахил біля центру, який не враховується: %1$d°</string>
+    <string name="steering_max_angle_title">Кут повороту</string>
+    <string name="steering_max_angle_summary">Кермо до упору при нахилі %1$d°</string>
+    <string name="steering_curve_title">Відгук керма</string>
+    <string name="steering_curve_linear">Лінійний</string>
+    <string name="steering_curve_summary">М’якше в центрі: %1$.1f</string>
 
 
     <string name="additionally">Дополнительно</string>

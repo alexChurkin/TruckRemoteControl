@@ -46,9 +46,24 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_PNEUMATIC_HORN, false)
         set(value) = prefs.edit { putBoolean(KEY_PNEUMATIC_HORN, value) }
 
-    var deadZone: Boolean
-        get() = prefs.getBoolean(KEY_DEAD_ZONE, false)
-        set(value) = prefs.edit { putBoolean(KEY_DEAD_ZONE, value) }
+    // Previous versions had only a switch, its dead zone was about 6 degrees
+    var steeringDeadZone: Int
+        get() = prefs.getInt(
+            KEY_STEERING_DEAD_ZONE,
+            if (prefs.getBoolean(KEY_DEAD_ZONE, false)) LEGACY_DEAD_ZONE else 0,
+        )
+            .coerceIn(STEERING_DEAD_ZONE_RANGE)
+        set(value) = prefs.edit { putInt(KEY_STEERING_DEAD_ZONE, value) }
+
+    var steeringMaxAngle: Int
+        get() = prefs.getInt(KEY_STEERING_MAX_ANGLE, STEERING_MAX_ANGLE_RANGE.last)
+            .coerceIn(STEERING_MAX_ANGLE_RANGE)
+        set(value) = prefs.edit { putInt(KEY_STEERING_MAX_ANGLE, value) }
+
+    var steeringExponent: Float
+        get() = prefs.getFloat(KEY_STEERING_EXPONENT, STEERING_EXPONENT_RANGE.start)
+            .coerceIn(STEERING_EXPONENT_RANGE)
+        set(value) = prefs.edit { putFloat(KEY_STEERING_EXPONENT, value) }
 
     var pedalMode: PedalMode
         get() = PedalMode.fromPrefValue(prefs.getString(KEY_PEDAL_MODE, null))
@@ -88,6 +103,9 @@ class AppSettings(private val prefs: SharedPreferences) {
     companion object {
         const val DEFAULT_PORT = 18250
         val PORT_RANGE = 10000..65535
+        val STEERING_DEAD_ZONE_RANGE = 0..15
+        val STEERING_MAX_ANGLE_RANGE = 20..90
+        val STEERING_EXPONENT_RANGE = 1f..3f
 
         private const val KEY_PORT = "serverPort"
         private const val KEY_USE_SPECIFIED_SERVER = "defaultServer"
@@ -95,6 +113,10 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_FORCE_FEEDBACK = "useFFB"
         private const val KEY_PNEUMATIC_HORN = "pneumaticSignal"
         private const val KEY_DEAD_ZONE = "deadzone"
+        private const val LEGACY_DEAD_ZONE = 6
+        private const val KEY_STEERING_DEAD_ZONE = "steeringDeadZone"
+        private const val KEY_STEERING_MAX_ANGLE = "steeringMaxAngle"
+        private const val KEY_STEERING_EXPONENT = "steeringExponent"
         private const val KEY_PEDAL_MODE = "pedalMode"
         private const val KEY_THROTTLE_LOCK = "throttleLock"
         private const val KEY_CALIBRATION_OFFSET = "calibrationOffset"

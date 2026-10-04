@@ -12,6 +12,20 @@ That's all :) Enjoy it!
 ![Screenshot](https://github.com/alexChurkin/TruckRemoteControl/raw/master/Screenshot.png)
 
 
+## Building
+
+JDK 17+ and Android SDK are needed:
+
+    ./gradlew ktlintCheck assembleDebug lintDebug testDebugUnitTest
+
+Release build uses these values from `~/.gradle/gradle.properties` or environment variables
+(in GitHub Actions they are repository secrets, the keystore is `TRUCKREMOTE_KEYSTORE_BASE64`):
+
+- `TRUCKREMOTE_KEYSTORE_FILE`, `TRUCKREMOTE_KEYSTORE_PASSWORD`, `TRUCKREMOTE_KEY_ALIAS`, `TRUCKREMOTE_KEY_PASSWORD` —
+  signing; without them the release APK is unsigned
+- `TRUCKREMOTE_ADMOB_APP_ID`, `TRUCKREMOTE_INTERSTITIAL_AD_ID` (or `app/ad.properties`) — AdMob ids;
+  test ids are used without them
+
 ## License
 
     Copyright 2021 Alex Churkin.

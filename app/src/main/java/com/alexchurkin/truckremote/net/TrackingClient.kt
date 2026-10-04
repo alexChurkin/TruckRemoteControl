@@ -4,7 +4,9 @@ import com.alexchurkin.truckremote.util.logD
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.DatagramSocket
+import java.net.Inet4Address
 import java.net.InetAddress
+import java.net.NetworkInterface
 import java.net.SocketTimeoutException
 import kotlin.concurrent.thread
 
@@ -123,14 +125,21 @@ class TrackingClient(private val listener: Listener) {
 
         // Hello is repeated a few times: UDP packets may be lost
         private fun connect(): Boolean {
-            val address = InetAddress.getByName(ip ?: BROADCAST_ADDRESS)
+            val addresses = if (ip != null) listOf(InetAddress.getByName(ip)) else broadcastAddresses()
             socket.broadcast = ip == null
             val hello = ControllerProtocol.HELLO.toByteArray()
             val answer = DatagramPacket(ByteArray(BUFFER_SIZE), BUFFER_SIZE)
 
             repeat(HELLO_ATTEMPTS) {
                 if (!running) return false
-                socket.send(DatagramPacket(hello, hello.size, address, port))
+                addresses.forEach { address ->
+                    // Some interfaces can't send broadcasts, the others should still be tried
+                    try {
+                        socket.send(DatagramPacket(hello, hello.size, address, port))
+                    } catch (e: IOException) {
+                        logD("Can't send hello to $address: $e")
+                    }
+                }
                 try {
                     socket.receive(answer)
                     socket.broadcast = false
@@ -170,6 +179,24 @@ class TrackingClient(private val listener: Listener) {
                     if (++timeouts > MAX_TIMEOUTS) return
                 }
             }
+        }
+
+        /*
+         * 255.255.255.255 goes only through the default interface, which may be wrong
+         * (e.g. the phone shares a hotspot or has mobile data), so subnet broadcasts are added.
+         */
+        private fun broadcastAddresses(): List<InetAddress> {
+            val subnetBroadcasts = try {
+                NetworkInterface.getNetworkInterfaces()?.toList().orEmpty()
+                    .filter { it.isUp && !it.isLoopback }
+                    .flatMap { it.interfaceAddresses }
+                    .filter { it.address is Inet4Address }
+                    .mapNotNull { it.broadcast }
+            } catch (e: IOException) {
+                logD("Can't get network interfaces: $e")
+                emptyList()
+            }
+            return (listOf(InetAddress.getByName(BROADCAST_ADDRESS)) + subnetBroadcasts).distinct()
         }
 
         private fun send(text: String) {

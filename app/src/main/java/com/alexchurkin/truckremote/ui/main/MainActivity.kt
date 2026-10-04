@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.util.Patterns
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
@@ -28,9 +27,11 @@ import androidx.core.view.isVisible
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.app
 import com.alexchurkin.truckremote.control.PedalHandler
+import com.alexchurkin.truckremote.control.SteeringCurve
 import com.alexchurkin.truckremote.databinding.ActivityMainBinding
 import com.alexchurkin.truckremote.net.ControllerAction
 import com.alexchurkin.truckremote.net.HornState
+import com.alexchurkin.truckremote.net.LowLatencyWifiLock
 import com.alexchurkin.truckremote.net.ServerState
 import com.alexchurkin.truckremote.net.TrackingClient
 import com.alexchurkin.truckremote.settings.PedalMode
@@ -39,6 +40,7 @@ import com.alexchurkin.truckremote.ui.settings.SettingsActivity
 import com.alexchurkin.truckremote.util.Toaster
 import com.alexchurkin.truckremote.util.enterFullscreen
 import com.alexchurkin.truckremote.util.isReverseLandscape
+import com.alexchurkin.truckremote.util.isValidIpv4
 import com.alexchurkin.truckremote.util.showKeepingFullscreen
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -55,7 +57,8 @@ class MainActivity :
     private val client = TrackingClient(this)
 
     private lateinit var sensorManager: SensorManager
-    private var accelerometer: Sensor? = null
+    private var tiltSensor: Sensor? = null
+    private val wifiLock by lazy { LowLatencyWifiLock(this) }
     private val vibrator: Vibrator by lazy { obtainVibrator() }
 
     private lateinit var brakePedal: PedalHandler
@@ -66,12 +69,14 @@ class MainActivity :
 
     @Volatile
     private var shownServerState: ServerState? = null
-    private var lastAccelerometerY = 0f
+
+    // Without calibration offset
+    private var lastRawTiltY = 0f
     private var analogUnavailableWarned = false
 
     // Settings are cached on resume: sensor events come very often
     private var calibrationOffset = 0f
-    private var useDeadZone = false
+    private var steeringCurve = SteeringCurve(deadZoneDeg = 0, maxAngleDeg = 90, exponent = 1f)
 
     @Volatile
     private var useForceFeedback = false
@@ -99,7 +104,7 @@ class MainActivity :
         setContentView(binding.root)
 
         sensorManager = checkNotNull(ContextCompat.getSystemService(this, SensorManager::class.java))
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        tiltSensor = obtainTiltSensor()
 
         val lockDistancePx = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
@@ -174,14 +179,15 @@ class MainActivity :
     override fun onResume() {
         super.onResume()
         calibrationOffset = settings.calibrationOffset
-        useDeadZone = settings.deadZone
+        steeringCurve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
         useForceFeedback = settings.forceFeedback
         analogPedalsMode = settings.pedalMode == PedalMode.Analog
         brakePedal.configure(analogPedalsMode, lockAllowed = false)
         gasPedal.configure(analogPedalsMode, lockAllowed = settings.throttleLock)
         releasePedals()
         client.resume()
-        if (isConnected) registerAccelerometer()
+        wifiLock.acquire()
+        if (isConnected) registerTiltSensor()
     }
 
     override fun onPause() {
@@ -190,6 +196,7 @@ class MainActivity :
         // Locked throttle mustn't come back after returning to the app
         releasePedals()
         client.pause()
+        wifiLock.release()
     }
 
     override fun onDestroy() {
@@ -202,8 +209,19 @@ class MainActivity :
         if (hasFocus) enterFullscreen()
     }
 
-    private fun registerAccelerometer() {
-        accelerometer?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_FASTEST) }
+    /*
+     * Gravity sensor isn't affected by shaking and touches of the screen (e.g. pressing pedals).
+     * Without a gyroscope it is only a filtered accelerometer with a delay, so the accelerometer is used then.
+     */
+    private fun obtainTiltSensor(): Sensor? {
+        val hasGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null
+        val gravity = if (hasGyroscope) sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY) else null
+        return gravity ?: sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    }
+
+    // The state is sent 50 times per second, the game rate is enough
+    private fun registerTiltSensor() {
+        tiltSensor?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
     }
 
     private fun startClient(useSpecifiedServer: Boolean) {
@@ -217,7 +235,7 @@ class MainActivity :
         }
 
         val serverIp = settings.specifiedServerIp
-        if (Patterns.IP_ADDRESS.matcher(serverIp).matches()) {
+        if (isValidIpv4(serverIp)) {
             Toaster.show(R.string.trying_to_connect)
             client.start(serverIp, settings.serverPort)
         } else {
@@ -341,13 +359,12 @@ class MainActivity :
         }
     }
 
-    /* Accelerometer */
+    /* Tilt sensor */
 
     override fun onSensorChanged(event: SensorEvent) {
-        val y = event.values[1] + calibrationOffset
-        lastAccelerometerY = y
-        var steering = if (isReverseLandscape) -y else y
-        if (useDeadZone && abs(steering) < DEAD_ZONE) steering = 0f
+        lastRawTiltY = event.values[1]
+        val y = lastRawTiltY + calibrationOffset
+        val steering = steeringCurve.apply(if (isReverseLandscape) -y else y)
         client.updateState { it.copy(steering = steering) }
     }
 
@@ -361,7 +378,7 @@ class MainActivity :
             analogUnavailableWarned = false
             binding.connectionIndicator.setImageResource(R.drawable.connection_indicator_green)
             Toaster.show("${getString(R.string.connected_to_server_at)} ${client.serverAddress}")
-            registerAccelerometer()
+            registerTiltSensor()
         } else {
             binding.connectionIndicator.setImageResource(R.drawable.connection_indicator_red)
             Toaster.show(R.string.connection_lost)
@@ -395,7 +412,10 @@ class MainActivity :
 
         if (previous?.lightsMode != state.lightsMode) showLights(state.lightsMode)
 
-        if (previous?.leftBlinker != state.leftBlinker || previous?.rightBlinker != state.rightBlinker) {
+        if (previous == null ||
+            previous.leftBlinker != state.leftBlinker ||
+            previous.rightBlinker != state.rightBlinker
+        ) {
             showBlinkers(previous, state)
         }
 
@@ -488,7 +508,7 @@ class MainActivity :
         AlertDialog.Builder(this)
             .setItems(R.array.calibration_items) { _, which ->
                 if (which == 0) {
-                    calibrationOffset = -lastAccelerometerY
+                    calibrationOffset = -lastRawTiltY
                     Toaster.show(R.string.calibration_completed)
                 } else {
                     calibrationOffset = 0f
@@ -541,7 +561,6 @@ class MainActivity :
     private companion object {
         // Horizontal swipe distance on gas which locks the throttle
         const val THROTTLE_LOCK_DISTANCE_DP = 70f
-        const val DEAD_ZONE = 0.98f
         const val CRUISE_MIN_VELOCITY = 1.5f
         const val CRUISE_MAX_SIDEWAYS_RATIO = 0.5f
 

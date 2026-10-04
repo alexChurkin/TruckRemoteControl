@@ -5,7 +5,7 @@ plugins {
 }
 
 // ktlint is run directly (as recommended by ktlint), it doesn't depend on Kotlin/AGP plugin internals
-val ktlint: Configuration by configurations.creating
+val ktlint: Configuration = configurations.create("ktlint")
 
 dependencies {
     ktlint(libs.ktlint.cli) {

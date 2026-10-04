@@ -1,6 +1,5 @@
 package com.alexchurkin.truckremote.ui.settings
 
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
@@ -11,6 +10,7 @@ import com.alexchurkin.truckremote.billing.BillingEvent
 import com.alexchurkin.truckremote.billing.BillingManager
 import com.alexchurkin.truckremote.settings.AppSettings
 import com.alexchurkin.truckremote.settings.PedalMode
+import com.alexchurkin.truckremote.util.isValidIpv4
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +24,9 @@ data class SettingsUiState(
     val serverIp: String,
     val forceFeedback: Boolean,
     val pneumaticHorn: Boolean,
-    val deadZone: Boolean,
+    val steeringDeadZone: Int,
+    val steeringMaxAngle: Int,
+    val steeringExponent: Float,
     val pedalMode: PedalMode,
     val throttleLock: Boolean,
     val adsRemoved: Boolean,
@@ -64,8 +66,16 @@ class SettingsViewModel(private val settings: AppSettings, billing: BillingManag
         settings.pneumaticHorn = value
     }
 
-    fun setDeadZone(value: Boolean) {
-        settings.deadZone = value
+    fun setSteeringDeadZone(degrees: Int) {
+        settings.steeringDeadZone = degrees
+    }
+
+    fun setSteeringMaxAngle(degrees: Int) {
+        settings.steeringMaxAngle = degrees
+    }
+
+    fun setSteeringExponent(value: Float) {
+        settings.steeringExponent = value
     }
 
     fun setPedalMode(mode: PedalMode) {
@@ -82,7 +92,9 @@ class SettingsViewModel(private val settings: AppSettings, billing: BillingManag
         serverIp = settings.specifiedServerIp,
         forceFeedback = settings.forceFeedback,
         pneumaticHorn = settings.pneumaticHorn,
-        deadZone = settings.deadZone,
+        steeringDeadZone = settings.steeringDeadZone,
+        steeringMaxAngle = settings.steeringMaxAngle,
+        steeringExponent = settings.steeringExponent,
         pedalMode = settings.pedalMode,
         throttleLock = settings.throttleLock,
         adsRemoved = adsRemoved,
@@ -93,7 +105,7 @@ class SettingsViewModel(private val settings: AppSettings, billing: BillingManag
 
         fun parsePort(text: String): Int? = text.trim().toIntOrNull()?.takeIf { it in AppSettings.PORT_RANGE }
 
-        fun isValidIp(text: String): Boolean = Patterns.IP_ADDRESS.matcher(text.trim()).matches()
+        fun isValidIp(text: String): Boolean = isValidIpv4(text.trim())
 
         val Factory = viewModelFactory {
             initializer {

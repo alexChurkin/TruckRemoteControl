@@ -13,6 +13,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Release is signed only when the keystore secrets are set (they aren't available in PRs from forks)
+      KEYSTORE_BASE64: ${{ secrets.TRUCKREMOTE_KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v5
 
@@ -33,3 +36,26 @@ jobs:
           name: reports
           path: app/build/reports/
           if-no-files-found: ignore
+
+      - name: Build signed release
+        if: github.event_name == 'push' && env.KEYSTORE_BASE64 != ''
+        env:
+          TRUCKREMOTE_KEYSTORE_FILE: ${{ runner.temp }}/release.jks
+          TRUCKREMOTE_KEYSTORE_PASSWORD: ${{ secrets.TRUCKREMOTE_KEYSTORE_PASSWORD }}
+          TRUCKREMOTE_KEY_ALIAS: ${{ secrets.TRUCKREMOTE_KEY_ALIAS }}
+          TRUCKREMOTE_KEY_PASSWORD: ${{ secrets.TRUCKREMOTE_KEY_PASSWORD }}
+          TRUCKREMOTE_ADMOB_APP_ID: ${{ secrets.TRUCKREMOTE_ADMOB_APP_ID }}
+          TRUCKREMOTE_INTERSTITIAL_AD_ID: ${{ secrets.TRUCKREMOTE_INTERSTITIAL_AD_ID }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$TRUCKREMOTE_KEYSTORE_FILE"
+          ./gradlew assembleRelease bundleRelease
+          rm "$TRUCKREMOTE_KEYSTORE_FILE"
+
+      - name: Upload release
+        if: github.event_name == 'push' && env.KEYSTORE_BASE64 != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: release
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
