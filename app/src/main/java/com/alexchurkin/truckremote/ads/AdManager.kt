@@ -5,19 +5,22 @@ import android.content.Context
 import com.alexchurkin.truckremote.BuildConfig
 import com.alexchurkin.truckremote.settings.AppSettings
 import com.alexchurkin.truckremote.util.logD
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.yandex.mobile.ads.common.AdError
+import com.yandex.mobile.ads.common.AdRequest
+import com.yandex.mobile.ads.common.AdRequestError
+import com.yandex.mobile.ads.common.ImpressionData
+import com.yandex.mobile.ads.common.YandexAds
+import com.yandex.mobile.ads.interstitial.InterstitialAd
+import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener
+import com.yandex.mobile.ads.interstitial.InterstitialAdLoadListener
+import com.yandex.mobile.ads.interstitial.InterstitialAdLoader
 
-// Shows at most one interstitial ad per app session
+// Yandex Ads; shows at most one interstitial ad per app session
 class AdManager(private val settings: AppSettings) {
 
     private var initialized = false
     private var initializing = false
+    private var loader: InterstitialAdLoader? = null
     private var preloadedAd: InterstitialAd? = null
     private var adShown = false
     private var showingNow = false
@@ -27,7 +30,8 @@ class AdManager(private val settings: AppSettings) {
         logD("> AdManager is initializing")
         initializing = true
         val appContext = context.applicationContext
-        MobileAds.initialize(appContext) {
+        YandexAds.enableLogging(BuildConfig.USE_LOG)
+        YandexAds.initialize(appContext) {
             logD("> AdManager was initialized")
             initializing = false
             initialized = true
@@ -36,17 +40,16 @@ class AdManager(private val settings: AppSettings) {
     }
 
     private fun preload(context: Context) {
-        InterstitialAd.load(
-            context,
-            BuildConfig.INTERSTITIAL_AD_ID,
-            AdRequest.Builder().build(),
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    preloadedAd = ad
+        val adLoader = loader ?: InterstitialAdLoader(context).also { loader = it }
+        adLoader.loadAd(
+            AdRequest.Builder(BuildConfig.INTERSTITIAL_AD_ID).build(),
+            object : InterstitialAdLoadListener {
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    preloadedAd = interstitialAd
                 }
 
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    logD("> Ad failed to load: ${error.message}")
+                override fun onAdFailedToLoad(error: AdRequestError) {
+                    logD("> Ad failed to load: ${error.code} ${error.description}")
                 }
             },
         )
@@ -57,17 +60,26 @@ class AdManager(private val settings: AppSettings) {
         val ad = preloadedAd
         if (settings.adsRemoved || adShown || showingNow || ad == null) return
         showingNow = true
-        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdShowedFullScreenContent() {
-                adShown = true
-                showingNow = false
-                preloadedAd = null
-            }
+        ad.setAdEventListener(
+            object : InterstitialAdEventListener {
+                override fun onAdShown() {
+                    adShown = true
+                    showingNow = false
+                    preloadedAd = null
+                }
 
-            override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                showingNow = false
-            }
-        }
+                override fun onAdFailedToShow(adError: AdError) {
+                    logD("> Ad failed to show: ${adError.description}")
+                    showingNow = false
+                }
+
+                override fun onAdDismissed() = Unit
+
+                override fun onAdClicked() = Unit
+
+                override fun onAdImpression(impressionData: ImpressionData?) = Unit
+            },
+        )
         ad.show(activity)
     }
 }

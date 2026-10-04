@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.alexchurkin.truckremote.analytics.Analytics
 import com.alexchurkin.truckremote.settings.AppSettings
 import com.alexchurkin.truckremote.util.logD
 import com.android.billingclient.api.AcknowledgePurchaseParams
@@ -170,13 +171,13 @@ class BillingManager(context: Context, private val settings: AppSettings) :
         if (purchased != wasPurchased) {
             settings.adsRemoved = purchased
             _adsRemoved.value = purchased
-            _events.tryEmit(
-                when {
-                    !purchased -> BillingEvent.Returned
-                    isLiveUpdate -> BillingEvent.Purchased
-                    else -> BillingEvent.Restored
-                },
-            )
+            val event = when {
+                !purchased -> BillingEvent.Returned
+                isLiveUpdate -> BillingEvent.Purchased
+                else -> BillingEvent.Restored
+            }
+            _events.tryEmit(event)
+            Analytics.report(Analytics.EVENT_ADS_REMOVED, mapOf("result" to event.name))
         }
 
         if (adsOffPurchase != null && purchased && !adsOffPurchase.isAcknowledged) {

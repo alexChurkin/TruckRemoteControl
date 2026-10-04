@@ -9,7 +9,8 @@ lifecycle = "2.11.0"
 constraintlayout = "2.2.2"
 material = "1.14.0"
 composeBom = "2026.09.00"
-playServicesAds = "25.5.0"
+yandexAds = "8.5.0"
+appMetrica = "8.6.0"
 billing = "9.1.0"
 junit = "4.13.2"
 ktlint = "1.8.0"
@@ -30,7 +31,8 @@ compose-ui = { module = "androidx.compose.ui:ui" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
-play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+yandex-ads = { module = "com.yandex.android:mobileads", version.ref = "yandexAds" }
+appmetrica = { module = "io.appmetrica.analytics:analytics", version.ref = "appMetrica" }
 billing = { module = "com.android.billingclient:billing", version.ref = "billing" }
 junit = { module = "junit:junit", version.ref = "junit" }
 ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }

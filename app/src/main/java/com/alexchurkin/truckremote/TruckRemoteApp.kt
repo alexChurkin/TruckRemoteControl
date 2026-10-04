@@ -3,6 +3,7 @@ package com.alexchurkin.truckremote
 import android.app.Application
 import android.content.Context
 import com.alexchurkin.truckremote.ads.AdManager
+import com.alexchurkin.truckremote.analytics.Analytics
 import com.alexchurkin.truckremote.billing.BillingManager
 import com.alexchurkin.truckremote.settings.AppSettings
 import com.alexchurkin.truckremote.util.Toaster
@@ -20,6 +21,7 @@ class TruckRemoteApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        Analytics.initialize(this)
         settings = AppSettings.create(this)
         Toaster.initialize(this)
         billing = BillingManager(this, settings)

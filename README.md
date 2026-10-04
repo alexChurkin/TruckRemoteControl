@@ -23,8 +23,10 @@ Release build uses these values from `~/.gradle/gradle.properties` or environmen
 
 - `TRUCKREMOTE_KEYSTORE_FILE`, `TRUCKREMOTE_KEYSTORE_PASSWORD`, `TRUCKREMOTE_KEY_ALIAS`, `TRUCKREMOTE_KEY_PASSWORD` —
   signing; without them the release APK is unsigned
-- `TRUCKREMOTE_ADMOB_APP_ID`, `TRUCKREMOTE_INTERSTITIAL_AD_ID` (or `app/ad.properties`) — AdMob ids;
-  test ids are used without them
+- `TRUCKREMOTE_INTERSTITIAL_AD_ID` — Yandex Ads interstitial unit, the demo unit is used without it;
+  `TRUCKREMOTE_APPMETRICA_API_KEY` — AppMetrica key, analytics is disabled without it.
+  They can also be set in `app/ad.properties` (`interstitialAdId`, `appMetricaApiKey`); debug builds always use
+  the demo ad unit and no analytics
 
 ## License
 

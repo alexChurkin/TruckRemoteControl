@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.alexchurkin.truckremote.R
+import com.alexchurkin.truckremote.analytics.Analytics
 import com.alexchurkin.truckremote.app
 import com.alexchurkin.truckremote.control.PedalHandler
 import com.alexchurkin.truckremote.control.SteeringCurve
@@ -66,6 +67,7 @@ class MainActivity :
     private lateinit var cruiseGestureDetector: GestureDetector
 
     private var isConnected = false
+    private var searchingByBroadcast = false
 
     @Volatile
     private var shownServerState: ServerState? = null
@@ -228,6 +230,7 @@ class MainActivity :
         binding.pauseButton.setImageResource(R.drawable.pause_btn_resumed)
         if (!isWifiEnabled()) Toaster.show(R.string.no_wifi_conn_detected)
 
+        searchingByBroadcast = !useSpecifiedServer
         if (!useSpecifiedServer) {
             Toaster.show(R.string.searching_on_local)
             client.start(null, settings.serverPort)
@@ -379,6 +382,7 @@ class MainActivity :
             binding.connectionIndicator.setImageResource(R.drawable.connection_indicator_green)
             Toaster.show("${getString(R.string.connected_to_server_at)} ${client.serverAddress}")
             registerTiltSensor()
+            reportConnected()
         } else {
             binding.connectionIndicator.setImageResource(R.drawable.connection_indicator_red)
             Toaster.show(R.string.connection_lost)
@@ -388,6 +392,15 @@ class MainActivity :
             showActionStates(engineOn = false, trailerAttached = false, wipersOn = false, beaconOn = false)
         }
     }
+
+    private fun reportConnected() = Analytics.report(
+        Analytics.EVENT_SERVER_CONNECTED,
+        mapOf(
+            "search" to if (searchingByBroadcast) "broadcast" else "ip",
+            "tilt_sensor" to if (tiltSensor?.type == Sensor.TYPE_GRAVITY) "gravity" else "accelerometer",
+            "pedals" to if (analogPedalsMode) "analog" else "digital",
+        ),
+    )
 
     override fun onServerState(state: ServerState) {
         if (useForceFeedback && state.ffbDurationMs > 0) vibrate(state.ffbDurationMs)

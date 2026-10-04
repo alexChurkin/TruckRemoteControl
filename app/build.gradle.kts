@@ -10,17 +10,19 @@ plugins {
 fun secret(name: String): String? =
     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull?.takeIf { it.isNotBlank() }
 
-// Real AdMob ids: ad.properties file or secrets; test ids are used without them
+// Yandex Ads unit and AppMetrica key: ad.properties file or secrets.
+// Without them the demo ad unit is used and analytics is disabled
 val adProperties = Properties().apply {
     val file = file("ad.properties")
     if (file.exists()) file.inputStream().use(::load)
 }
-val admobAppId = adProperties.getProperty("admobAppId")
-    ?: secret("TRUCKREMOTE_ADMOB_APP_ID")
-    ?: "ca-app-pub-3940256099942544~3347511713"
+val demoInterstitialAdId = "demo-interstitial-yandex"
 val interstitialAdId = adProperties.getProperty("interstitialAdId")
     ?: secret("TRUCKREMOTE_INTERSTITIAL_AD_ID")
-    ?: "ca-app-pub-3940256099942544/1033173712"
+    ?: demoInterstitialAdId
+val appMetricaApiKey = adProperties.getProperty("appMetricaApiKey")
+    ?: secret("TRUCKREMOTE_APPMETRICA_API_KEY")
+    ?: ""
 
 // Without the keystore the release build is unsigned
 val releaseKeystore = secret("TRUCKREMOTE_KEYSTORE_FILE")
@@ -35,9 +37,6 @@ android {
         targetSdk = 37
         versionCode = 34
         versionName = "1.22"
-
-        buildConfigField("String", "ADMOB_APP_ID", "\"$admobAppId\"")
-        manifestPlaceholders["admobAppId"] = admobAppId
 
         vectorDrawables.useSupportLibrary = true
     }
@@ -63,7 +62,9 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = " (debug)"
-            buildConfigField("String", "INTERSTITIAL_AD_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
+            buildConfigField("String", "INTERSTITIAL_AD_ID", "\"$demoInterstitialAdId\"")
+            // Debug sessions shouldn't get into statistics
+            buildConfigField("String", "APPMETRICA_API_KEY", "\"\"")
             buildConfigField("boolean", "USE_LOG", "true")
         }
         release {
@@ -72,6 +73,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.findByName("release")
             buildConfigField("String", "INTERSTITIAL_AD_ID", "\"$interstitialAdId\"")
+            buildConfigField("String", "APPMETRICA_API_KEY", "\"$appMetricaApiKey\"")
             buildConfigField("boolean", "USE_LOG", "false")
         }
     }
@@ -106,7 +108,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     debugImplementation(libs.compose.ui.tooling)
 
-    implementation(libs.play.services.ads)
+    implementation(libs.yandex.ads)
+    implementation(libs.appmetrica)
     implementation(libs.billing)
 
     testImplementation(libs.junit)
