@@ -1,11 +1,14 @@
 Truck Remote Control
 ====================
 ETS2/ATS truck remote control app for Android based on Joystick and Keyboard emulation.
+Android 7.0 or newer is needed.
+
 ## How to use?
-Launch [server app](https://github.com/alexChurkin/TruckRemoteServer) on your PC (follow instuction). Then: 
-1) Run game
-2) Run this Android app
-3) Follow in-app instructions. 
+Launch the [server app](https://github.com/alexChurkin/TruckRemoteServer) on your PC (follow its instructions). Then:
+1) Run the game
+2) Connect the phone to the same network as the PC and run this app: it finds the server by itself
+   (or enter the server address in Settings and choose *Connect by IP address* in the menu)
+3) Tilt the phone to steer and press the pedals; the guide in the app menu (gear button) describes the rest
 
 That's all :) Enjoy it!
 
@@ -14,7 +17,7 @@ That's all :) Enjoy it!
 
 ## Building
 
-JDK 17+ and Android SDK are needed:
+JDK 17+ and Android SDK (API 37) are needed:
 
     ./gradlew ktlintCheck assembleDebug lintDebug testDebugUnitTest
 
@@ -37,8 +40,10 @@ The app follows the [Android app architecture guide](https://developer.android.c
   `billing`, `ads`, `analytics`.
 - `domain` — logic without Android dependencies: `SteeringCurve`, `PedalHandler`.
 - `ui` — screens: a view model holds the UI state (`StateFlow`) and one-off effects, the activity
-  only renders the state and passes user actions (unidirectional data flow). The controller screen uses views
-  (fixed landscape, touches of several pedals at once), the settings screen is Jetpack Compose.
+  only renders the state and passes user actions (unidirectional data flow). The controller screen (`ui/main`)
+  uses views (landscape, touches of several pedals at once) and a dialog fragment for the menu,
+  the settings screen (`ui/settings`) is Jetpack Compose with Material 3, the guide (`ui/guide`) shows
+  its pages as fragments.
 - `di/AppContainer` — manual dependency injection: the app-wide objects are created once,
   view models get them through their factories (fakes are used in unit tests).
 
