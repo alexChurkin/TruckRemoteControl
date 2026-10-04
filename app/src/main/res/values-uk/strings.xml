@@ -86,7 +86,8 @@
 
     <string name="pedals">Педалі</string>
     <string name="pedal_mode_title">Режим педалей</string>
-    <string name="pedal_mode_summary">Аналоговий: затисніть педаль і ведіть вгору-вниз, щоб задати силу (у грі призначте осі Y і Z vJoy на газ і гальмо)</string>
+    <string name="pedal_mode_summary_digital">Цифровий: педаль натиснута повністю, поки ви її торкаєтеся (клавіші-стрілки у грі)</string>
+    <string name="pedal_mode_summary_analog">Аналоговий: затисніть педаль і ведіть вгору-вниз, щоб задати силу (у грі призначте осі Y і Z vJoy на газ і гальмо)</string>
     <string-array name="pedal_mode_entries">
         <item>Цифровий (натискання до упору)</item>
         <item>Аналоговий (сила натискання)</item>
@@ -110,4 +111,5 @@
     <string name="server_not_found_title">Сервер не знайдено</string>
     <string name="server_not_found_text">Пошук триває у фоні. Перевірте, що:\n\n• Truck Remote Server запущено на ПК\n• телефон і ПК підключені до однієї мережі (гостьові мережі Wi-Fi часто не дають пристроям бачити одне одного)\n• сервер дозволено в брандмауері Windows (сервер пропонує це під час першого запуску)\n• порт у застосунку і на сервері збігається\n\nМожна також вказати IP-адресу сервера (вона показана у вікні сервера) у налаштуваннях.</string>
     <string name="link_quality">Втрати пакетів: %1$s, розкид затримки: %2$d мс</string>
+    <string name="license_open_link">Відкрити в браузері</string>
 </resources>

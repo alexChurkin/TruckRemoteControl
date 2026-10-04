@@ -29,7 +29,7 @@
             android:hardwareAccelerated="true"
             android:resizeableActivity="false"
             android:screenOrientation="sensorLandscape"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme.Main"
             android:turnScreenOn="true"
             tools:ignore="NonResizeableActivity,UnusedAttribute">
             <intent-filter>

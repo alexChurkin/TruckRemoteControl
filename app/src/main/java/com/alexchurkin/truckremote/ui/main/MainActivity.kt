@@ -20,7 +20,6 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.annotation.AnimRes
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -47,6 +46,7 @@ import com.alexchurkin.truckremote.util.enterFullscreen
 import com.alexchurkin.truckremote.util.isReverseLandscape
 import com.alexchurkin.truckremote.util.isValidIpv4
 import com.alexchurkin.truckremote.util.showKeepingFullscreen
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -439,7 +439,7 @@ class MainActivity :
     private fun showServerNotFoundHint() {
         if (notFoundHintShown || isFinishing) return
         notFoundHintShown = true
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.server_not_found_title)
             .setMessage(R.string.server_not_found_text)
             .setPositiveButton(android.R.string.ok, null)
@@ -561,7 +561,7 @@ class MainActivity :
     }
 
     private fun showReleaseNotesDialog() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.version_changes_title)
             .setMessage(R.string.version_changes_text)
             .setPositiveButton(R.string.close) { _, _ ->
@@ -573,7 +573,8 @@ class MainActivity :
     }
 
     private fun showCalibrationDialog() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.calibration)
             .setItems(R.array.calibration_items) { _, which ->
                 if (which == 0) {
                     calibrationOffset = -lastRawTiltY

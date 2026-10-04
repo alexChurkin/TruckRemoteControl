@@ -2,14 +2,31 @@
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar" />
 
-    <!-- Compose screens draw everything themselves -->
+    <!-- Compose screens draw everything themselves, the window has the color of their surface -->
     <style name="AppTheme.Compose" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@color/backgroundMain</item>
+        <item name="android:windowBackground">@color/m3_surface</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <!-- Main screen: its own look, Material 3 for dialogs (the same colors as the Compose screens) -->
+    <style name="AppTheme.Main" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowBackground">@color/backgroundMain</item>
+        <item name="colorPrimary">@color/m3_primary</item>
+        <item name="colorOnPrimary">@color/m3_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_secondary</item>
+        <item name="colorOnSecondary">@color/m3_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_onSecondaryContainer</item>
+        <item name="colorSurface">@color/m3_surface</item>
+        <item name="colorOnSurface">@color/m3_onSurface</item>
+        <item name="colorOnSurfaceVariant">@color/m3_onSurfaceVariant</item>
+        <item name="colorSurfaceContainer">@color/m3_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/m3_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/m3_surfaceContainerHighest</item>
+        <item name="colorOutline">@color/m3_outline</item>
+        <item name="colorOutlineVariant">@color/m3_outlineVariant</item>
+        <item name="colorError">@color/m3_error</item>
     </style>
 
 

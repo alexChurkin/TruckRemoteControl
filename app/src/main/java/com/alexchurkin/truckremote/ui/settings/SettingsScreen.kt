@@ -25,7 +25,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -37,6 +36,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
@@ -59,6 +59,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -77,7 +78,11 @@ import com.alexchurkin.truckremote.settings.AppSettings
 import com.alexchurkin.truckremote.settings.PedalMode
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 import com.mikepenz.aboutlibraries.Libs
+import com.mikepenz.aboutlibraries.entity.Library
+import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
+import com.mikepenz.aboutlibraries.ui.compose.m3.style.m3VariantColors
+import com.mikepenz.aboutlibraries.ui.compose.style.LicenseHueResolver
 import com.mikepenz.aboutlibraries.ui.compose.variant.LibraryActionKind
 import com.mikepenz.aboutlibraries.util.withContext
 import kotlin.math.roundToInt
@@ -417,20 +422,68 @@ private fun LicensesList(contentPadding: PaddingValues, modifier: Modifier = Mod
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LibrariesContainer(
             libraries = libraries,
-            dialogLibrary = dialogLibrary,
+            // The dialog of the library isn't Material 3 (no title, plain text wall), ours is shown instead
+            dialogLibrary = null,
             sheetLibrary = null,
-            onDialogLibraryChange = { dialogLibraryId = it?.uniqueId },
+            onDialogLibraryChange = {},
             onSheetLibraryChange = {},
             modifier = Modifier.widthIn(max = MAX_CONTENT_WIDTH).fillMaxSize(),
             contentPadding = contentPadding,
+            // Tonal license badges of the color scheme instead of a different hue for every license
+            variantColors = LibraryDefaults.m3VariantColors(
+                licenseHueResolver = LicenseHueResolver.None,
+                licenseBadgeContainer = MaterialTheme.colorScheme.secondaryContainer,
+                licenseBadgeContent = MaterialTheme.colorScheme.onSecondaryContainer,
+            ),
             onActionClick = { library, kind ->
                 val hasText = library.licenses.any { !it.licenseContent.isNullOrBlank() }
                 if (kind == LibraryActionKind.License && hasText) dialogLibraryId = library.uniqueId
                 kind == LibraryActionKind.License && hasText
             },
-            licenseDialogConfirmText = stringResource(R.string.close),
         )
     }
+
+    dialogLibrary?.let { LicenseTextDialog(library = it, onDismiss = { dialogLibraryId = null }) }
+}
+
+@Composable
+private fun LicenseTextDialog(library: Library, onDismiss: () -> Unit) {
+    val licenses = library.licenses.filter { !it.licenseContent.isNullOrBlank() }
+    val link = licenses.firstNotNullOfOrNull { it.url?.takeIf(String::isNotBlank) }
+    val uriHandler = LocalUriHandler.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(licenses.joinToString(" / ") { it.name }) },
+        text = {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Text(
+                    text = listOfNotNull(library.name, library.artifactVersion).joinToString(" "),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                licenses.forEach { license ->
+                    Text(
+                        text = license.licenseContent.orEmpty().trim(),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 12.dp),
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
+        },
+        dismissButton = if (link != null) {
+            {
+                TextButton(onClick = { runCatching { uriHandler.openUri(link) } }) {
+                    Text(stringResource(R.string.license_open_link))
+                }
+            }
+        } else {
+            null
+        },
+    )
 }
 
 @Composable
@@ -443,16 +496,14 @@ private fun InfoItem(title: String, summary: String, modifier: Modifier = Modifi
 }
 
 @Composable
+// Material 3 list subheader: groups are separated by space, not by dividers
 private fun SectionHeader(@StringRes titleRes: Int, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.padding(top = 16.dp)) {
-        HorizontalDivider()
-        Text(
-            text = stringResource(titleRes),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
-        )
-    }
+    Text(
+        text = stringResource(titleRes),
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+    )
 }
 
 @Composable
@@ -519,6 +570,8 @@ private fun SliderItem(
             onValueChangeFinished = { onValueChange(current) },
             valueRange = valueRange,
             steps = steps,
+            // Material 3 shows tick marks only for a few values, here they would be a row of dots
+            track = { SliderDefaults.Track(sliderState = it, drawTick = { _, _ -> }) },
             modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
@@ -530,7 +583,17 @@ private fun PedalModeItem(mode: PedalMode, onModeChange: (PedalMode) -> Unit, mo
     Column(modifier = modifier.padding(bottom = 8.dp)) {
         ListItem(
             headlineContent = { Text(stringResource(R.string.pedal_mode_title)) },
-            supportingContent = { Text(stringResource(R.string.pedal_mode_summary)) },
+            // Describes the selected mode
+            supportingContent = {
+                Text(
+                    stringResource(
+                        when (mode) {
+                            PedalMode.Digital -> R.string.pedal_mode_summary_digital
+                            PedalMode.Analog -> R.string.pedal_mode_summary_analog
+                        },
+                    ),
+                )
+            },
         )
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
