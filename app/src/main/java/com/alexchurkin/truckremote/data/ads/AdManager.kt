@@ -58,7 +58,8 @@ class AdManager(private val settings: AppSettings) {
     // Does nothing if ads are removed, the ad isn't loaded yet or was already shown
     fun tryShowFullscreenAd(activity: Activity) {
         val ad = preloadedAd
-        if (settings.adsRemoved || adShown || showingNow || ad == null) return
+        if (settings.adsRemoved || adShown) return
+        if (showingNow || ad == null) return
         showingNow = true
         ad.setAdEventListener(
             object : InterstitialAdEventListener {

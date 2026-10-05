@@ -57,7 +57,7 @@ class LinkQualityMeter(private val windowMs: Long = 2_000) {
         val expected = sequences.max() - sequences.min() + 1
         if (expected <= 0) return null
         val received = sequences.distinct().size
-        return ((expected - received) * 100 / expected).toInt().coerceIn(0, 100)
+        return ((expected - received) * PERCENT / expected).toInt().coerceIn(0, PERCENT)
     }
 
     private fun dropOld(nowMs: Long) {
@@ -66,5 +66,6 @@ class LinkQualityMeter(private val windowMs: Long = 2_000) {
 
     private companion object {
         const val MIN_MESSAGES = 5
+        const val PERCENT = 100
     }
 }

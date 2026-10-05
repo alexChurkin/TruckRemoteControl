@@ -19,7 +19,16 @@ That's all :) Enjoy it!
 
 JDK 17+ and Android SDK (API 37) are needed:
 
-    ./gradlew ktlintCheck assembleDebug lintDebug testDebugUnitTest
+    ./gradlew ktlintCheck detekt assembleDebug lintDebug testDebugUnitTest
+
+Code checks (all of them run in CI and fail the build):
+
+- [ktlint](https://pinterest.github.io/ktlint/) — code style (Android Studio style, `.editorconfig`)
+  with [Compose rules](https://mrmans0n.github.io/compose-rules/); `./gradlew ktlintFormat` fixes it
+- [detekt](https://detekt.dev) — code smells, complexity and potential bugs, the default rules
+  with a few Compose/Android exceptions in `config/detekt/detekt.yml`
+- Android Lint — `app/lint.xml`
+- Kotlin compiler warnings are errors
 
 Release build uses these values from `~/.gradle/gradle.properties` or environment variables
 (in GitHub Actions they are repository secrets, the keystore is `TRUCKREMOTE_KEYSTORE_BASE64`):

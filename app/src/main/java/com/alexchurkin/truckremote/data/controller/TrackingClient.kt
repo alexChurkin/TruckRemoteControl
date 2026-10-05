@@ -173,23 +173,13 @@ class TrackingClient(private val listener: Listener) {
             listener.onConnectionStateChanged(newState)
         }
 
+        private var connectedOnce = false
+        private var failedAttempts = 0
+
         private fun run() {
             report(ConnectionState.Searching)
-            var connectedOnce = false
-            var failedAttempts = 0
             try {
-                while (running) {
-                    if (handshake()) {
-                        connectedOnce = true
-                        failedAttempts = 0
-                        report(ConnectionState.Connected)
-                        exchangeMessages()
-                        if (running) report(ConnectionState.Lost)
-                    } else if (running) {
-                        if (!connectedOnce) report(ConnectionState.NotFound)
-                        Thread.sleep(reconnectDelayMs(failedAttempts++))
-                    }
-                }
+                while (running) connectAndExchange()
             } catch (_: InterruptedException) {
                 // Stopped
             } catch (e: IOException) {
@@ -200,15 +190,34 @@ class TrackingClient(private val listener: Listener) {
             report(ConnectionState.Disconnected)
         }
 
+        // Returns when the connection is lost or the server isn't found (after a delay)
+        private fun connectAndExchange() {
+            if (handshake()) {
+                connectedOnce = true
+                failedAttempts = 0
+                report(ConnectionState.Connected)
+                exchangeMessages()
+                if (running) report(ConnectionState.Lost)
+            } else if (running) {
+                if (!connectedOnce) report(ConnectionState.NotFound)
+                Thread.sleep(reconnectDelayMs(failedAttempts++))
+            }
+        }
+
+        // Returns false if the session is stopped
+        private fun recreateSocketIfSendingFailed(): Boolean {
+            if (!sendFailed) return true
+            sendFailed = false
+            logD("Sending failed, the socket is recreated")
+            socket.close()
+            if (!running) return false
+            socket = DatagramSocket()
+            return true
+        }
+
         // Hello is repeated a few times: UDP packets may be lost
         private fun handshake(): Boolean {
-            if (sendFailed) {
-                sendFailed = false
-                logD("Sending failed, the socket is recreated")
-                socket.close()
-                if (!running) return false
-                socket = DatagramSocket()
-            }
+            if (!recreateSocketIfSendingFailed()) return false
             if (socket.isConnected) socket.disconnect()
             val addresses = targetAddresses()
             socket.broadcast = ip == null
@@ -218,26 +227,34 @@ class TrackingClient(private val listener: Listener) {
 
             repeat(HELLO_ATTEMPTS) {
                 if (!running) return false
-                addresses.forEach { address ->
-                    // Some interfaces can't send broadcasts, the others should still be tried
-                    try {
-                        socket.send(DatagramPacket(hello, hello.size, address, port))
-                    } catch (e: IOException) {
-                        logD("Can't send hello to $address: $e")
-                        sendFailed = true
-                    }
-                }
-                try {
-                    socket.receive(answer)
-                    socket.broadcast = false
-                    socket.connect(answer.socketAddress)
-                    serverAddress = answer.address.hostAddress
-                    return true
-                } catch (_: SocketTimeoutException) {
-                    logD("No answer to hello")
-                }
+                sendHello(hello, addresses)
+                if (receiveHelloAnswer(answer)) return true
             }
             return false
+        }
+
+        private fun sendHello(hello: ByteArray, addresses: List<InetAddress>) {
+            addresses.forEach { address ->
+                // Some interfaces can't send broadcasts, the others should still be tried
+                try {
+                    socket.send(DatagramPacket(hello, hello.size, address, port))
+                } catch (e: IOException) {
+                    logD("Can't send hello to $address: $e")
+                    sendFailed = true
+                }
+            }
+        }
+
+        // The server that answered first is used
+        private fun receiveHelloAnswer(answer: DatagramPacket): Boolean = try {
+            socket.receive(answer)
+            socket.broadcast = false
+            socket.connect(answer.socketAddress)
+            serverAddress = answer.address.hostAddress
+            true
+        } catch (_: SocketTimeoutException) {
+            logD("No answer to hello")
+            false
         }
 
         /*
@@ -318,30 +335,42 @@ class TrackingClient(private val listener: Listener) {
             return if (paused) PAUSED_INTERVAL_MS else SEND_INTERVAL_MS
         }
 
+        // A timeout isn't an error: silence is checked by the caller
+        private fun receiveMessage(packet: DatagramPacket) {
+            try {
+                // Length is reduced by every received packet
+                packet.length = BUFFER_SIZE
+                socket.receive(packet)
+            } catch (_: SocketTimeoutException) {
+                return
+            }
+            val message = String(packet.data, 0, packet.length)
+            val now = SystemClock.elapsedRealtime()
+            lastMessageTime = now
+            ControllerProtocol.decodeServerMessage(message)?.let {
+                meter.onMessage(now, it.sequence)
+                lastServerState = it
+                listener.onServerState(it)
+            }
+            if (resuming) {
+                resuming = false
+                report(ConnectionState.Connected)
+            }
+        }
+
+        private fun reportLinkQuality(now: Long) {
+            meter.quality(now)?.let {
+                lastLinkQuality = it
+                if (isReportable) listener.onLinkQuality(it)
+            }
+        }
+
         private fun receiveMessages() {
             val packet = DatagramPacket(ByteArray(BUFFER_SIZE), BUFFER_SIZE)
             var lastQualityReport = 0L
 
             while (running) {
-                try {
-                    // Length is reduced by every received packet
-                    packet.length = BUFFER_SIZE
-                    socket.receive(packet)
-                    val message = String(packet.data, 0, packet.length)
-                    val now = SystemClock.elapsedRealtime()
-                    lastMessageTime = now
-                    ControllerProtocol.decodeServerMessage(message)?.let {
-                        meter.onMessage(now, it.sequence)
-                        lastServerState = it
-                        listener.onServerState(it)
-                    }
-                    if (resuming) {
-                        resuming = false
-                        report(ConnectionState.Connected)
-                    }
-                } catch (_: SocketTimeoutException) {
-                    // Checked below
-                }
+                receiveMessage(packet)
 
                 val now = SystemClock.elapsedRealtime()
                 // The server doesn't send anything to a paused controller
@@ -358,10 +387,7 @@ class TrackingClient(private val listener: Listener) {
                 }
                 if (now - lastQualityReport >= QUALITY_REPORT_INTERVAL_MS) {
                     lastQualityReport = now
-                    meter.quality(now)?.let {
-                        lastLinkQuality = it
-                        if (isReportable) listener.onLinkQuality(it)
-                    }
+                    reportLinkQuality(now)
                 }
             }
         }

@@ -127,3 +127,10 @@ aboutLibraries {
         fetchRemoteLicense = false
     }
 }
+
+kotlin {
+    compilerOptions {
+        // Compiler warnings (deprecations, unchecked casts, unused values) fail the build
+        allWarningsAsErrors = true
+    }
+}

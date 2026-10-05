@@ -179,7 +179,9 @@ class MainActivity :
         gasLevelView.setState(pedals.gasLevel, pedals.gasLocked)
 
         gasLockLabel.isVisible = pedals.gasLocked
-        if (pedals.gasLocked) gasLockLabel.text = getString(R.string.gas_locked, (pedals.gasLevel * 100).roundToInt())
+        if (pedals.gasLocked) {
+            gasLockLabel.text = getString(R.string.gas_locked, (pedals.gasLevel * PERCENT).roundToInt())
+        }
 
         // An analog pedal follows the finger, a digital one is pressed down smoothly
         breakImage.showPedalPress(pedals.brakeLevel, PedalHinge.Top, animated = !pedals.analog)
@@ -330,7 +332,7 @@ class MainActivity :
             val movedX = abs(e1.x - e2.x)
             val movedY = abs(e1.y - e2.y)
             val isFastVerticalSwipeUp = velocityY < 0 &&
-                abs(velocityY) / 1000 > CRUISE_MIN_VELOCITY &&
+                abs(velocityY) / MS_IN_SECOND > CRUISE_MIN_VELOCITY &&
                 movedX / movedY < CRUISE_MAX_SIDEWAYS_RATIO
             if (isFastVerticalSwipeUp && viewModel.onCruiseSwipe()) {
                 binding.gasImage.startCachedAnimation(R.anim.gas_cruise)
@@ -396,8 +398,12 @@ class MainActivity :
 
         // Horizontal swipe distance on gas which locks the throttle
         const val THROTTLE_LOCK_DISTANCE_DP = 70f
+
+        // Pixels per millisecond
         const val CRUISE_MIN_VELOCITY = 1.5f
         const val CRUISE_MAX_SIDEWAYS_RATIO = 0.5f
+        const val MS_IN_SECOND = 1000
+        const val PERCENT = 100
 
         const val LIGHTS_OFF = 0
         const val LIGHTS_PARKING = 1

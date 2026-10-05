@@ -65,7 +65,18 @@ object ControllerProtocol {
     const val PAUSED = "paused"
     const val GOODBYE = "goodbye"
 
+    // Fields of a server message; the base ones are sent by every server version
+    private const val FIELD_ENGINE = 0
+    private const val FIELD_PARKING_BRAKE = 1
+    private const val FIELD_LEFT_BLINKER = 2
+    private const val FIELD_RIGHT_BLINKER = 3
+    private const val FIELD_LIGHTS_MODE = 4
+    private const val FIELD_FFB_DURATION = 5
     private const val SERVER_BASE_FIELDS = 6
+    private const val FIELD_TRAILER = 6
+    private const val FIELD_WIPERS = 7
+    private const val FIELD_BEACON = 8
+    private const val FIELD_ANALOG_PEDALS = 9
 
     /*
      * Messages of both sides may end with a tagged sequence number ("#123").
@@ -96,21 +107,23 @@ object ControllerProtocol {
         val allParts = message.trim().split(',')
         val sequence = allParts.last().takeIf { it.startsWith(SEQUENCE_TAG) }?.drop(1)?.toLongOrNull()
         val parts = if (sequence != null) allParts.dropLast(1) else allParts
-        if (parts.size < SERVER_BASE_FIELDS) return null
+        val lightsMode = parts.getOrNull(FIELD_LIGHTS_MODE)?.toIntOrNull()
+        val ffbDurationMs = parts.getOrNull(FIELD_FFB_DURATION)?.toLongOrNull()
+        if (parts.size < SERVER_BASE_FIELDS || lightsMode == null || ffbDurationMs == null) return null
 
         fun flag(index: Int) = parts.getOrNull(index) == "1"
 
         return ServerState(
-            engineOn = parts[0].toBooleanStrictIgnoreCase(),
-            parkingBrake = parts[1].toBooleanStrictIgnoreCase(),
-            leftBlinker = parts[2].toBooleanStrictIgnoreCase(),
-            rightBlinker = parts[3].toBooleanStrictIgnoreCase(),
-            lightsMode = parts[4].toIntOrNull() ?: return null,
-            ffbDurationMs = parts[5].toLongOrNull() ?: return null,
-            trailerAttached = flag(6),
-            wipersOn = flag(7),
-            beaconOn = flag(8),
-            analogPedalsAvailable = flag(9),
+            engineOn = parts[FIELD_ENGINE].toBooleanStrictIgnoreCase(),
+            parkingBrake = parts[FIELD_PARKING_BRAKE].toBooleanStrictIgnoreCase(),
+            leftBlinker = parts[FIELD_LEFT_BLINKER].toBooleanStrictIgnoreCase(),
+            rightBlinker = parts[FIELD_RIGHT_BLINKER].toBooleanStrictIgnoreCase(),
+            lightsMode = lightsMode,
+            ffbDurationMs = ffbDurationMs,
+            trailerAttached = flag(FIELD_TRAILER),
+            wipersOn = flag(FIELD_WIPERS),
+            beaconOn = flag(FIELD_BEACON),
+            analogPedalsAvailable = flag(FIELD_ANALOG_PEDALS),
             sequence = sequence,
         )
     }

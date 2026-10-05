@@ -27,7 +27,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - name: Build and check
-        run: ./gradlew --continue ktlintCheck assembleDebug lintDebug testDebugUnitTest
+        run: ./gradlew --continue ktlintCheck detekt assembleDebug lintDebug testDebugUnitTest
 
       - name: Upload reports
         if: always()

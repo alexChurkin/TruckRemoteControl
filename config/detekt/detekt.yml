@@ -1,0 +1,32 @@
+# detekt (https://detekt.dev) runs with its default config, only the differences are here
+
+naming:
+  FunctionNaming:
+    # Composable functions are named like types (Compose API guidelines)
+    ignoreAnnotated: ['Composable']
+
+complexity:
+  LongMethod:
+    # A screen is a declarative tree of composables
+    ignoreAnnotated: ['Composable']
+  LongParameterList:
+    # Composables take state, callbacks and a modifier (Compose API guidelines)
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # A view model has a function per user action (Android architecture guide), an activity a callback per view
+    ignorePrivate: true
+    ignoreOverridden: true
+    thresholdInClasses: 25
+
+style:
+  MagicNumber:
+    # Colors of the Material 3 palette
+    excludes: ['**/test/**', '**/androidTest/**', '**/ui/theme/**']
+  ReturnCount:
+    # Guard clauses (early returns of a parser) keep the code flat
+    max: 3
+    excludeGuardClauses: true
+  UnusedPrivateMember:
+    # Previews are used by Android Studio
+    ignoreAnnotated: ['Preview']

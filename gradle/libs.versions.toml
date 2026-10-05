@@ -15,6 +15,7 @@ aboutLibraries = "15.2.0"
 billing = "9.1.0"
 junit = "4.13.2"
 ktlint = "1.8.0"
+detekt = "1.23.8"
 composeRules = "0.6.7"
 
 [libraries]
@@ -40,6 +41,7 @@ aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3",
 billing = { module = "com.android.billingclient:billing", version.ref = "billing" }
 junit = { module = "junit:junit", version.ref = "junit" }
 ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
+detekt-cli = { module = "io.gitlab.arturbosch.detekt:detekt-cli", version.ref = "detekt" }
 compose-rules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version.ref = "composeRules" }
 
 [plugins]
