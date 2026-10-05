@@ -2,8 +2,10 @@
 
 package com.alexchurkin.truckremote.ui.settings
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +14,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -59,9 +63,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
@@ -78,7 +87,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alexchurkin.truckremote.BuildConfig
 import com.alexchurkin.truckremote.R
-import com.alexchurkin.truckremote.data.billing.BillingEvent
 import com.alexchurkin.truckremote.data.settings.AppLanguage
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.PedalMode
@@ -91,6 +99,7 @@ import com.mikepenz.aboutlibraries.ui.compose.m3.style.m3VariantColors
 import com.mikepenz.aboutlibraries.ui.compose.style.LicenseHueResolver
 import com.mikepenz.aboutlibraries.ui.compose.variant.LibraryActionKind
 import com.mikepenz.aboutlibraries.util.withContext
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 // Shown page and open dialog are kept in saved state, so they survive rotation together with the typed text
@@ -117,8 +126,12 @@ data class SettingsActions(
     val onSteeringDeadZoneChange: (Int) -> Unit = {},
     val onSteeringMaxAngleChange: (Int) -> Unit = {},
     val onSteeringExponentChange: (Float) -> Unit = {},
+    val onCalibrate: () -> Unit = {},
+    val onResetCalibration: () -> Unit = {},
     val onPedalModeChange: (PedalMode) -> Unit = {},
     val onThrottleLockChange: (Boolean) -> Unit = {},
+    val onScanQr: () -> Unit = {},
+    val onOpenGuide: () -> Unit = {},
     val onRestorePurchase: () -> Unit = {},
     val onOpenGithub: () -> Unit = {},
 )
@@ -127,20 +140,22 @@ data class SettingsActions(
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
+    onOpenGuide: () -> Unit,
     onOpenGithub: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // The tilt sensor works only while the screen is shown
+    val steering by viewModel.steeringPreview.collectAsStateWithLifecycle(initialValue = null)
     val snackbarHostState = remember { SnackbarHostState() }
     val resources = LocalResources.current
+    val context = LocalContext.current
 
     LaunchedEffect(viewModel, snackbarHostState) {
-        viewModel.billingEvents.collect { event ->
-            snackbarHostState.showSnackbar(resources.getString(event.messageRes))
-        }
+        viewModel.messages.collect { message -> snackbarHostState.showSnackbar(message.format(resources)) }
     }
 
-    val actions = remember(viewModel, onBack, onOpenGithub) {
+    val actions = remember(viewModel, onBack, onOpenGuide, onOpenGithub, context) {
         SettingsActions(
             onBack = onBack,
             onServerPortChange = viewModel::setServerPort,
@@ -151,8 +166,19 @@ fun SettingsScreen(
             onSteeringDeadZoneChange = viewModel::setSteeringDeadZone,
             onSteeringMaxAngleChange = viewModel::setSteeringMaxAngle,
             onSteeringExponentChange = viewModel::setSteeringExponent,
+            onCalibrate = viewModel::calibrate,
+            onResetCalibration = viewModel::resetCalibration,
             onPedalModeChange = viewModel::setPedalMode,
             onThrottleLockChange = viewModel::setThrottleLock,
+            onScanQr = {
+                QrScanner.scan(
+                    context = context,
+                    onResult = viewModel::applyScannedServer,
+                    onLoading = viewModel::onScannerLoading,
+                    onUnavailable = viewModel::onScannerUnavailable,
+                )
+            },
+            onOpenGuide = onOpenGuide,
             onRestorePurchase = viewModel::restorePurchase,
             onOpenGithub = onOpenGithub,
         )
@@ -160,24 +186,17 @@ fun SettingsScreen(
 
     SettingsContent(
         state = state,
+        steering = steering,
         actions = actions,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
     )
 }
 
-@get:StringRes
-private val BillingEvent.messageRes: Int
-    get() = when (this) {
-        BillingEvent.Restored -> R.string.purchase_restored
-        BillingEvent.Returned -> R.string.purchase_returned
-        BillingEvent.NotFound -> R.string.purchase_not_found
-        BillingEvent.Failed -> R.string.purchase_check_failed
-    }
-
 @Composable
 private fun SettingsContent(
     state: SettingsUiState,
+    steering: Float?,
     actions: SettingsActions,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
@@ -220,6 +239,7 @@ private fun SettingsContent(
         when (page) {
             SettingsPage.Main -> SettingsList(
                 state = state,
+                steering = steering,
                 actions = actions,
                 listState = mainListState,
                 onOpenDialog = { dialog = it },
@@ -272,9 +292,14 @@ private fun SettingsContent(
     }
 }
 
+/*
+ * Sections go from the most tuned to the rarely changed ones: steering, pedals, buttons, connection,
+ * the app and the information about it.
+ */
 @Composable
 private fun SettingsList(
     state: SettingsUiState,
+    steering: Float?,
     actions: SettingsActions,
     listState: LazyListState,
     onOpenDialog: (SettingsDialog) -> Unit,
@@ -283,38 +308,20 @@ private fun SettingsList(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxSize(), state = listState, contentPadding = contentPadding) {
-        centeredItem { SectionHeader(R.string.connection) }
-        centeredItem {
-            ClickableItem(
-                title = stringResource(R.string.server_port_title),
-                summary = state.serverPort.toString(),
-                onClick = { onOpenDialog(SettingsDialog.Port) },
-            )
-        }
+        steeringSection(state, steering, actions)
+
+        centeredItem { SectionHeader(R.string.pedals) }
+        centeredItem { PedalModeItem(mode = state.pedalMode, onModeChange = actions.onPedalModeChange) }
         centeredItem {
             SwitchItem(
-                title = stringResource(R.string.connect_to_default_on_startup_title),
-                summary = stringResource(
-                    if (state.useSpecifiedServer) {
-                        R.string.connect_to_default_on_startup_summary_on
-                    } else {
-                        R.string.connect_to_default_on_startup_summary_off
-                    },
-                ),
-                checked = state.useSpecifiedServer,
-                onCheckedChange = actions.onUseSpecifiedServerChange,
-            )
-        }
-        centeredItem {
-            ClickableItem(
-                title = stringResource(R.string.def_server_ip_title),
-                summary = state.serverIp.ifEmpty { stringResource(R.string.def_server_ip_summary) },
-                enabled = state.useSpecifiedServer,
-                onClick = { onOpenDialog(SettingsDialog.ServerIp) },
+                title = stringResource(R.string.throttle_lock_title),
+                summary = stringResource(R.string.throttle_lock_summary),
+                checked = state.throttleLock,
+                onCheckedChange = actions.onThrottleLockChange,
             )
         }
 
-        centeredItem { SectionHeader(R.string.control) }
+        centeredItem { SectionHeader(R.string.section_buttons) }
         centeredItem {
             SwitchItem(
                 title = stringResource(R.string.ffb_text),
@@ -331,65 +338,10 @@ private fun SettingsList(
                 onCheckedChange = actions.onPneumaticHornChange,
             )
         }
-        centeredItem {
-            val range = AppSettings.STEERING_DEAD_ZONE_RANGE
-            SliderItem(
-                title = stringResource(R.string.steering_dead_zone_title),
-                summary = {
-                    val degrees = it.roundToInt()
-                    if (degrees == 0) {
-                        stringResource(R.string.steering_dead_zone_off)
-                    } else {
-                        stringResource(R.string.steering_dead_zone_summary, degrees)
-                    }
-                },
-                value = state.steeringDeadZone.toFloat(),
-                valueRange = range.first.toFloat()..range.last.toFloat(),
-                steps = range.last - range.first - 1,
-                onValueChange = { actions.onSteeringDeadZoneChange(it.roundToInt()) },
-            )
-        }
-        centeredItem {
-            val range = AppSettings.STEERING_MAX_ANGLE_RANGE
-            SliderItem(
-                title = stringResource(R.string.steering_max_angle_title),
-                summary = { stringResource(R.string.steering_max_angle_summary, it.roundToInt()) },
-                value = state.steeringMaxAngle.toFloat(),
-                valueRange = range.first.toFloat()..range.last.toFloat(),
-                steps = (range.last - range.first) / MAX_ANGLE_STEP - 1,
-                onValueChange = { actions.onSteeringMaxAngleChange(it.roundToInt()) },
-            )
-        }
-        centeredItem {
-            val range = AppSettings.STEERING_EXPONENT_RANGE
-            SliderItem(
-                title = stringResource(R.string.steering_curve_title),
-                summary = {
-                    if (it <= range.start) {
-                        stringResource(R.string.steering_curve_linear)
-                    } else {
-                        stringResource(R.string.steering_curve_summary, it)
-                    }
-                },
-                value = state.steeringExponent,
-                valueRange = range,
-                steps = ((range.endInclusive - range.start) / EXPONENT_STEP).roundToInt() - 1,
-                onValueChange = { actions.onSteeringExponentChange((it / EXPONENT_STEP).roundToInt() * EXPONENT_STEP) },
-            )
-        }
 
-        centeredItem { SectionHeader(R.string.pedals) }
-        centeredItem { PedalModeItem(mode = state.pedalMode, onModeChange = actions.onPedalModeChange) }
-        centeredItem {
-            SwitchItem(
-                title = stringResource(R.string.throttle_lock_title),
-                summary = stringResource(R.string.throttle_lock_summary),
-                checked = state.throttleLock,
-                onCheckedChange = actions.onThrottleLockChange,
-            )
-        }
+        connectionSection(state, actions, onOpenDialog)
 
-        centeredItem { SectionHeader(R.string.additionally) }
+        centeredItem { SectionHeader(R.string.section_app) }
         centeredItem {
             ClickableItem(
                 title = stringResource(R.string.language_title),
@@ -397,6 +349,7 @@ private fun SettingsList(
                 onClick = { onOpenDialog(SettingsDialog.Language) },
             )
         }
+        centeredItem { ClickableItem(title = stringResource(R.string.start_guide), onClick = actions.onOpenGuide) }
         centeredItem {
             if (state.adsRemoved) {
                 InfoItem(
@@ -411,6 +364,8 @@ private fun SettingsList(
                 )
             }
         }
+
+        centeredItem { SectionHeader(R.string.about_app) }
         centeredItem { ClickableItem(title = stringResource(R.string.github_page), onClick = actions.onOpenGithub) }
         centeredItem {
             ClickableItem(
@@ -426,6 +381,112 @@ private fun SettingsList(
                 onClick = { onOpenDialog(SettingsDialog.About) },
             )
         }
+    }
+}
+
+// The steering is set up on the phone (the server applies it as is), with a live preview
+private fun LazyListScope.steeringSection(state: SettingsUiState, steering: Float?, actions: SettingsActions) {
+    centeredItem { SectionHeader(R.string.section_steering) }
+    centeredItem { SteeringPreview(steering) }
+    centeredItem {
+        val range = AppSettings.STEERING_MAX_ANGLE_RANGE
+        SliderItem(
+            title = stringResource(R.string.steering_sensitivity_title),
+            summary = { stringResource(R.string.steering_max_angle_summary, it.roundToInt()) },
+            value = state.steeringMaxAngle.toFloat(),
+            valueRange = range.first.toFloat()..range.last.toFloat(),
+            steps = (range.last - range.first) / MAX_ANGLE_STEP - 1,
+            onValueChange = { actions.onSteeringMaxAngleChange(it.roundToInt()) },
+        )
+    }
+    centeredItem {
+        val range = AppSettings.STEERING_DEAD_ZONE_RANGE
+        SliderItem(
+            title = stringResource(R.string.steering_dead_zone_title),
+            summary = {
+                val degrees = it.roundToInt()
+                if (degrees == 0) {
+                    stringResource(R.string.steering_dead_zone_off)
+                } else {
+                    stringResource(R.string.steering_dead_zone_summary, degrees)
+                }
+            },
+            value = state.steeringDeadZone.toFloat(),
+            valueRange = range.first.toFloat()..range.last.toFloat(),
+            steps = range.last - range.first - 1,
+            onValueChange = { actions.onSteeringDeadZoneChange(it.roundToInt()) },
+        )
+    }
+    centeredItem {
+        val range = AppSettings.STEERING_EXPONENT_RANGE
+        SliderItem(
+            title = stringResource(R.string.steering_curve_title),
+            summary = {
+                if (it <= range.start) {
+                    stringResource(R.string.steering_curve_linear)
+                } else {
+                    stringResource(R.string.steering_curve_summary, it)
+                }
+            },
+            value = state.steeringExponent,
+            valueRange = range,
+            steps = ((range.endInclusive - range.start) / EXPONENT_STEP).roundToInt() - 1,
+            onValueChange = { actions.onSteeringExponentChange((it / EXPONENT_STEP).roundToInt() * EXPONENT_STEP) },
+        )
+    }
+    calibrationItems(state, actions)
+}
+
+private fun LazyListScope.calibrationItems(state: SettingsUiState, actions: SettingsActions) {
+    centeredItem {
+        ClickableItem(
+            title = stringResource(R.string.calibrate_title),
+            summary = stringResource(R.string.calibrate_summary),
+            onClick = actions.onCalibrate,
+        )
+    }
+    if (state.calibrated) {
+        centeredItem {
+            ClickableItem(
+                title = stringResource(R.string.calibration_reset_title),
+                onClick = actions.onResetCalibration,
+            )
+        }
+    }
+}
+
+// Search or a fixed address; the address can be taken from the QR code of the server window
+private fun LazyListScope.connectionSection(
+    state: SettingsUiState,
+    actions: SettingsActions,
+    onOpenDialog: (SettingsDialog) -> Unit,
+) {
+    centeredItem { SectionHeader(R.string.connection) }
+    centeredItem {
+        SearchModeItem(useSpecifiedServer = state.useSpecifiedServer, onChange = actions.onUseSpecifiedServerChange)
+    }
+    if (state.useSpecifiedServer) {
+        centeredItem {
+            ClickableItem(
+                title = stringResource(R.string.def_server_ip_title),
+                summary = state.serverIp.ifEmpty { stringResource(R.string.def_server_ip_summary) },
+                onClick = { onOpenDialog(SettingsDialog.ServerIp) },
+            )
+        }
+    }
+    centeredItem {
+        ClickableItem(
+            title = stringResource(R.string.scan_qr_title),
+            summary = stringResource(R.string.scan_qr_summary),
+            onClick = actions.onScanQr,
+        )
+    }
+    centeredItem {
+        ClickableItem(
+            title = stringResource(R.string.server_port_title),
+            summary = state.serverPort.toString(),
+            onClick = { onOpenDialog(SettingsDialog.Port) },
+        )
     }
 }
 
@@ -607,6 +668,99 @@ private fun SliderItem(
     }
 }
 
+// What the phone sends now: the wheel turns and the bar fills while the phone is tilted
+@Composable
+private fun SteeringPreview(steering: Float?, modifier: Modifier = Modifier) {
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val value = if (landscape) steering ?: 0f else 0f
+    val percent = (value * PERCENT).roundToInt()
+    ListItem(
+        leadingContent = {
+            Icon(
+                painter = painterResource(R.drawable.ic_action_camera_interior),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .size(40.dp)
+                    .rotate(value * MAX_WHEEL_ROTATION),
+            )
+        },
+        headlineContent = {
+            Text(
+                when {
+                    !landscape -> stringResource(R.string.steering_preview_portrait)
+                    percent < 0 -> stringResource(R.string.steering_preview_left, -percent)
+                    percent > 0 -> stringResource(R.string.steering_preview_right, percent)
+                    else -> stringResource(R.string.steering_preview_center)
+                },
+            )
+        },
+        supportingContent = if (landscape) {
+            { SteeringBar(value, Modifier.padding(top = 8.dp)) }
+        } else {
+            null
+        },
+        modifier = modifier,
+    )
+}
+
+// Filled from the center to the steering value
+@Composable
+private fun SteeringBar(value: Float, modifier: Modifier = Modifier) {
+    val track = MaterialTheme.colorScheme.surfaceContainerHighest
+    val fill = MaterialTheme.colorScheme.primary
+    val center = MaterialTheme.colorScheme.outline
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(8.dp),
+    ) {
+        val radius = CornerRadius(size.height / 2)
+        drawRoundRect(color = track, cornerRadius = radius)
+        val middle = size.width / 2
+        val end = middle + value.coerceIn(-1f, 1f) * middle
+        drawRoundRect(
+            color = fill,
+            topLeft = Offset(minOf(middle, end), 0f),
+            size = Size(abs(end - middle), size.height),
+            cornerRadius = radius,
+        )
+        drawRect(color = center, topLeft = Offset(middle - 1.dp.toPx(), 0f), size = Size(2.dp.toPx(), size.height))
+    }
+}
+
+@Composable
+private fun SearchModeItem(useSpecifiedServer: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    val labels = listOf(stringResource(R.string.search_mode_auto), stringResource(R.string.search_mode_ip))
+    Column(modifier = modifier.padding(bottom = 8.dp)) {
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.search_mode_title)) },
+            supportingContent = {
+                Text(
+                    stringResource(
+                        if (useSpecifiedServer) R.string.search_mode_summary_ip else R.string.search_mode_summary_auto,
+                    ),
+                )
+            },
+        )
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+        ) {
+            labels.forEachIndexed { index, label ->
+                SegmentedButton(
+                    selected = (index == 1) == useSpecifiedServer,
+                    onClick = { onChange(index == 1) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
+                ) {
+                    Text(label)
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun PedalModeItem(mode: PedalMode, onModeChange: (PedalMode) -> Unit, modifier: Modifier = Modifier) {
     val labels = stringArrayResource(R.array.pedal_mode_entries)
@@ -748,6 +902,10 @@ private fun AboutDialog(onDismiss: () -> Unit) {
 }
 
 private const val DISABLED_ALPHA = 0.38f
+private const val PERCENT = 100
+
+// Degrees of the preview wheel at the full lock
+private const val MAX_WHEEL_ROTATION = 120f
 private const val MAX_ANGLE_STEP = 5
 private const val EXPONENT_STEP = 0.1f
 private val MAX_CONTENT_WIDTH = 640.dp
@@ -769,10 +927,12 @@ private fun SettingsPreview() {
                 steeringDeadZone = 3,
                 steeringMaxAngle = 60,
                 steeringExponent = 1.5f,
+                calibrated = true,
                 pedalMode = PedalMode.Analog,
                 throttleLock = true,
                 adsRemoved = false,
             ),
+            steering = 0.3f,
             actions = SettingsActions(),
             snackbarHostState = remember { SnackbarHostState() },
         )

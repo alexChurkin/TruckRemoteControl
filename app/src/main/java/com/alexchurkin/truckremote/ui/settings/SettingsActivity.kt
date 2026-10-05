@@ -10,6 +10,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.app
+import com.alexchurkin.truckremote.ui.guide.GuideActivity
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 
 // AppCompat applies the language chosen in the app on Android 12 and older
@@ -26,6 +27,7 @@ class SettingsActivity : AppCompatActivity() {
                 SettingsScreen(
                     viewModel = viewModel(factory = SettingsViewModel.Factory),
                     onBack = ::finish,
+                    onOpenGuide = { startActivity(Intent(this, GuideActivity::class.java)) },
                     onOpenGithub = ::openGithub,
                 )
             }

@@ -61,7 +61,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         set(value) = prefs.edit { putInt(KEY_STEERING_DEAD_ZONE, value) }
 
     var steeringMaxAngle: Int
-        get() = prefs.getInt(KEY_STEERING_MAX_ANGLE, STEERING_MAX_ANGLE_RANGE.last)
+        get() = prefs.getInt(KEY_STEERING_MAX_ANGLE, DEFAULT_STEERING_MAX_ANGLE)
             .coerceIn(STEERING_MAX_ANGLE_RANGE)
         set(value) = prefs.edit { putInt(KEY_STEERING_MAX_ANGLE, value) }
 
@@ -110,6 +110,10 @@ class AppSettings(private val prefs: SharedPreferences) {
 
         // A bit smoother near the center than the linear curve of previous versions
         const val DEFAULT_STEERING_EXPONENT = 1.5f
+
+        // The sensitivity is set on the phone since protocol 2 (the server applies it as is):
+        // full lock at 75° feels like the previous default sensitivity of the server
+        const val DEFAULT_STEERING_MAX_ANGLE = 75
 
         private const val KEY_PORT = "serverPort"
         private const val KEY_USE_SPECIFIED_SERVER = "defaultServer"

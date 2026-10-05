@@ -282,6 +282,8 @@ class MainViewModelTest {
 
     @Test
     fun `tilt steers only on screen while connected, with calibration and curve`() {
+        // Full lock at 90°: the steering value is the gravity projection
+        settings.steeringMaxAngle = 90
         tilt.readings.tryEmit(TiltReading(3f, reverseLandscape = false))
         assertEquals(0f, controller.state.steering)
 

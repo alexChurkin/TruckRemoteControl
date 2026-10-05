@@ -5,7 +5,7 @@
 
     <integer name="version">15</integer>
     <string name="version_changes_title">New in this version</string>
-    <string name="version_changes_text">Analog pedals (touch and drag up to press harder), throttle lock (turn it on in settings) and three pages of quick actions: truck (engine, trailer, wipers…), driving (retarder, engine brake, cruise speed, quick park) and view (cameras, map, dashboard, radio). Update Truck Remote Server on your PC to use them.</string>
+    <string name="version_changes_text">Analog pedals (touch and drag up to press harder), throttle lock (turn it on in settings) and three pages of quick actions: truck (engine, trailer, wipers…), driving (retarder, engine brake, cruise speed, quick park) and view (cameras, map, dashboard, radio). Update Truck Remote Server on your PC to use them. Steering sensitivity is now set in the app with a live preview, the server can be found by its QR code.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -34,28 +34,22 @@
     <string name="server_port_summary">Port used for all kinds of connections</string>
     <string name="server_port_dialog_title">Server port</string>
 
-    <string name="connect_to_default_on_startup_title">Connect by IP address</string>
-    <string name="connect_to_default_on_startup_summary_off">On startup the app searches for the server in the local network</string>
-    <string name="connect_to_default_on_startup_summary_on">On startup the app connects to the server at the address below</string>
 
     <string name="def_server_ip_title">Server IP address</string>
     <string name="def_server_ip_summary">Not set. The address is shown in the Truck Remote Server window</string>
 
-    <string name="control">Controls</string>
     <string name="ffb_text">Vibration</string>
     <string name="ffb_summary">The phone vibrates on collisions in the game (force feedback)</string>
     <string name="use_pneumatic_signal_text">Air horn</string>
     <string name="use_pneumatic_signal_summary">The horn button sounds the air horn instead of the regular one</string>
     <string name="steering_dead_zone_title">Steering dead zone</string>
     <string name="steering_dead_zone_summary">Small tilts near the center are ignored: up to %1$d°</string>
-    <string name="steering_max_angle_title">Tilt for full lock</string>
     <string name="steering_max_angle_summary">The wheel is turned all the way at %1$d° of tilt</string>
     <string name="steering_curve_title">Steering curve</string>
     <string name="steering_curve_linear">Linear</string>
     <string name="steering_curve_summary">Smoother near the center: %1$.1f</string>
 
 
-    <string name="additionally">More</string>
 
 
     <string name="github_page">Source code on GitHub</string>
@@ -67,7 +61,7 @@
     <string name="guide">Guide</string>
     <string name="how_to_run">• How to run?</string>
     <string name="how_to_run_text">First, download Truck Remote Server and run it on the computer with the game. You can do it by this link: https://github.com/alexChurkin/TruckRemoteServer .</string>
-    <string name="how_to_run_text_2">As you can see, you can set the connection port and steering sensitivity as you like. Then you need to start the game and select Keyboard + vJoy in Controls.</string>
+    <string name="how_to_run_text_2">The server shows its address and QR code (scan it in the app settings if the phone doesn\'t find the server). Then start the game and select Keyboard + vJoy in Controls. The steering sensitivity is set in the app settings.</string>
     <string name="how_to_run_text_3">It\'s important to use only \"Simple Automatic\" transmission and set \"Steering sensitivity\" and \"Steering non-linearity\" as follows:</string>
     <string name="how_to_run_text_4" formatted="false">When using force feedback, it is also recommended to disable all types of feedback in the game, except for the Collisions (50%), Bumps (~15%) and Terrain (~10%).</string>
     <string name="how_to_run_text_5">Make sure all keys in the control settings are set as standard. Enter the game and proceed to the next step.</string>
@@ -137,4 +131,26 @@
     <string name="steering_dead_zone_off">Off</string>
     <string name="language_title">Language</string>
     <string name="language_system">System default</string>
+    <string name="section_steering">Steering</string>
+    <string name="section_buttons">Buttons and feedback</string>
+    <string name="section_app">App</string>
+    <string name="steering_sensitivity_title">Sensitivity</string>
+    <string name="calibrate_title">Straighten the wheel</string>
+    <string name="calibrate_summary">Hold the phone as when driving straight and tap</string>
+    <string name="calibration_reset_title">Reset straightening</string>
+    <string name="search_mode_title">Server search</string>
+    <string name="search_mode_auto">Automatically</string>
+    <string name="search_mode_ip">By IP address</string>
+    <string name="search_mode_summary_auto">The app finds the server in the local network</string>
+    <string name="search_mode_summary_ip">The app connects to the address below</string>
+    <string name="scan_qr_title">Scan the QR code of the server</string>
+    <string name="scan_qr_summary">The code is shown in the Truck Remote Server window</string>
+    <string name="scan_qr_done">Server %1$s:%2$d is saved</string>
+    <string name="scan_qr_wrong">This isn\'t a QR code of Truck Remote Server</string>
+    <string name="scan_qr_unavailable">The scanner needs Google Play services</string>
+    <string name="steering_preview_left">Left %1$d%%</string>
+    <string name="steering_preview_right">Right %1$d%%</string>
+    <string name="steering_preview_center">Straight</string>
+    <string name="steering_preview_portrait">Turn the phone sideways to check the steering</string>
+    <string name="scan_qr_loading">The scanner is being downloaded by Google Play services, try again in a minute</string>
 </resources>

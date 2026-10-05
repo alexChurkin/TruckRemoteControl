@@ -1,4 +1,5 @@
 [versions]
+codeScanner = "16.1.0"
 agp = "9.4.0"
 kotlin = "2.4.20"
 coroutines = "1.11.0"
@@ -19,6 +20,7 @@ detekt = "1.23.8"
 composeRules = "0.6.7"
 
 [libraries]
+play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "codeScanner" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }

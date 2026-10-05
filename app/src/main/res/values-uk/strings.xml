@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Зміни у версії</string>
-    <string name="version_changes_text">Аналогові педалі (торкніться й ведіть угору, щоб натиснути сильніше), фіксація газу (вмикається в налаштуваннях) і три сторінки швидких дій: вантажівка (двигун, причіп, двірники…), водіння (ретардер, моторне гальмо, швидкість круїзу, швидке паркування) та огляд (камери, карта, приладова панель, радіо). Для них оновіть Truck Remote Server на ПК.</string>
+    <string name="version_changes_text">Аналогові педалі (торкніться й ведіть угору, щоб натиснути сильніше), фіксація газу (вмикається в налаштуваннях) і три сторінки швидких дій: вантажівка (двигун, причіп, двірники…), водіння (ретардер, моторне гальмо, швидкість круїзу, швидке паркування) та огляд (камери, карта, приладова панель, радіо). Для них оновіть Truck Remote Server на ПК. Чутливість керма тепер налаштовується в застосунку з живим попереднім переглядом, сервер можна знайти за QR-кодом.</string>
 
     <string name="searching_on_local">Пошук серверів у локальній мережі…</string>
     <string name="signal_strength">Сила сигналу Wi-Fi:</string>
@@ -30,28 +30,22 @@
     <string name="server_port_summary">Порт, що використовується для всіх видів підключень</string>
     <string name="server_port_dialog_title">Порт сервера</string>
 
-    <string name="connect_to_default_on_startup_title">Підключатися за IP-адресою</string>
-    <string name="connect_to_default_on_startup_summary_off">Під час запуску застосунок шукає сервер у локальній мережі</string>
-    <string name="connect_to_default_on_startup_summary_on">Під час запуску застосунок підключається до сервера за адресою нижче</string>
 
     <string name="def_server_ip_title">IP-адреса сервера</string>
     <string name="def_server_ip_summary">Не вказана. Адресу показано у вікні Truck Remote Server</string>
 
-    <string name="control">Керування</string>
     <string name="ffb_text">Вібрація</string>
     <string name="ffb_summary">Телефон вібрує під час зіткнень у грі (зворотний зв’язок)</string>
     <string name="use_pneumatic_signal_text">Пневмосигнал</string>
     <string name="use_pneumatic_signal_summary">Кнопка сигналу вмикає пневматичний сигнал замість звичайного</string>
     <string name="steering_dead_zone_title">Мертва зона керма</string>
     <string name="steering_dead_zone_summary">Невеликий нахил біля центру не враховується: до %1$d°</string>
-    <string name="steering_max_angle_title">Нахил для повного повороту</string>
     <string name="steering_max_angle_summary">Кермо повертається до упору при нахилі %1$d°</string>
     <string name="steering_curve_title">Крива керма</string>
     <string name="steering_curve_linear">Лінійна</string>
     <string name="steering_curve_summary">Плавніше біля центру: %1$.1f</string>
 
 
-    <string name="additionally">Додатково</string>
 
 
     <string name="github_page">Вихідний код на GitHub</string>
@@ -63,7 +57,7 @@
     <string name="guide">Інструкція</string>
     <string name="how_to_run">• Як запустити?</string>
     <string name="how_to_run_text">Спершу завантажте Truck Remote Server і запустіть його на комп’ютері, де встановлено гру. Зробити це можна за посиланням: https://github.com/alexChurkin/TruckRemoteServer .</string>
-    <string name="how_to_run_text_2">У програмі можна налаштувати порт і чутливість керма так, як вам зручно. Потім запустіть гру й увімкніть керування за допомогою клавіатури та vJoy.</string>
+    <string name="how_to_run_text_2">Сервер показує свою адресу та QR-код (відскануйте його в налаштуваннях застосунку, якщо телефон не знаходить сервер). Потім запустіть гру й увімкніть керування за допомогою клавіатури та vJoy. Чутливість керма налаштовується в налаштуваннях застосунку.</string>
     <string name="how_to_run_text_3">Важливо використовувати лише спрощену автоматичну КПП! Також рекомендується збільшити \"Чутливість керма\" і \"Нелінійність керування\", як на цьому знімку екрана:</string>
     <string name="how_to_run_text_4" formatted="false">Якщо використовуєте вібрацію, рекомендується вимкнути в грі всі види зворотного зв’язку, крім зіткнень (50%), ударів підвіски (~15%) і поверхні під колесами (~10%).</string>
     <string name="how_to_run_text_5">Переконайтеся, що всі клавіші в налаштуваннях керування стандартні, почніть гру й перейдіть до наступного кроку інструкції.</string>
@@ -131,4 +125,26 @@
     <string name="steering_dead_zone_off">Вимкнена</string>
     <string name="language_title">Мова</string>
     <string name="language_system">Як у системі</string>
+    <string name="section_steering">Кермо</string>
+    <string name="section_buttons">Кнопки й віддача</string>
+    <string name="section_app">Застосунок</string>
+    <string name="steering_sensitivity_title">Чутливість</string>
+    <string name="calibrate_title">Вирівняти кермо</string>
+    <string name="calibrate_summary">Тримайте телефон як під час їзди прямо й натисніть</string>
+    <string name="calibration_reset_title">Скинути вирівнювання</string>
+    <string name="search_mode_title">Пошук сервера</string>
+    <string name="search_mode_auto">Автоматично</string>
+    <string name="search_mode_ip">За IP-адресою</string>
+    <string name="search_mode_summary_auto">Застосунок знаходить сервер у локальній мережі</string>
+    <string name="search_mode_summary_ip">Застосунок підключається до адреси нижче</string>
+    <string name="scan_qr_title">Сканувати QR-код сервера</string>
+    <string name="scan_qr_summary">Код показано у вікні Truck Remote Server</string>
+    <string name="scan_qr_done">Сервер %1$s:%2$d збережено</string>
+    <string name="scan_qr_wrong">Це не QR-код Truck Remote Server</string>
+    <string name="scan_qr_unavailable">Для сканера потрібні сервіси Google Play</string>
+    <string name="steering_preview_left">Ліворуч %1$d%%</string>
+    <string name="steering_preview_right">Праворуч %1$d%%</string>
+    <string name="steering_preview_center">Прямо</string>
+    <string name="steering_preview_portrait">Поверніть телефон горизонтально, щоб перевірити кермо</string>
+    <string name="scan_qr_loading">Сервіси Google Play завантажують сканер, спробуйте за хвилину</string>
 </resources>

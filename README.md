@@ -7,8 +7,9 @@ Android 7.0 or newer is needed.
 Launch the [server app](https://github.com/alexChurkin/TruckRemoteServer) on your PC (follow its instructions). Then:
 1) Run the game
 2) Connect the phone to the same network as the PC and run this app: it finds the server by itself
-   (or enter the server address in Settings and choose *Connect by IP address* in the menu)
-3) Tilt the phone to steer and press the pedals; the guide in the app menu (gear button) describes the rest
+   (or scan the QR code of the server window in Settings → Connection)
+3) Tilt the phone to steer and press the pedals. The steering is set up in Settings → Steering
+   (sensitivity, dead zone, curve) with a live preview; the guide in the app menu describes the rest
 
 That's all :) Enjoy it!
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Змены ў версіі</string>
-    <string name="version_changes_text">Аналагавыя педалі (дакраніцеся і вядзіце ўверх, каб націснуць мацней), фіксацыя газу (уключаецца ў наладах) і тры старонкі хуткіх дзеянняў: грузавік (рухавік, прычэп, дворнікі…), ваджэнне (рэтардэр, маторны тормаз, хуткасць круізу, хуткая паркоўка) і агляд (камеры, карта, прыборная панэль, радыё). Для іх абнавіце Truck Remote Server на ПК.</string>
+    <string name="version_changes_text">Аналагавыя педалі (дакраніцеся і вядзіце ўверх, каб націснуць мацней), фіксацыя газу (уключаецца ў наладах) і тры старонкі хуткіх дзеянняў: грузавік (рухавік, прычэп, дворнікі…), ваджэнне (рэтардэр, маторны тормаз, хуткасць круізу, хуткая паркоўка) і агляд (камеры, карта, прыборная панэль, радыё). Для іх абнавіце Truck Remote Server на ПК. Адчувальнасць руля цяпер наладжваецца ў праграме з жывым папярэднім праглядам, сервер можна знайсці па QR-кодзе.</string>
 
     <string name="searching_on_local">Пошук сервераў у лакальнай сетцы…</string>
     <string name="signal_strength">Сіла сігналу Wi-Fi:</string>
@@ -30,28 +30,22 @@
     <string name="server_port_summary">Порт, які выкарыстоўваецца для ўсіх відаў падключэнняў</string>
     <string name="server_port_dialog_title">Порт сервера</string>
 
-    <string name="connect_to_default_on_startup_title">Падключацца па IP-адрасе</string>
-    <string name="connect_to_default_on_startup_summary_off">Пры запуску праграма шукае сервер у лакальнай сетцы</string>
-    <string name="connect_to_default_on_startup_summary_on">Пры запуску праграма падключаецца да сервера па адрасе ніжэй</string>
 
     <string name="def_server_ip_title">IP-адрас сервера</string>
     <string name="def_server_ip_summary">Не ўказаны. Адрас паказаны ў акне Truck Remote Server</string>
 
-    <string name="control">Кіраванне</string>
     <string name="ffb_text">Вібрацыя</string>
     <string name="ffb_summary">Тэлефон вібруе пры сутыкненнях у гульні (зваротная сувязь)</string>
     <string name="use_pneumatic_signal_text">Пнеўмасігнал</string>
     <string name="use_pneumatic_signal_summary">Кнопка сігналу ўключае пнеўматычны сігнал замест звычайнага</string>
     <string name="steering_dead_zone_title">Мёртвая зона руля</string>
     <string name="steering_dead_zone_summary">Невялікі нахіл каля цэнтра не ўлічваецца: да %1$d°</string>
-    <string name="steering_max_angle_title">Нахіл для поўнага павароту</string>
     <string name="steering_max_angle_summary">Руль паварочваецца да ўпору пры нахіле %1$d°</string>
     <string name="steering_curve_title">Крывая руля</string>
     <string name="steering_curve_linear">Лінейная</string>
     <string name="steering_curve_summary">Плаўней каля цэнтра: %1$.1f</string>
 
 
-    <string name="additionally">Дадаткова</string>
 
 
     <string name="github_page">Зыходны код на GitHub</string>
@@ -63,7 +57,7 @@
     <string name="guide">Інструкцыя</string>
     <string name="how_to_run">• Як запусціць?</string>
     <string name="how_to_run_text">Спачатку спампуйце Truck Remote Server і запусціце яго на камп’ютары, дзе ўсталявана гульня. Зрабіць гэта можна па спасылцы: https://github.com/alexChurkin/TruckRemoteServer .</string>
-    <string name="how_to_run_text_2">У праграме можна наладзіць порт і адчувальнасць руля так, як вам зручна. Потым запусціце гульню і ўключыце кіраванне з дапамогай клавіятуры і vJoy.</string>
+    <string name="how_to_run_text_2">Сервер паказвае свой адрас і QR-код (адсканіруйце яго ў наладах праграмы, калі тэлефон не знаходзіць сервер). Потым запусціце гульню і ўключыце кіраванне з дапамогай клавіятуры і vJoy. Адчувальнасць руля наладжваецца ў наладах праграмы.</string>
     <string name="how_to_run_text_3">Важна выкарыстоўваць толькі спрошчаную аўтаматычную КПП! Таксама рэкамендуецца павялічыць \"Адчувальнасць руля\" і \"Нелінейнасць кіравання\", як на гэтым здымку экрана:</string>
     <string name="how_to_run_text_4" formatted="false">Калі выкарыстоўваеце вібрацыю, рэкамендуецца адключыць у гульні ўсе віды зваротнай сувязі, акрамя сутыкненняў (50%), удараў падвескі (~15%) і паверхні пад коламі (~10%).</string>
     <string name="how_to_run_text_5">Пераканайцеся, што ўсе клавішы ў наладах кіравання стандартныя, пачніце гульню і перайдзіце да наступнага кроку інструкцыі.</string>
@@ -131,4 +125,26 @@
     <string name="steering_dead_zone_off">Выключана</string>
     <string name="language_title">Мова</string>
     <string name="language_system">Як у сістэме</string>
+    <string name="section_steering">Руль</string>
+    <string name="section_buttons">Кнопкі і аддача</string>
+    <string name="section_app">Праграма</string>
+    <string name="steering_sensitivity_title">Адчувальнасць</string>
+    <string name="calibrate_title">Выраўнаваць руль</string>
+    <string name="calibrate_summary">Трымайце тэлефон як пры яздзе прама і націсніце</string>
+    <string name="calibration_reset_title">Скінуць выраўноўванне</string>
+    <string name="search_mode_title">Пошук сервера</string>
+    <string name="search_mode_auto">Аўтаматычна</string>
+    <string name="search_mode_ip">Па IP-адрасе</string>
+    <string name="search_mode_summary_auto">Праграма знаходзіць сервер у лакальнай сетцы</string>
+    <string name="search_mode_summary_ip">Праграма падключаецца да адраса ніжэй</string>
+    <string name="scan_qr_title">Сканаваць QR-код сервера</string>
+    <string name="scan_qr_summary">Код паказаны ў акне Truck Remote Server</string>
+    <string name="scan_qr_done">Сервер %1$s:%2$d захаваны</string>
+    <string name="scan_qr_wrong">Гэта не QR-код Truck Remote Server</string>
+    <string name="scan_qr_unavailable">Для сканера патрэбны сэрвісы Google Play</string>
+    <string name="steering_preview_left">Улева %1$d%%</string>
+    <string name="steering_preview_right">Управа %1$d%%</string>
+    <string name="steering_preview_center">Прама</string>
+    <string name="steering_preview_portrait">Павярніце тэлефон гарызантальна, каб праверыць руль</string>
+    <string name="scan_qr_loading">Сэрвісы Google Play загружаюць сканер, паспрабуйце праз хвіліну</string>
 </resources>
