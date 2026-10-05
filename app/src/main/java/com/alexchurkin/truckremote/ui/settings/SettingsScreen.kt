@@ -89,7 +89,9 @@ import com.alexchurkin.truckremote.BuildConfig
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.settings.AppLanguage
 import com.alexchurkin.truckremote.data.settings.AppSettings
+import com.alexchurkin.truckremote.data.settings.Game
 import com.alexchurkin.truckremote.data.settings.PedalMode
+import com.alexchurkin.truckremote.data.settings.SpeedUnits
 import com.alexchurkin.truckremote.domain.SteeringProcessor
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 import com.mikepenz.aboutlibraries.Libs
@@ -129,6 +131,10 @@ data class SettingsActions(
     val onSteeringMaxAngleChange: (Int) -> Unit = {},
     val onSteeringExponentChange: (Float) -> Unit = {},
     val onSteeringSmoothnessChange: (Int) -> Unit = {},
+    val onSeparateGameSettingsChange: (Boolean) -> Unit = {},
+    val onEditedGameChange: (Game) -> Unit = {},
+    val onCopyFromOtherGame: () -> Unit = {},
+    val onSpeedUnitsChange: (SpeedUnits) -> Unit = {},
     val onCalibrate: () -> Unit = {},
     val onResetCalibration: () -> Unit = {},
     val onPedalModeChange: (PedalMode) -> Unit = {},
@@ -171,6 +177,10 @@ fun SettingsScreen(
             onSteeringMaxAngleChange = viewModel::setSteeringMaxAngle,
             onSteeringExponentChange = viewModel::setSteeringExponent,
             onSteeringSmoothnessChange = viewModel::setSteeringSmoothness,
+            onSeparateGameSettingsChange = viewModel::setSeparateGameSettings,
+            onEditedGameChange = viewModel::selectEditedGame,
+            onCopyFromOtherGame = viewModel::copyFromOtherGame,
+            onSpeedUnitsChange = viewModel::setSpeedUnits,
             onCalibrate = viewModel::calibrate,
             onResetCalibration = viewModel::resetCalibration,
             onPedalModeChange = viewModel::setPedalMode,
@@ -313,6 +323,7 @@ private fun SettingsList(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxSize(), state = listState, contentPadding = contentPadding) {
+        gameSection(state, actions)
         steeringSection(state, steering, actions)
 
         centeredItem { SectionHeader(R.string.pedals) }
@@ -333,6 +344,14 @@ private fun SettingsList(
                 summary = stringResource(R.string.show_dashboard_summary),
                 checked = state.showDashboard,
                 onCheckedChange = actions.onShowDashboardChange,
+            )
+        }
+        centeredItem {
+            ChoiceItem(
+                title = stringResource(R.string.speed_units_title),
+                labels = stringArrayResource(R.array.speed_units_entries).toList(),
+                selected = state.speedUnits.ordinal,
+                onSelect = { actions.onSpeedUnitsChange(SpeedUnits.entries[it]) },
             )
         }
         centeredItem {
@@ -398,6 +417,36 @@ private fun SettingsList(
 }
 
 // The steering is set up on the phone (the server applies it as is), with a live preview
+// Separate settings for each game: the game chosen here is the one the steering, the panel and the units are for
+private fun LazyListScope.gameSection(state: SettingsUiState, actions: SettingsActions) {
+    centeredItem { SectionHeader(R.string.section_game) }
+    centeredItem {
+        SwitchItem(
+            title = stringResource(R.string.separate_game_settings_title),
+            summary = stringResource(R.string.separate_game_settings_summary),
+            checked = state.separateGameSettings,
+            onCheckedChange = actions.onSeparateGameSettingsChange,
+        )
+    }
+    if (!state.separateGameSettings) return
+    centeredItem {
+        ChoiceItem(
+            title = stringResource(R.string.edited_game_title),
+            labels = Game.entries.map { it.title },
+            selected = state.editedGame.ordinal,
+            onSelect = { actions.onEditedGameChange(Game.entries[it]) },
+        )
+    }
+    centeredItem {
+        val other = if (state.editedGame == Game.Ets2) Game.Ats else Game.Ets2
+        ClickableItem(
+            title = stringResource(R.string.copy_game_settings_title, other.title),
+            summary = stringResource(R.string.copy_game_settings_summary, state.editedGame.title),
+            onClick = actions.onCopyFromOtherGame,
+        )
+    }
+}
+
 private fun LazyListScope.steeringSection(state: SettingsUiState, steering: Float?, actions: SettingsActions) {
     centeredItem { SectionHeader(R.string.section_steering) }
     centeredItem { SteeringPreview(steering) }
@@ -800,6 +849,35 @@ private fun SearchModeItem(useSpecifiedServer: Boolean, onChange: (Boolean) -> U
     }
 }
 
+// A title with segmented buttons under it
+@Composable
+private fun ChoiceItem(
+    title: String,
+    labels: List<String>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.padding(bottom = 8.dp)) {
+        ListItem(headlineContent = { Text(title) })
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+        ) {
+            labels.forEachIndexed { index, label ->
+                SegmentedButton(
+                    selected = index == selected,
+                    onClick = { onSelect(index) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
+                ) {
+                    Text(label)
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun PedalModeItem(mode: PedalMode, onModeChange: (PedalMode) -> Unit, modifier: Modifier = Modifier) {
     val labels = stringArrayResource(R.array.pedal_mode_entries)
@@ -970,6 +1048,9 @@ private fun SettingsPreview() {
                 steeringMaxAngle = 60,
                 steeringExponent = 1.5f,
                 steeringSmoothness = 5,
+                separateGameSettings = true,
+                editedGame = Game.Ats,
+                speedUnits = SpeedUnits.ByGame,
                 calibrated = true,
                 pedalMode = PedalMode.Analog,
                 throttleLock = true,

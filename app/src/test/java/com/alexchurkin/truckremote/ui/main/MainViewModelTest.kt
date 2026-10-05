@@ -7,6 +7,7 @@ import com.alexchurkin.truckremote.data.controller.ConnectionState
 import com.alexchurkin.truckremote.data.controller.ControllerAction
 import com.alexchurkin.truckremote.data.controller.ControllerRepository
 import com.alexchurkin.truckremote.data.controller.ControllerState
+import com.alexchurkin.truckremote.data.controller.Dashboard
 import com.alexchurkin.truckremote.data.controller.HornState
 import com.alexchurkin.truckremote.data.controller.LinkQuality
 import com.alexchurkin.truckremote.data.controller.ServerState
@@ -16,7 +17,9 @@ import com.alexchurkin.truckremote.data.sensor.TiltReading
 import com.alexchurkin.truckremote.data.sensor.TiltSensor
 import com.alexchurkin.truckremote.data.settings.ActionLayout
 import com.alexchurkin.truckremote.data.settings.AppSettings
+import com.alexchurkin.truckremote.data.settings.Game
 import com.alexchurkin.truckremote.data.settings.PedalMode
+import com.alexchurkin.truckremote.data.settings.SpeedUnits
 import com.alexchurkin.truckremote.domain.SteeringCurve
 import com.alexchurkin.truckremote.testing.FakeSharedPreferences
 import kotlin.math.pow
@@ -288,7 +291,7 @@ class MainViewModelTest {
 
         assertEquals(ControllerAction.Engine, viewModel.state.value.actionLayout.pages[1][7])
         assertNull(viewModel.state.value.actionLayout.pages[0][0])
-        assertEquals(viewModel.state.value.actionLayout, settings.actionLayout)
+        assertEquals(viewModel.state.value.actionLayout, settings.game(Game.Ets2).actionLayout)
 
         viewModel.onActionLayoutReset()
         assertEquals(ActionLayout.Default, viewModel.state.value.actionLayout)
@@ -314,6 +317,32 @@ class MainViewModelTest {
         val effects = collectEffects()
         connect(TRUCK.copy(serverRevision = BinaryProtocol.REVISION))
         assertEquals(0, effects.count { it == MainEffect.ServerOutdated })
+    }
+
+    @Test
+    fun `settings of the game being played are used`() {
+        settings.separateGameSettings = true
+        settings.game(Game.Ats).speedUnits = SpeedUnits.Metric
+        settings.game(Game.Ats).actionLayout = ActionLayout.Default.with(0, 0, ControllerAction.Map)
+
+        connect(TRUCK.copy(dashboard = DASHBOARD.copy(isAts = true)))
+
+        assertEquals(Game.Ats, settings.lastGame)
+        assertFalse(viewModel.state.value.imperialUnits)
+        assertEquals(ControllerAction.Map, viewModel.state.value.actionLayout.pages[0][0])
+
+        controller.truckState.value = TRUCK.copy(dashboard = DASHBOARD)
+        assertEquals(Game.Ets2, settings.lastGame)
+        assertEquals(ControllerAction.Engine, viewModel.state.value.actionLayout.pages[0][0])
+    }
+
+    @Test
+    fun `speed units follow the game by default`() {
+        connect(TRUCK.copy(dashboard = DASHBOARD.copy(isAts = true)))
+        assertTrue(viewModel.state.value.imperialUnits)
+
+        settings.game(Game.Ats).speedUnits = SpeedUnits.Metric
+        assertFalse(viewModel.state.value.imperialUnits)
     }
 
     @Test
@@ -360,7 +389,7 @@ class MainViewModelTest {
         var time = 0L
         fun tiltTo(angle: Float) = tilt.readings.tryEmit(TiltReading(angle, time++ * 1_000_000_000L))
         val g = SteeringCurve.GRAVITY
-        settings.steeringMaxAngle = 90
+        settings.game(Game.Ets2).steeringMaxAngle = 90
         tiltTo(30f)
         assertEquals(0f, controller.state.steering)
 
@@ -370,7 +399,7 @@ class MainViewModelTest {
         tiltTo(30f)
         assertEquals((1f / 3).pow(1.5f) * g, controller.state.steering, 0.001f)
 
-        settings.steeringExponent = 1f
+        settings.game(Game.Ets2).steeringExponent = 1f
         tiltTo(30f)
         assertEquals(g / 3, controller.state.steering, 0.001f)
         tiltTo(-30f)
@@ -382,7 +411,7 @@ class MainViewModelTest {
         tiltTo(30f)
         assertEquals(0f, controller.state.steering, 0.001f)
 
-        settings.steeringDeadZone = 15
+        settings.game(Game.Ets2).steeringDeadZone = 15
         viewModel.resetCalibration()
         tiltTo(10f)
         assertEquals(0f, controller.state.steering, 0.001f)
@@ -467,6 +496,17 @@ class MainViewModelTest {
 
     private companion object {
         const val LOCK_DISTANCE = 100f
+        val DASHBOARD = Dashboard(
+            speed = 20f,
+            speedLimit = 0f,
+            cruiseSpeed = 0f,
+            gear = 8,
+            engineRpm = 1200,
+            engineRpmMax = 2500,
+            fuelPercent = 50,
+            isAts = false,
+        )
+
         val TRUCK = ServerState(
             engineOn = true,
             parkingBrake = false,

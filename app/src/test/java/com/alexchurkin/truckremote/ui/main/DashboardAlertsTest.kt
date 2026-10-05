@@ -15,7 +15,7 @@ class DashboardAlertsTest {
         engineRpm = 1200,
         engineRpmMax = 2500,
         fuelPercent = 12,
-        imperial = false,
+        isAts = false,
     )
 
     @Test
@@ -34,6 +34,7 @@ class DashboardAlertsTest {
     fun `serious problems come first`() {
         val alerts = dashboard.copy(
             warnings = setOf(TruckWarning.Fuel, TruckWarning.AirPressure, TruckWarning.AirPressureEmergency),
+            fuelRangeKm = 85,
             wearPercent = 23,
             restStopMinutes = 40,
         ).alerts()
@@ -41,7 +42,7 @@ class DashboardAlertsTest {
         assertEquals(
             listOf(
                 DashboardAlert(AlertKind.AirPressure, severe = true),
-                DashboardAlert(AlertKind.Fuel, severe = false, 12),
+                DashboardAlert(AlertKind.Fuel, severe = false, 12, rangeKm = 85),
                 DashboardAlert(AlertKind.Rest, severe = false, 40),
                 DashboardAlert(AlertKind.Wear, severe = false, 23),
             ),

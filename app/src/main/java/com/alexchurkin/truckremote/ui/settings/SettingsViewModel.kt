@@ -14,12 +14,16 @@ import com.alexchurkin.truckremote.data.billing.BillingManager
 import com.alexchurkin.truckremote.data.controller.ServerLink
 import com.alexchurkin.truckremote.data.sensor.TiltSensor
 import com.alexchurkin.truckremote.data.settings.AppSettings
+import com.alexchurkin.truckremote.data.settings.Game
+import com.alexchurkin.truckremote.data.settings.GameSettings
 import com.alexchurkin.truckremote.data.settings.PedalMode
+import com.alexchurkin.truckremote.data.settings.SpeedUnits
 import com.alexchurkin.truckremote.domain.SteeringCurve
 import com.alexchurkin.truckremote.domain.SteeringProcessor
 import com.alexchurkin.truckremote.util.isValidIpv4
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -40,6 +44,10 @@ data class SettingsUiState(
     val steeringMaxAngle: Int,
     val steeringExponent: Float,
     val steeringSmoothness: Int,
+    val separateGameSettings: Boolean,
+    // The game whose settings are shown (the steering, the panel and the speed units)
+    val editedGame: Game,
+    val speedUnits: SpeedUnits,
     val calibrated: Boolean,
     val pedalMode: PedalMode,
     val throttleLock: Boolean,
@@ -63,11 +71,18 @@ class SettingsViewModel(
     private val tiltSensor: TiltSensor,
 ) : ViewModel() {
 
+    // The game being played is shown first
+    private val editedGame = MutableStateFlow(settings.lastGame)
+
     val state: StateFlow<SettingsUiState> = combine(
         settings.changes().onStart { emit(Unit) },
         billing.adsRemoved,
-    ) { _, adsRemoved -> snapshot(adsRemoved) }
+        editedGame,
+    ) { _, adsRemoved, _ -> snapshot(adsRemoved) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), snapshot(billing.adsRemoved.value))
+
+    private val game: GameSettings
+        get() = settings.game(editedGame.value)
 
     private val ownMessages = Channel<SettingsMessage>(Channel.BUFFERED)
 
@@ -83,9 +98,10 @@ class SettingsViewModel(
      * The sensor works only while the preview is collected (the settings screen is shown).
      */
     val steeringPreview: Flow<Float> = tiltSensor.readings().map { reading ->
-        steering.curve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
+        val game = game
+        steering.curve = SteeringCurve(game.steeringDeadZone, game.steeringMaxAngle, game.steeringExponent)
         steering.calibrationOffset = settings.calibrationOffset
-        steering.smoothness = settings.steeringSmoothness
+        steering.smoothness = game.steeringSmoothness
         steering.process(reading.angle, reading.timeNanos) / SteeringCurve.GRAVITY
     }
 
@@ -135,19 +151,38 @@ class SettingsViewModel(
     }
 
     fun setSteeringDeadZone(degrees: Int) {
-        settings.steeringDeadZone = degrees
+        game.steeringDeadZone = degrees
     }
 
     fun setSteeringMaxAngle(degrees: Int) {
-        settings.steeringMaxAngle = degrees
+        game.steeringMaxAngle = degrees
     }
 
     fun setSteeringExponent(value: Float) {
-        settings.steeringExponent = value
+        game.steeringExponent = value
     }
 
     fun setSteeringSmoothness(level: Int) {
-        settings.steeringSmoothness = level
+        game.steeringSmoothness = level
+    }
+
+    fun setSeparateGameSettings(value: Boolean) {
+        settings.separateGameSettings = value
+    }
+
+    fun selectEditedGame(game: Game) {
+        editedGame.value = game
+    }
+
+    // The settings of the other game replace the shown ones
+    fun copyFromOtherGame() {
+        val other = if (editedGame.value == Game.Ets2) Game.Ats else Game.Ets2
+        game.copyFrom(settings.game(other))
+        ownMessages.trySend(SettingsMessage(R.string.game_settings_copied, listOf(other.title)))
+    }
+
+    fun setSpeedUnits(units: SpeedUnits) {
+        game.speedUnits = units
     }
 
     // The current tilt becomes the straight wheel
@@ -179,10 +214,13 @@ class SettingsViewModel(
         forceFeedback = settings.forceFeedback,
         pneumaticHorn = settings.pneumaticHorn,
         showDashboard = settings.showDashboard,
-        steeringDeadZone = settings.steeringDeadZone,
-        steeringMaxAngle = settings.steeringMaxAngle,
-        steeringExponent = settings.steeringExponent,
-        steeringSmoothness = settings.steeringSmoothness,
+        steeringDeadZone = game.steeringDeadZone,
+        steeringMaxAngle = game.steeringMaxAngle,
+        steeringExponent = game.steeringExponent,
+        steeringSmoothness = game.steeringSmoothness,
+        separateGameSettings = settings.separateGameSettings,
+        editedGame = editedGame.value,
+        speedUnits = game.speedUnits,
         calibrated = settings.calibrationOffset != 0f,
         pedalMode = settings.pedalMode,
         throttleLock = settings.throttleLock,
@@ -204,6 +242,13 @@ class SettingsViewModel(
         }
     }
 }
+
+// Game names are the same in every language
+val Game.title: String
+    get() = when (this) {
+        Game.Ets2 -> "ETS2"
+        Game.Ats -> "ATS"
+    }
 
 @get:StringRes
 private val BillingEvent.messageRes: Int

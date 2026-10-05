@@ -146,6 +146,7 @@ class MainActivity :
                 DashboardPanel(
                     dashboard = dashboard,
                     job = state.truck?.job,
+                    imperialUnits = state.imperialUnits,
                     onCruiseToggle = viewModel::onCruiseToggle,
                     onCruiseStep = { up ->
                         viewModel.onAction(if (up) ControllerAction.CruiseUp else ControllerAction.CruiseDown)

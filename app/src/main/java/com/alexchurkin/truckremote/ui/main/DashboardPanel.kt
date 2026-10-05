@@ -62,6 +62,7 @@ private const val METERS_IN_MILE = 1609.344f
 private const val PRECISE_DISTANCE_BELOW = 10f
 private const val SECONDS_IN_MINUTE = 60L
 private const val MINUTES_IN_HOUR = 60
+private const val MAX_ALERTS = 3
 private const val REPEAT_DELAY_MS = 450L
 private const val REPEAT_INTERVAL_MS = 220L
 
@@ -76,16 +77,17 @@ private const val REPEAT_INTERVAL_MS = 220L
 fun DashboardPanel(
     dashboard: Dashboard,
     job: Job?,
+    imperialUnits: Boolean,
     onCruiseToggle: () -> Boolean,
     onCruiseStep: (up: Boolean) -> Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val factor = if (dashboard.imperial) MPH_IN_MS else KMH_IN_MS
-    val unit = stringResource(if (dashboard.imperial) R.string.dashboard_mph else R.string.dashboard_kmh)
+    val factor = if (imperialUnits) MPH_IN_MS else KMH_IN_MS
+    val unit = stringResource(if (imperialUnits) R.string.dashboard_mph else R.string.dashboard_kmh)
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (dashboard.speedLimit > 0f) {
-                SpeedLimitSign((dashboard.speedLimit * factor).roundToInt(), dashboard.imperial)
+                SpeedLimitSign((dashboard.speedLimit * factor).roundToInt(), american = dashboard.isAts)
                 Spacer(Modifier.width(14.dp))
             }
             BasicText(
@@ -107,9 +109,9 @@ fun DashboardPanel(
         RpmBar(dashboard.engineRpm, dashboard.engineRpmMax, Modifier.padding(top = 4.dp))
         if (dashboard.routeDistance > 0f) {
             BasicText(
-                text = routeText(dashboard),
+                text = routeText(dashboard, imperialUnits),
                 style = TextStyle(color = colorResource(R.color.dashboardSecondary), fontSize = 13.sp),
-                modifier = Modifier.padding(top = 6.dp),
+                modifier = Modifier.padding(top = 4.dp),
             )
         }
         if (job != null) JobLine(job, Modifier.padding(top = 2.dp))
@@ -118,24 +120,24 @@ fun DashboardPanel(
             unit = unit,
             onToggle = onCruiseToggle,
             onStep = onCruiseStep,
-            modifier = Modifier.padding(top = 12.dp),
+            modifier = Modifier.padding(top = 8.dp),
         )
         val alerts = dashboard.alerts()
-        if (alerts.isNotEmpty()) Alerts(alerts, Modifier.padding(top = 8.dp))
+        if (alerts.isNotEmpty()) Alerts(alerts, imperialUnits, Modifier.padding(top = 6.dp))
     }
 }
 
 // "128 km · 1 h 45 min" to the end of the route
 @Composable
-private fun routeText(dashboard: Dashboard): String {
-    val distance = dashboard.routeDistance / if (dashboard.imperial) METERS_IN_MILE else METERS_IN_KILOMETER
+private fun routeText(dashboard: Dashboard, imperialUnits: Boolean): String {
+    val distance = dashboard.routeDistance / if (imperialUnits) METERS_IN_MILE else METERS_IN_KILOMETER
     val distanceText = if (distance >= PRECISE_DISTANCE_BELOW) {
         distance.roundToInt().toString()
     } else {
         String.format(LocalConfiguration.current.locales[0], "%.1f", distance)
     }
     val time = durationText(((dashboard.routeTimeSeconds + SECONDS_IN_MINUTE / 2) / SECONDS_IN_MINUTE).toInt())
-    val unit = stringResource(if (dashboard.imperial) R.string.dashboard_unit_mi else R.string.dashboard_unit_km)
+    val unit = stringResource(if (imperialUnits) R.string.dashboard_unit_mi else R.string.dashboard_unit_km)
     return stringResource(R.string.dashboard_route, distanceText, unit, time)
 }
 
@@ -171,34 +173,63 @@ private fun JobLine(job: Job, modifier: Modifier = Modifier) {
 // Small labels of what needs attention: red ones are serious
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Alerts(alerts: List<DashboardAlert>, modifier: Modifier = Modifier) {
+private fun Alerts(alerts: List<DashboardAlert>, imperialUnits: Boolean, modifier: Modifier = Modifier) {
     FlowRow(
         modifier = modifier.widthIn(max = 460.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        alerts.forEach { alert ->
-            val color = colorResource(if (alert.severe) R.color.indicatorRed else R.color.dashboardCaution)
-            BasicText(
-                text = alertText(alert),
-                style = TextStyle(color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold),
-                modifier = Modifier
-                    .border(1.dp, color, RoundedCornerShape(8.dp))
-                    .padding(horizontal = 8.dp, vertical = 3.dp),
+        // One row at most: the most important ones and the number of the others
+        alerts.take(MAX_ALERTS).forEach { alert ->
+            AlertLabel(
+                text = alertText(alert, imperialUnits),
+                color = colorResource(if (alert.severe) R.color.indicatorRed else R.color.dashboardCaution),
             )
+        }
+        if (alerts.size > MAX_ALERTS) {
+            AlertLabel(text = "+${alerts.size - MAX_ALERTS}", color = colorResource(R.color.dashboardCaution))
         }
     }
 }
 
 @Composable
-private fun alertText(alert: DashboardAlert) = when (alert.kind) {
+private fun AlertLabel(text: String, color: Color) {
+    BasicText(
+        text = text,
+        style = TextStyle(color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold),
+        maxLines = 1,
+        modifier = Modifier
+            .border(1.dp, color, RoundedCornerShape(8.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    )
+}
+
+@Composable
+private fun alertText(alert: DashboardAlert, imperialUnits: Boolean) = when (alert.kind) {
     AlertKind.AirPressure -> stringResource(R.string.alert_air_pressure)
+
     AlertKind.OilPressure -> stringResource(R.string.alert_oil_pressure)
+
     AlertKind.WaterTemperature -> stringResource(R.string.alert_water_temperature)
+
     AlertKind.Battery -> stringResource(R.string.alert_battery)
+
     AlertKind.AdBlue -> stringResource(R.string.alert_adblue)
-    AlertKind.Fuel -> stringResource(R.string.dashboard_low_fuel, alert.value)
+
+    AlertKind.Fuel -> if (alert.rangeKm > 0) {
+        val range = if (imperialUnits) {
+            (alert.rangeKm * METERS_IN_KILOMETER / METERS_IN_MILE).roundToInt()
+        } else {
+            alert.rangeKm
+        }
+        val unit = stringResource(if (imperialUnits) R.string.dashboard_unit_mi else R.string.dashboard_unit_km)
+        stringResource(R.string.dashboard_low_fuel_range, alert.value, range, unit)
+    } else {
+        stringResource(R.string.dashboard_low_fuel, alert.value)
+    }
+
     AlertKind.Wear -> stringResource(R.string.alert_wear, alert.value)
+
     AlertKind.Rest -> stringResource(R.string.alert_rest, alert.value)
 }
 
@@ -211,16 +242,16 @@ private fun gearText(gear: Int) = when {
 
 // A round European sign in ETS2, a rectangular American one in ATS
 @Composable
-private fun SpeedLimitSign(limit: Int, imperial: Boolean) {
-    val shape: Shape = if (imperial) RoundedCornerShape(4.dp) else CircleShape
+private fun SpeedLimitSign(limit: Int, american: Boolean) {
+    val shape: Shape = if (american) RoundedCornerShape(4.dp) else CircleShape
     val description = stringResource(R.string.dashboard_speed_limit, limit)
     Box(
         modifier = Modifier
-            .size(width = if (imperial) 34.dp else 40.dp, height = 40.dp)
+            .size(width = if (american) 34.dp else 40.dp, height = 40.dp)
             .background(Color.White, shape)
             .border(
-                if (imperial) 2.dp else 4.dp,
-                if (imperial) Color.Black else colorResource(R.color.indicatorRed),
+                if (american) 2.dp else 4.dp,
+                if (american) Color.Black else colorResource(R.color.indicatorRed),
                 shape,
             )
             .semantics { contentDescription = description },

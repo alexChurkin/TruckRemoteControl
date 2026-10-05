@@ -129,8 +129,8 @@ data class Dashboard(
     val engineRpm: Int,
     val engineRpmMax: Int,
     val fuelPercent: Int,
-    // American Truck Simulator shows miles per hour
-    val imperial: Boolean,
+    // American Truck Simulator (its signs are American, its speed is in mph unless the user chose otherwise)
+    val isAts: Boolean,
     // null: the server doesn't send the warnings (no extended state), low fuel is guessed by its level then
     val warnings: Set<TruckWarning>? = null,
     // The most worn part of the truck and the trailer
@@ -140,6 +140,8 @@ data class Dashboard(
     // Navigation: to the end of the route, 0 - no route
     val routeDistance: Float = 0f,
     val routeTimeSeconds: Long = 0,
+    // Kilometers the fuel is enough for, 0 - unknown
+    val fuelRangeKm: Int = 0,
 )
 
 object ControllerProtocol {

@@ -16,11 +16,12 @@ import kotlin.math.roundToInt
  * joystick axes of the server). Actions: a click counter (mod 256) or 1 while a hold action is held.
  * Paused controller: type 0x03, goodbye: type 0x04.
  *
- * Server state, 22 bytes (37 and 38 in the extended state): type 0x02 | sequence u32 | flags u16 |
+ * Server state, 22 bytes (37, 38 and 40 in the extended state): type 0x02 | sequence u32 | flags u16 |
  * force feedback duration u16 (ms) | speed i16 (cm/s) | speed limit u16 (cm/s) | cruise speed u16 (cm/s) |
  * gear i8 | rpm u16 | max rpm u16 | fuel u8 (percent) | game u8 (1 - ETS2, 2 - ATS) |
  * flags2 u16 | retarder level u8 | retarder steps u8 | wear u8 (percent) | rest stop i16 (game minutes) |
- * route distance u32 (m) | route time u32 (s) | server revision u8 (a 22-byte state is revision 1, 37 bytes - 2).
+ * route distance u32 (m) | route time u32 (s) | server revision u8 (a 22-byte state is revision 1, 37 bytes - 2) |
+ * fuel range u16 (km, revision 4+).
  * Flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer, 5 wipers, 6 beacon,
  * 7 analog pedals available, 8-9 lights mode, 10 telemetry available (the dashboard values are real).
  * Flags2: 0-6 warnings (see [TruckWarning], in its order), 7 differential lock, 8 lift axle, 9 engine brake.
@@ -31,7 +32,7 @@ object BinaryProtocol {
     const val VERSION = 2
 
     // The server revision this app makes use of entirely (an older server is worth updating)
-    const val REVISION = 3
+    const val REVISION = 4
 
     private const val STATE_TYPE: Byte = 0x02
     private const val PAUSED_TYPE: Byte = 0x03
@@ -52,6 +53,8 @@ object BinaryProtocol {
     private const val ROUTE_DISTANCE_OFFSET = 29
     private const val ROUTE_TIME_OFFSET = 33
     private const val REVISION_OFFSET = 37
+    private const val FUEL_RANGE_OFFSET = 38
+    private const val FUEL_RANGE_END = 40
     private const val REVISION_BASIC = 1
     private const val REVISION_EXTENDED = 2
     private const val DIFFERENTIAL_LOCK_BIT = 7
@@ -140,7 +143,7 @@ object BinaryProtocol {
             beaconOn = bit(BEACON_BIT),
             analogPedalsAvailable = bit(ANALOG_PEDALS_BIT),
             sequence = sequence,
-            dashboard = if (dashboard != null && extended) withExtras(dashboard, all, flags2) else dashboard,
+            dashboard = if (dashboard != null && extended) withExtras(dashboard, all, flags2, length) else dashboard,
             differentialLock = bit2(DIFFERENTIAL_LOCK_BIT),
             liftAxle = bit2(LIFT_AXLE_BIT),
             engineBrake = bit2(ENGINE_BRAKE_BIT),
@@ -151,12 +154,13 @@ object BinaryProtocol {
     }
 
     // The extended part of the state: the whole message in the buffer
-    private fun withExtras(dashboard: Dashboard, all: ByteBuffer, flags2: Int) = dashboard.copy(
+    private fun withExtras(dashboard: Dashboard, all: ByteBuffer, flags2: Int, length: Int) = dashboard.copy(
         warnings = TruckWarning.entries.filter { flags2 and (1 shl it.ordinal) != 0 }.toSet(),
         wearPercent = all.get(WEAR_OFFSET).toInt() and BYTE_MASK,
         restStopMinutes = all.getShort(REST_STOP_OFFSET).toInt(),
         routeDistance = (all.getInt(ROUTE_DISTANCE_OFFSET).toLong() and UINT32_MASK).toFloat(),
         routeTimeSeconds = all.getInt(ROUTE_TIME_OFFSET).toLong() and UINT32_MASK,
+        fuelRangeKm = if (length >= FUEL_RANGE_END) all.getShort(FUEL_RANGE_OFFSET).toInt() and UINT16_MASK else 0,
     )
 
     private fun revision(all: ByteBuffer, length: Int) = when {
@@ -193,7 +197,7 @@ object BinaryProtocol {
         engineRpm = buffer.getShort().toInt() and UINT16_MASK,
         engineRpmMax = buffer.getShort().toInt() and UINT16_MASK,
         fuelPercent = buffer.get().toInt() and BYTE_MASK,
-        imperial = (buffer.get().toInt() and BYTE_MASK) == GAME_ATS,
+        isAts = (buffer.get().toInt() and BYTE_MASK) == GAME_ATS,
     )
 
     private fun flag(value: Boolean, bit: Int) = if (value) 1 shl bit else 0

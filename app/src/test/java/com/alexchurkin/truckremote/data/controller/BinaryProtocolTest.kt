@@ -131,7 +131,7 @@ class BinaryProtocolTest {
         assertEquals(1500, dashboard.engineRpm)
         assertEquals(2500, dashboard.engineRpmMax)
         assertEquals(38, dashboard.fuelPercent)
-        assertTrue(dashboard.imperial)
+        assertTrue(dashboard.isAts)
         assertNull(BinaryProtocol.decodeServerState(message(false), 22)!!.dashboard)
         // A state of an earlier server version has no dashboard
         assertNull(BinaryProtocol.decodeServerState(message(true), 9)!!.dashboard)
@@ -192,6 +192,21 @@ class BinaryProtocolTest {
         assertNull(BinaryProtocol.decodeJob(noJob, noJob.size))
         // Cut in the middle of the city
         assertNull(BinaryProtocol.decodeJob(message, message.size - 2))
+    }
+
+    @Test
+    fun `fuel range comes with revision 4`() {
+        val state = ByteBuffer.allocate(40).order(ByteOrder.LITTLE_ENDIAN)
+            .put(0x02)
+            .putInt(1)
+            .putShort((1 shl 10).toShort())
+            .put(ByteArray(30))
+            .put(4)
+            .putShort(640)
+            .array()
+
+        assertEquals(640, BinaryProtocol.decodeServerState(state, 40)!!.dashboard!!.fuelRangeKm)
+        assertEquals(0, BinaryProtocol.decodeServerState(state, 38)!!.dashboard!!.fuelRangeKm)
     }
 
     @Test

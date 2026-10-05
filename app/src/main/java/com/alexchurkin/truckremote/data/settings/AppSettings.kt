@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.alexchurkin.truckremote.domain.SteeringCurve
-import com.alexchurkin.truckremote.domain.SteeringProcessor
 import kotlin.math.asin
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -59,39 +58,29 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_SHOW_DASHBOARD, true)
         set(value) = prefs.edit { putBoolean(KEY_SHOW_DASHBOARD, value) }
 
-    // Previous versions had only a switch, its dead zone was about 6 degrees
-    var steeringDeadZone: Int
-        get() = prefs.getInt(
-            KEY_STEERING_DEAD_ZONE,
-            if (prefs.getBoolean(KEY_DEAD_ZONE, false)) LEGACY_DEAD_ZONE else 0,
-        )
-            .coerceIn(STEERING_DEAD_ZONE_RANGE)
-        set(value) = prefs.edit { putInt(KEY_STEERING_DEAD_ZONE, value) }
+    /**
+     * Steering, the quick actions layout and speed units: common for both games
+     * unless [separateGameSettings] is on (American Truck Simulator has its own ones then).
+     */
+    fun game(game: Game) = GameSettings(prefs, if (separateGameSettings && game == Game.Ats) ATS_PREFIX else "")
 
-    var steeringMaxAngle: Int
-        get() = prefs.getInt(KEY_STEERING_MAX_ANGLE, DEFAULT_STEERING_MAX_ANGLE)
-            .coerceIn(STEERING_MAX_ANGLE_RANGE)
-        set(value) = prefs.edit { putInt(KEY_STEERING_MAX_ANGLE, value) }
+    // American Truck Simulator starts with a copy of the common settings
+    var separateGameSettings: Boolean
+        get() = prefs.getBoolean(KEY_SEPARATE_GAME_SETTINGS, false)
+        set(value) {
+            if (value && !separateGameSettings) GameSettings(prefs, ATS_PREFIX).copyFrom(GameSettings(prefs, ""))
+            prefs.edit { putBoolean(KEY_SEPARATE_GAME_SETTINGS, value) }
+        }
 
-    var steeringExponent: Float
-        get() = prefs.getFloat(KEY_STEERING_EXPONENT, DEFAULT_STEERING_EXPONENT)
-            .coerceIn(STEERING_EXPONENT_RANGE)
-        set(value) = prefs.edit { putFloat(KEY_STEERING_EXPONENT, value) }
-
-    // See SteeringProcessor.smoothness
-    var steeringSmoothness: Int
-        get() = prefs.getInt(KEY_STEERING_SMOOTHNESS, SteeringProcessor.DEFAULT_SMOOTHNESS)
-            .coerceIn(SteeringProcessor.SMOOTHNESS_RANGE)
-        set(value) = prefs.edit { putInt(KEY_STEERING_SMOOTHNESS, value) }
+    // The game the server reported last (its settings are used until the game is known again)
+    var lastGame: Game
+        get() = Game.fromPrefValue(prefs.getString(KEY_LAST_GAME, null))
+        set(value) = prefs.edit { putString(KEY_LAST_GAME, value.prefValue) }
 
     // The server revision the "update the server" hint was shown for: it is shown once
     var serverUpdateHintRevision: Int
         get() = prefs.getInt(KEY_SERVER_UPDATE_HINT, 0)
         set(value) = prefs.edit { putInt(KEY_SERVER_UPDATE_HINT, value) }
-
-    var actionLayout: ActionLayout
-        get() = ActionLayout.decode(prefs.getString(KEY_ACTION_LAYOUT, null))
-        set(value) = prefs.edit { putString(KEY_ACTION_LAYOUT, value.encode()) }
 
     var pedalMode: PedalMode
         get() = PedalMode.fromPrefValue(prefs.getString(KEY_PEDAL_MODE, null))
@@ -159,13 +148,9 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_LAST_SERVER_IP = "lastServerIp"
         private const val KEY_PNEUMATIC_HORN = "pneumaticSignal"
         private const val KEY_SHOW_DASHBOARD = "showDashboard"
-        private const val KEY_DEAD_ZONE = "deadzone"
-        private const val LEGACY_DEAD_ZONE = 6
-        private const val KEY_STEERING_DEAD_ZONE = "steeringDeadZone"
-        private const val KEY_STEERING_MAX_ANGLE = "steeringMaxAngle"
-        private const val KEY_STEERING_EXPONENT = "steeringExponent"
-        private const val KEY_STEERING_SMOOTHNESS = "steeringSmoothness"
-        private const val KEY_ACTION_LAYOUT = "actionLayout"
+        private const val KEY_SEPARATE_GAME_SETTINGS = "separateGameSettings"
+        private const val KEY_LAST_GAME = "lastGame"
+        private const val ATS_PREFIX = "ats."
         private const val KEY_SERVER_UPDATE_HINT = "serverUpdateHintRevision"
         private const val KEY_PEDAL_MODE = "pedalMode"
         private const val KEY_THROTTLE_LOCK = "throttleLock"

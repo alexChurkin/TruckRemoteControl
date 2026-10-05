@@ -24,6 +24,7 @@ import com.alexchurkin.truckremote.data.sensor.TiltReading
 import com.alexchurkin.truckremote.data.sensor.TiltSensor
 import com.alexchurkin.truckremote.data.settings.ActionLayout
 import com.alexchurkin.truckremote.data.settings.AppSettings
+import com.alexchurkin.truckremote.data.settings.Game
 import com.alexchurkin.truckremote.data.settings.PedalMode
 import com.alexchurkin.truckremote.domain.PedalHandler
 import com.alexchurkin.truckremote.domain.SteeringCurve
@@ -77,6 +78,8 @@ data class MainUiState(
     // Instruments are shown while the server sends them (the game and its telemetry plugin are running)
     val showDashboard: Boolean = true,
     val actionLayout: ActionLayout = ActionLayout.Default,
+    // Speed and distances in miles (by the game or the user's choice)
+    val imperialUnits: Boolean = false,
 ) {
     val isConnected: Boolean
         get() = connection.isConnected
@@ -281,6 +284,9 @@ class MainViewModel(
     private fun onTruckState(truck: ServerState?) {
         val analogBefore = state.value.truck?.analogPedalsAvailable
         _state.update { it.copy(truck = truck) }
+        // The settings of the game being played (the dashboard tells the game)
+        val game = truck?.dashboard?.let { if (it.isAts) Game.Ats else Game.Ets2 }
+        if (game != null && game != settings.lastGame) settings.lastGame = game
         if (truck != null && truck.serverRevision < BinaryProtocol.REVISION &&
             settings.serverUpdateHintRevision < BinaryProtocol.REVISION
         ) {
@@ -336,12 +342,14 @@ class MainViewModel(
 
     // Puts the action into a place of the quick actions panel (see ActionLayout.with)
     fun onActionAssign(page: Int, slot: Int, action: ControllerAction?) {
-        settings.actionLayout = state.value.actionLayout.with(page, slot, action)
+        gameSettings().actionLayout = state.value.actionLayout.with(page, slot, action)
     }
 
     fun onActionLayoutReset() {
-        settings.actionLayout = ActionLayout.Default
+        gameSettings().actionLayout = ActionLayout.Default
     }
+
+    private fun gameSettings() = settings.game(settings.lastGame)
 
     // A swipe up on the gas or the cruise button of the dashboard; returns true if it was sent
     fun onCruiseToggle(): Boolean {
@@ -478,12 +486,19 @@ class MainViewModel(
     }
 
     private fun applySettings() {
-        steering.curve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
+        val game = gameSettings()
+        steering.curve = SteeringCurve(game.steeringDeadZone, game.steeringMaxAngle, game.steeringExponent)
         steering.calibrationOffset = settings.calibrationOffset
-        steering.smoothness = settings.steeringSmoothness
+        steering.smoothness = game.steeringSmoothness
         forceFeedback = settings.forceFeedback
         pneumaticHorn = settings.pneumaticHorn
-        _state.update { it.copy(showDashboard = settings.showDashboard, actionLayout = settings.actionLayout) }
+        _state.update {
+            it.copy(
+                showDashboard = settings.showDashboard,
+                actionLayout = game.actionLayout,
+                imperialUnits = game.speedUnits.isImperial(settings.lastGame),
+            )
+        }
         analogPedalsMode = settings.pedalMode == PedalMode.Analog
         brakePedal.configure(analogPedalsMode, lockAllowed = false)
         gasPedal.configure(analogPedalsMode, lockAllowed = settings.throttleLock)
