@@ -9,12 +9,15 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -27,6 +30,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -51,14 +55,18 @@ import kotlinx.coroutines.launch
 private const val KMH_IN_MS = 3.6f
 private const val MPH_IN_MS = 2.236936f
 private const val RED_ZONE = 0.9f
-private const val LOW_FUEL_PERCENT = 15
+private const val METERS_IN_KILOMETER = 1000f
+private const val METERS_IN_MILE = 1609.344f
+private const val PRECISE_DISTANCE_BELOW = 10f
+private const val SECONDS_IN_MINUTE = 60L
+private const val MINUTES_IN_HOUR = 60
 private const val REPEAT_DELAY_MS = 450L
 private const val REPEAT_INTERVAL_MS = 220L
 
 /**
  * Instruments in the middle of the controller screen: speed with its unit, the gear, the speed limit sign,
  * engine rpm and the cruise control (its speed is changed here). Only what matters is shown:
- * the speed limit when there is one, the fuel when it's low.
+ * the speed limit when there is one, the route while driving by the navigation, warnings when there are problems.
  * [onCruiseToggle] and [onCruiseStep] return true if the command was sent (the button gives haptic feedback then).
  */
 @Composable
@@ -93,6 +101,13 @@ fun DashboardPanel(
             }
         }
         RpmBar(dashboard.engineRpm, dashboard.engineRpmMax, Modifier.padding(top = 4.dp))
+        if (dashboard.routeDistance > 0f) {
+            BasicText(
+                text = routeText(dashboard),
+                style = TextStyle(color = colorResource(R.color.dashboardSecondary), fontSize = 13.sp),
+                modifier = Modifier.padding(top = 6.dp),
+            )
+        }
         CruiseControl(
             speed = (dashboard.cruiseSpeed * factor).roundToInt(),
             unit = unit,
@@ -100,18 +115,62 @@ fun DashboardPanel(
             onStep = onCruiseStep,
             modifier = Modifier.padding(top = 12.dp),
         )
-        if (dashboard.fuelPercent in 0..LOW_FUEL_PERCENT) {
+        val alerts = dashboard.alerts()
+        if (alerts.isNotEmpty()) Alerts(alerts, Modifier.padding(top = 8.dp))
+    }
+}
+
+// "128 km · 1 h 45 min" to the end of the route
+@Composable
+private fun routeText(dashboard: Dashboard): String {
+    val distance = dashboard.routeDistance / if (dashboard.imperial) METERS_IN_MILE else METERS_IN_KILOMETER
+    val distanceText = if (distance >= PRECISE_DISTANCE_BELOW) {
+        distance.roundToInt().toString()
+    } else {
+        String.format(LocalConfiguration.current.locales[0], "%.1f", distance)
+    }
+    val minutes = ((dashboard.routeTimeSeconds + SECONDS_IN_MINUTE / 2) / SECONDS_IN_MINUTE).toInt()
+    val time = if (minutes >= MINUTES_IN_HOUR) {
+        stringResource(R.string.dashboard_time_hours, minutes / MINUTES_IN_HOUR, minutes % MINUTES_IN_HOUR)
+    } else {
+        stringResource(R.string.dashboard_time_minutes, minutes)
+    }
+    val unit = stringResource(if (dashboard.imperial) R.string.dashboard_unit_mi else R.string.dashboard_unit_km)
+    return stringResource(R.string.dashboard_route, distanceText, unit, time)
+}
+
+// Small labels of what needs attention: red ones are serious
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Alerts(alerts: List<DashboardAlert>, modifier: Modifier = Modifier) {
+    FlowRow(
+        modifier = modifier.widthIn(max = 460.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        alerts.forEach { alert ->
+            val color = colorResource(if (alert.severe) R.color.indicatorRed else R.color.dashboardCaution)
             BasicText(
-                text = stringResource(R.string.dashboard_low_fuel, dashboard.fuelPercent),
-                style = TextStyle(
-                    color = colorResource(R.color.dashboardCaution),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
-                modifier = Modifier.padding(top = 8.dp),
+                text = alertText(alert),
+                style = TextStyle(color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold),
+                modifier = Modifier
+                    .border(1.dp, color, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 3.dp),
             )
         }
     }
+}
+
+@Composable
+private fun alertText(alert: DashboardAlert) = when (alert.kind) {
+    AlertKind.AirPressure -> stringResource(R.string.alert_air_pressure)
+    AlertKind.OilPressure -> stringResource(R.string.alert_oil_pressure)
+    AlertKind.WaterTemperature -> stringResource(R.string.alert_water_temperature)
+    AlertKind.Battery -> stringResource(R.string.alert_battery)
+    AlertKind.AdBlue -> stringResource(R.string.alert_adblue)
+    AlertKind.Fuel -> stringResource(R.string.dashboard_low_fuel, alert.value)
+    AlertKind.Wear -> stringResource(R.string.alert_wear, alert.value)
+    AlertKind.Rest -> stringResource(R.string.alert_rest, alert.value)
 }
 
 @Composable

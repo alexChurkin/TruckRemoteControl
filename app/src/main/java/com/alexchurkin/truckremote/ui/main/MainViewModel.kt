@@ -30,6 +30,7 @@ import com.alexchurkin.truckremote.domain.SteeringProcessor
 import com.alexchurkin.truckremote.util.isValidIpv4
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,6 +43,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 
 enum class Pedal {
@@ -57,6 +59,11 @@ data class PedalsUiState(
     val gasLocked: Boolean = false,
 )
 
+enum class AutoPause {
+    FaceDown,
+    NoSensor,
+}
+
 data class MainUiState(
     val connection: ConnectionState = ConnectionState.Disconnected,
     val linkQuality: LinkQuality? = null,
@@ -64,12 +71,17 @@ data class MainUiState(
     val truck: ServerState? = null,
     val pedals: PedalsUiState = PedalsUiState(),
     val pausedByUser: Boolean = false,
+    // Nothing is controlled while the phone lies screen down or the tilt sensor is silent
+    val autoPause: AutoPause? = null,
     // Instruments are shown while the server sends them (the game and its telemetry plugin are running)
     val showDashboard: Boolean = true,
     val actionLayout: ActionLayout = ActionLayout.Default,
 ) {
     val isConnected: Boolean
         get() = connection.isConnected
+
+    val isPaused: Boolean
+        get() = pausedByUser || autoPause != null
 }
 
 // One-off events for the screen
@@ -127,6 +139,7 @@ class MainViewModel(
     private var searchingByBroadcast = false
     private var notFoundShown = false
     private var analogUnavailableWarned = false
+    private var faceDown = false
 
     init {
         applySettings()
@@ -142,7 +155,8 @@ class MainViewModel(
             shown && connected
         }
             .distinctUntilChanged()
-            .flatMapLatest { active -> if (active) tiltSensor.readings() else emptyFlow() }
+            .onEach { active -> if (!active) setAutoPause(null) }
+            .flatMapLatest { active -> if (active) readingsWithWatchdog() else emptyFlow() }
             .onEach(::onTilt)
             .launchIn(viewModelScope)
     }
@@ -217,7 +231,7 @@ class MainViewModel(
         if (!state.value.isConnected) return
         val paused = !state.value.pausedByUser
         if (paused) releasePedals()
-        controller.setPausedByUser(paused)
+        controller.setPausedByUser(paused || state.value.autoPause != null)
         _state.update { it.copy(pausedByUser = paused) }
         if (paused) send(MainEffect.ShowAd)
     }
@@ -279,7 +293,7 @@ class MainViewModel(
     /* Buttons */
 
     private val isControllable: Boolean
-        get() = state.value.isConnected && !state.value.pausedByUser
+        get() = state.value.isConnected && !state.value.isPaused
 
     // Toggles are flipped on every click, so a lost message can't lose a click
     private fun toggle(transform: (ControllerState) -> ControllerState) {
@@ -407,9 +421,39 @@ class MainViewModel(
 
     /* Steering */
 
-    private fun onTilt(reading: TiltReading) {
+    // null after the sensor has been silent for SENSOR_TIMEOUT_MS
+    private fun readingsWithWatchdog(): Flow<TiltReading?> = tiltSensor.readings().transformLatest { reading ->
+        emit(reading)
+        delay(SENSOR_TIMEOUT_MS)
+        emit(null)
+    }
+
+    private fun onTilt(reading: TiltReading?) {
+        if (reading == null) {
+            setAutoPause(AutoPause.NoSensor)
+            return
+        }
+        // Hysteresis: a phone held flat doesn't flicker between the states
+        faceDown = reading.screenUp < if (faceDown) FACE_DOWN_EXIT else FACE_DOWN_ENTER
+        setAutoPause(if (faceDown) AutoPause.FaceDown else null)
         val value = steering.process(reading.angle, reading.timeNanos)
         controller.updateState { it.copy(steering = value) }
+    }
+
+    // The server releases everything while the controller is paused; the pedals are released here too
+    private fun setAutoPause(reason: AutoPause?) {
+        val previous = state.value.autoPause
+        if (reason == previous) return
+        if (reason == null) faceDown = false
+        _state.update { it.copy(autoPause = reason) }
+        if (!state.value.isConnected) return
+        controller.setPausedByUser(reason != null || state.value.pausedByUser)
+        when (reason) {
+            null -> send(MainEffect.Message(R.string.auto_pause_off))
+            AutoPause.FaceDown -> send(MainEffect.Message(R.string.auto_pause_face_down))
+            AutoPause.NoSensor -> send(MainEffect.Message(R.string.auto_pause_no_sensor))
+        }
+        if (reason != null) releasePedals()
     }
 
     // The current position becomes the center
@@ -442,6 +486,12 @@ class MainViewModel(
     }
 
     companion object {
+        private const val SENSOR_TIMEOUT_MS = 1000L
+
+        // Where the screen faces (see TiltReading.screenUp): about 37° and 30° below horizontal
+        private const val FACE_DOWN_ENTER = -0.6f
+        private const val FACE_DOWN_EXIT = -0.5f
+
         val Factory = viewModelFactory {
             initializer {
                 val container = (checkNotNull(this[APPLICATION_KEY]) as TruckRemoteApp).container

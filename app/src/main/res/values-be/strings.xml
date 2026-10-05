@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Змены ў версіі</string>
-    <string name="version_changes_text">Аналагавыя педалі (дакраніцеся і вядзіце ўверх, каб націснуць мацней), фіксацыя газу (уключаецца ў наладах) і тры старонкі хуткіх дзеянняў: грузавік (рухавік, прычэп, дворнікі…), ваджэнне (рэтардэр, маторны тормаз, хуткасць круізу, хуткая паркоўка) і агляд (камеры, карта, прыборная панэль, радыё). Для іх абнавіце Truck Remote Server на ПК. Адчувальнасць руля цяпер наладжваецца ў праграме з жывым папярэднім праглядам, сервер можна знайсці па QR-кодзе. Руль выкарыстоўвае гіраскоп разам з акселерометрам і адаптыўны фільтр: плаўна і без запазнення. Доўгі націск на хуткую кнопку дазваляе паставіць на яе месца любое іншае дзеянне, плаўнасць руля наладжваецца ў наладах.</string>
+    <string name="version_changes_text">Аналагавыя педалі (дакраніцеся і вядзіце ўверх, каб націснуць мацней), фіксацыя газу (уключаецца ў наладах) і тры старонкі хуткіх дзеянняў: грузавік (рухавік, прычэп, дворнікі…), ваджэнне (рэтардэр, маторны тормаз, хуткасць круізу, хуткая паркоўка) і агляд (камеры, карта, прыборная панэль, радыё). Для іх абнавіце Truck Remote Server на ПК. Адчувальнасць руля цяпер наладжваецца ў праграме з жывым папярэднім праглядам, сервер можна знайсці па QR-кодзе. Руль выкарыстоўвае гіраскоп разам з акселерометрам і адаптыўны фільтр: плаўна і без запазнення. Доўгі націск на хуткую кнопку дазваляе паставіць на яе месца любое іншае дзеянне, плаўнасць руля наладжваецца ў наладах. На прыборцы: папярэджанні (паветра, алей, перагрэў, паліва, знос, адпачынак) і адлегласць і час да мэты, на панэлі бачныя блакіроўка дыферэнцыяла, пад\'ёмная вось і ўзровень рэтардэра (абнавіце Truck Remote Server). Аўтапаўза: кіраванне адпускаецца, пакуль тэлефон ляжыць экранам уніз.</string>
 
     <string name="searching_on_local">Пошук сервераў у лакальнай сетцы…</string>
     <string name="signal_strength">Сіла сігналу Wi-Fi:</string>
@@ -171,4 +171,19 @@
     <string name="actions_edit_done">Гатова</string>
     <string name="actions_empty">Пуста</string>
     <string name="actions_edit_place">Замяніць: %1$s</string>
+    <string name="auto_pause_face_down">Аўтапаўза: тэлефон ляжыць экранам уніз</string>
+    <string name="auto_pause_no_sensor">Аўтапаўза: няма даных датчыка нахілу</string>
+    <string name="auto_pause_off">Аўтапаўза знята</string>
+    <string name="alert_air_pressure">Ціск паветра</string>
+    <string name="alert_oil_pressure">Ціск алею</string>
+    <string name="alert_water_temperature">Перагрэў рухавіка</string>
+    <string name="alert_battery">Акумулятар</string>
+    <string name="alert_adblue">AdBlue</string>
+    <string name="alert_wear">Знос %1$d%%</string>
+    <string name="alert_rest">Адпачынак праз %1$d хв</string>
+    <string name="dashboard_route">%1$s %2$s · %3$s</string>
+    <string name="dashboard_time_hours">%1$d г %2$02d хв</string>
+    <string name="dashboard_time_minutes">%1$d хв</string>
+    <string name="dashboard_unit_km">км</string>
+    <string name="dashboard_unit_mi">мілі</string>
 </resources>

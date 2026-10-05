@@ -138,6 +138,42 @@ class BinaryProtocolTest {
     }
 
     @Test
+    fun `extended state carries warnings, axles, retarder and the route`() {
+        val message = ByteBuffer.allocate(37).order(ByteOrder.LITTLE_ENDIAN)
+            .put(0x02)
+            .putInt(1)
+            .putShort((1 shl 10).toShort())
+            .put(ByteArray(15))
+            .putShort((1 or (1 shl 3) or (1 shl 6) or (1 shl 7) or (1 shl 9)).toShort())
+            .put(2)
+            .put(4)
+            .put(23)
+            .putShort((-40).toShort())
+            .putInt(128_401)
+            .putInt(6300)
+            .array()
+
+        val state = BinaryProtocol.decodeServerState(message, message.size)!!
+        val dashboard = state.dashboard!!
+
+        assertEquals(
+            setOf(TruckWarning.AirPressure, TruckWarning.WaterTemperature, TruckWarning.Fuel),
+            dashboard.warnings,
+        )
+        assertEquals(23, dashboard.wearPercent)
+        assertEquals(-40, dashboard.restStopMinutes)
+        assertEquals(128_401f, dashboard.routeDistance)
+        assertEquals(6300L, dashboard.routeTimeSeconds)
+        assertTrue(state.differentialLock)
+        assertFalse(state.liftAxle)
+        assertTrue(state.engineBrake)
+        assertEquals(2, state.retarderLevel)
+        assertEquals(4, state.retarderSteps)
+        // A 22-byte state has no warnings: low fuel is guessed by the level then
+        assertNull(BinaryProtocol.decodeServerState(message, 22)!!.dashboard!!.warnings)
+    }
+
+    @Test
     fun `text and short messages aren't binary states`() {
         val text = "True,False,False,False,1,0".toByteArray()
         assertFalse(BinaryProtocol.isBinary(text, text.size))

@@ -294,6 +294,44 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `phone screen down pauses the controller until it is picked up`() {
+        viewModel.setForeground(true)
+        connect()
+        viewModel.onPedalDown(Pedal.Gas, 0f, 0f, 100)
+        assertTrue(controller.state.gasPressed)
+
+        tilt.readings.tryEmit(TiltReading(0f, 0, screenUp = -0.9f))
+
+        assertEquals(AutoPause.FaceDown, viewModel.state.value.autoPause)
+        assertTrue(controller.pausedByUserNow)
+        assertFalse(controller.state.gasPressed)
+        assertFalse(viewModel.onAction(ControllerAction.Engine))
+
+        // Still down a bit: the hysteresis keeps the pause
+        tilt.readings.tryEmit(TiltReading(0f, 1, screenUp = -0.55f))
+        assertEquals(AutoPause.FaceDown, viewModel.state.value.autoPause)
+
+        tilt.readings.tryEmit(TiltReading(0f, 2, screenUp = 0.3f))
+        assertNull(viewModel.state.value.autoPause)
+        assertFalse(controller.pausedByUserNow)
+    }
+
+    @Test
+    fun `silent tilt sensor pauses the controller`() {
+        viewModel.setForeground(true)
+        connect()
+        tilt.readings.tryEmit(TiltReading(0f, 0, screenUp = 0.3f))
+
+        dispatcher.scheduler.advanceTimeBy(1500)
+        assertEquals(AutoPause.NoSensor, viewModel.state.value.autoPause)
+        assertTrue(controller.pausedByUserNow)
+
+        tilt.readings.tryEmit(TiltReading(0f, 1, screenUp = 0.3f))
+        assertNull(viewModel.state.value.autoPause)
+        assertFalse(controller.pausedByUserNow)
+    }
+
+    @Test
     fun `tilt steers only on screen while connected, with calibration and curve`() {
         // A second between the readings: the filter starts anew and passes them as is
         var time = 0L

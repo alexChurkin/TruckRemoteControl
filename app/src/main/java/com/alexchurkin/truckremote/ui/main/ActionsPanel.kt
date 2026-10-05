@@ -64,7 +64,7 @@ private val ItemShape = RoundedCornerShape(10.dp)
 /**
  * The quick actions panel: pages of buttons (swiped sideways) with page indicators under them.
  * [onClick] and [onHold] return true if the action was sent (the button gives haptic feedback then),
- * [activeActions] are on in the game (e.g. the engine is running).
+ * [activeActions] are on in the game (e.g. the engine is running), [badges] are small texts on buttons (e.g. "2/4").
  * A long press on a button (or on an empty place) starts editing the [layout]: a tapped place shows
  * all actions to choose from, [onAssign] puts the chosen one there, [onReset] brings the default layout back.
  */
@@ -72,6 +72,7 @@ private val ItemShape = RoundedCornerShape(10.dp)
 fun ActionsPanel(
     layout: ActionLayout,
     activeActions: Set<ControllerAction>,
+    badges: Map<ControllerAction, String>,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
     onAssign: (page: Int, slot: Int, action: ControllerAction?) -> Unit,
@@ -117,6 +118,7 @@ fun ActionsPanel(
                 ActionGrid(
                     slots = layout.pages[page],
                     activeActions = activeActions,
+                    badges = badges,
                     editing = editing,
                     onClick = onClick,
                     onHold = onHold,
@@ -168,6 +170,7 @@ private data class Place(val page: Int, val slot: Int)
 private fun ActionGrid(
     slots: List<ControllerAction?>,
     activeActions: Set<ControllerAction>,
+    badges: Map<ControllerAction, String>,
     editing: Boolean,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
@@ -188,6 +191,7 @@ private fun ActionGrid(
                         else -> ActionItem(
                             button = action.button(),
                             active = action in activeActions,
+                            badge = badges[action],
                             onClick = onClick,
                             onHold = onHold,
                             onLongPress = onLongPress,
@@ -240,6 +244,7 @@ private fun PickerGrid(
 private fun ActionItem(
     button: ActionButton,
     active: Boolean,
+    badge: String?,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
     onLongPress: () -> Unit,
@@ -282,11 +287,20 @@ private fun ActionItem(
             if (onClick(action)) view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
     }
-    ActionTile(
-        button = button,
-        background = animateColorAsState(background, label = "background").value,
-        modifier = modifier.clip(ItemShape).then(input),
-    )
+    Box(modifier) {
+        ActionTile(
+            button = button,
+            background = animateColorAsState(background, label = "background").value,
+            modifier = Modifier.clip(ItemShape).then(input),
+        )
+        if (badge != null) {
+            BasicText(
+                text = badge,
+                style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = 3.dp, end = 6.dp),
+            )
+        }
+    }
 }
 
 // An empty place is invisible until the layout is edited

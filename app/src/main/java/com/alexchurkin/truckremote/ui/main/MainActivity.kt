@@ -62,6 +62,7 @@ class MainActivity :
 
     // Actions that are on in the game: their buttons are highlighted
     private var activeActions by mutableStateOf(emptySet<ControllerAction>())
+    private var actionBadges by mutableStateOf(emptyMap<ControllerAction, String>())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,6 +144,7 @@ class MainActivity :
             ActionsPanel(
                 layout = state.actionLayout,
                 activeActions = activeActions,
+                badges = actionBadges,
                 onClick = viewModel::onAction,
                 onHold = viewModel::onActionHold,
                 onAssign = viewModel::onActionAssign,
@@ -165,7 +167,7 @@ class MainActivity :
     private fun render(state: MainUiState) {
         showConnectionIndicator(state)
         binding.pauseButton.setImageResource(
-            if (state.pausedByUser) R.drawable.pause_btn_paused else R.drawable.pause_btn_resumed,
+            if (state.isPaused) R.drawable.pause_btn_paused else R.drawable.pause_btn_resumed,
         )
         showPedals(state.pedals)
         // The truck state is unknown without the server: nothing is shown as turned on
@@ -242,11 +244,27 @@ class MainActivity :
             showBlinkers(previous, truck)
         }
 
+        showActions(truck)
+    }
+
+    // States of the quick actions panel buttons
+    private fun showActions(truck: ServerState) {
         activeActions = buildSet {
             if (truck.engineOn) add(ControllerAction.Engine)
             if (truck.trailerAttached) add(ControllerAction.Trailer)
             if (truck.wipersOn) add(ControllerAction.Wipers)
             if (truck.beaconOn) add(ControllerAction.Beacon)
+            if (truck.differentialLock) add(ControllerAction.DiffLock)
+            if (truck.liftAxle) add(ControllerAction.LiftAxle)
+            if (truck.engineBrake) add(ControllerAction.EngineBrake)
+            if (truck.retarderLevel > 0) add(ControllerAction.RetarderUp)
+        }
+        // The retarder level on both of its buttons
+        actionBadges = if (truck.retarderSteps > 0) {
+            val level = "${truck.retarderLevel}/${truck.retarderSteps}"
+            mapOf(ControllerAction.RetarderUp to level, ControllerAction.RetarderDown to level)
+        } else {
+            emptyMap()
         }
     }
 

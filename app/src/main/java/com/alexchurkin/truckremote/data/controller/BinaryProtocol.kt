@@ -16,11 +16,14 @@ import kotlin.math.roundToInt
  * joystick axes of the server). Actions: a click counter (mod 256) or 1 while a hold action is held.
  * Paused controller: type 0x03, goodbye: type 0x04.
  *
- * Server state, 22 bytes: type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms) |
- * speed i16 (cm/s) | speed limit u16 (cm/s) | cruise speed u16 (cm/s) | gear i8 | rpm u16 | max rpm u16 |
- * fuel u8 (percent) | game u8 (1 - ETS2, 2 - ATS).
+ * Server state, 22 bytes (37 in the extended state): type 0x02 | sequence u32 | flags u16 |
+ * force feedback duration u16 (ms) | speed i16 (cm/s) | speed limit u16 (cm/s) | cruise speed u16 (cm/s) |
+ * gear i8 | rpm u16 | max rpm u16 | fuel u8 (percent) | game u8 (1 - ETS2, 2 - ATS) |
+ * flags2 u16 | retarder level u8 | retarder steps u8 | wear u8 (percent) | rest stop i16 (game minutes) |
+ * route distance u32 (m) | route time u32 (s).
  * Flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer, 5 wipers, 6 beacon,
  * 7 analog pedals available, 8-9 lights mode, 10 telemetry available (the dashboard values are real).
+ * Flags2: 0-6 warnings (see [TruckWarning], in its order), 7 differential lock, 8 lift axle, 9 engine brake.
  */
 object BinaryProtocol {
     const val VERSION = 2
@@ -33,6 +36,17 @@ object BinaryProtocol {
     private const val CONTROLLER_HEADER_SIZE = 16
     private const val SERVER_STATE_SIZE = 9
     private const val SERVER_DASHBOARD_SIZE = 22
+    private const val SERVER_EXTENDED_SIZE = 37
+    private const val FLAGS2_OFFSET = 22
+    private const val RETARDER_LEVEL_OFFSET = 24
+    private const val RETARDER_STEPS_OFFSET = 25
+    private const val WEAR_OFFSET = 26
+    private const val REST_STOP_OFFSET = 27
+    private const val ROUTE_DISTANCE_OFFSET = 29
+    private const val ROUTE_TIME_OFFSET = 33
+    private const val DIFFERENTIAL_LOCK_BIT = 7
+    private const val LIFT_AXLE_BIT = 8
+    private const val ENGINE_BRAKE_BIT = 9
     private const val CENTIMETERS_IN_METER = 100f
     private const val GAME_ATS = 2
     private const val LEVEL_SCALE = 0xFFFF
@@ -99,6 +113,11 @@ object BinaryProtocol {
         val flags = buffer.getShort().toInt() and UINT16_MASK
         val ffbDurationMs = buffer.getShort().toLong() and UINT16_MASK.toLong()
         fun bit(index: Int) = flags and (1 shl index) != 0
+        val extended = length >= SERVER_EXTENDED_SIZE
+        val all = ByteBuffer.wrap(data, 0, length).order(ByteOrder.LITTLE_ENDIAN)
+        val flags2 = if (extended) all.getShort(FLAGS2_OFFSET).toInt() and UINT16_MASK else 0
+        fun bit2(index: Int) = flags2 and (1 shl index) != 0
+        val dashboard = if (length >= SERVER_DASHBOARD_SIZE && bit(TELEMETRY_BIT)) decodeDashboard(buffer) else null
         return ServerState(
             engineOn = bit(ENGINE_BIT),
             parkingBrake = bit(PARKING_BRAKE_ON_BIT),
@@ -111,7 +130,22 @@ object BinaryProtocol {
             beaconOn = bit(BEACON_BIT),
             analogPedalsAvailable = bit(ANALOG_PEDALS_BIT),
             sequence = sequence,
-            dashboard = if (length >= SERVER_DASHBOARD_SIZE && bit(TELEMETRY_BIT)) decodeDashboard(buffer) else null,
+            dashboard = if (dashboard != null && extended) {
+                dashboard.copy(
+                    warnings = TruckWarning.entries.filter { bit2(it.ordinal) }.toSet(),
+                    wearPercent = all.get(WEAR_OFFSET).toInt() and BYTE_MASK,
+                    restStopMinutes = all.getShort(REST_STOP_OFFSET).toInt(),
+                    routeDistance = (all.getInt(ROUTE_DISTANCE_OFFSET).toLong() and UINT32_MASK).toFloat(),
+                    routeTimeSeconds = all.getInt(ROUTE_TIME_OFFSET).toLong() and UINT32_MASK,
+                )
+            } else {
+                dashboard
+            },
+            differentialLock = bit2(DIFFERENTIAL_LOCK_BIT),
+            liftAxle = bit2(LIFT_AXLE_BIT),
+            engineBrake = bit2(ENGINE_BRAKE_BIT),
+            retarderLevel = if (extended) all.get(RETARDER_LEVEL_OFFSET).toInt() and BYTE_MASK else 0,
+            retarderSteps = if (extended) all.get(RETARDER_STEPS_OFFSET).toInt() and BYTE_MASK else 0,
         )
     }
 

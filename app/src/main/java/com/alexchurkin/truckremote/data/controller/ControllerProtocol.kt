@@ -86,7 +86,25 @@ data class ServerState(
     val sequence: Long? = null,
     // Instruments of the truck (binary protocol), null while the game or its telemetry plugin isn't running
     val dashboard: Dashboard? = null,
+    // Sent with the telemetry in the extended (37-byte) state
+    val differentialLock: Boolean = false,
+    val liftAxle: Boolean = false,
+    val engineBrake: Boolean = false,
+    val retarderLevel: Int = 0,
+    // 0: the truck has no retarder
+    val retarderSteps: Int = 0,
 )
+
+// Warning lamps of the truck dashboard
+enum class TruckWarning {
+    AirPressure,
+    AirPressureEmergency,
+    OilPressure,
+    WaterTemperature,
+    Battery,
+    AdBlue,
+    Fuel,
+}
 
 data class Dashboard(
     // m/s, negative when reversing
@@ -102,6 +120,15 @@ data class Dashboard(
     val fuelPercent: Int,
     // American Truck Simulator shows miles per hour
     val imperial: Boolean,
+    // null: the server doesn't send the warnings (no extended state), low fuel is guessed by its level then
+    val warnings: Set<TruckWarning>? = null,
+    // The most worn part of the truck and the trailer
+    val wearPercent: Int = 0,
+    // Game minutes until the driver must rest
+    val restStopMinutes: Int = 0,
+    // Navigation: to the end of the route, 0 - no route
+    val routeDistance: Float = 0f,
+    val routeTimeSeconds: Long = 0,
 )
 
 object ControllerProtocol {
