@@ -2,36 +2,31 @@ package com.alexchurkin.truckremote.domain
 
 import kotlin.math.abs
 import kotlin.math.pow
-import kotlin.math.sin
 import kotlin.math.withSign
 
 /**
- * Converts the gravity projection on the device Y axis (m/s², positive to the right)
- * into the steering value sent to the server (in the same units, so the server scale is kept).
- *
- * Work is done with the tilt sine (y / g):
- * - tilt below [deadZoneDeg] gives 0, the rest of the range starts from 0 (no jump at the dead zone border);
- * - tilt of [maxAngleDeg] and more gives the full value (g);
+ * Converts the steering angle of the phone (degrees, positive to the right) into the steering value
+ * sent to the server: [GRAVITY] (m/s², the unit of previous versions) is the full lock.
+ * - an angle within [deadZoneDeg] gives 0, the rest of the range starts from 0 (no jump at the dead zone border);
+ * - [maxAngleDeg] and more give the full lock;
  * - [exponent] > 1 makes the center softer and the edges sharper.
- * Dead zone 0°, max angle 90° and exponent 1 give the input value as is (behavior of previous versions).
+ * Every degree of the range turns the wheel equally (the angle, not the gravity projection, is used).
  */
 class SteeringCurve(deadZoneDeg: Int, maxAngleDeg: Int, private val exponent: Float) {
 
-    private val deadZoneSin = sinDeg(deadZoneDeg)
-    private val range = (sinDeg(maxAngleDeg) - deadZoneSin).coerceAtLeast(MIN_RANGE)
+    private val deadZone = deadZoneDeg.toFloat()
+    private val range = (maxAngleDeg - deadZoneDeg).toFloat().coerceAtLeast(MIN_RANGE_DEG)
 
-    fun apply(y: Float): Float {
-        if (y.isNaN()) return 0f
-        val tiltSin = (abs(y) / GRAVITY).coerceAtMost(1f)
-        if (tiltSin <= deadZoneSin) return 0f
-        val part = ((tiltSin - deadZoneSin) / range).coerceAtMost(1f)
-        return (part.pow(exponent) * GRAVITY).withSign(y)
+    fun apply(angleDeg: Float): Float {
+        if (angleDeg.isNaN()) return 0f
+        val angle = abs(angleDeg)
+        if (angle <= deadZone) return 0f
+        val part = ((angle - deadZone) / range).coerceAtMost(1f)
+        return (part.pow(exponent) * GRAVITY).withSign(angleDeg)
     }
 
     companion object {
         const val GRAVITY = 9.80665f
-        private const val MIN_RANGE = 0.01f
-
-        private fun sinDeg(degrees: Int) = sin(Math.toRadians(degrees.toDouble())).toFloat()
+        private const val MIN_RANGE_DEG = 1f
     }
 }

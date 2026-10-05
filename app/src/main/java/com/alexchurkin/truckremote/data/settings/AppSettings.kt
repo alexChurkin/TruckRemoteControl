@@ -3,6 +3,8 @@ package com.alexchurkin.truckremote.data.settings
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.alexchurkin.truckremote.domain.SteeringCurve
+import kotlin.math.asin
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -83,9 +85,23 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_THROTTLE_LOCK, false)
         set(value) = prefs.edit { putBoolean(KEY_THROTTLE_LOCK, value) }
 
+    // Degrees added to the steering angle (the straight position chosen by the user).
+    // Earlier versions stored the gravity projection (m/s²): it's converted to the angle once
     var calibrationOffset: Float
-        get() = prefs.getFloat(KEY_CALIBRATION_OFFSET, 0f)
-        set(value) = prefs.edit { putFloat(KEY_CALIBRATION_OFFSET, value) }
+        get() = when {
+            prefs.contains(KEY_CALIBRATION_OFFSET_DEG) -> prefs.getFloat(KEY_CALIBRATION_OFFSET_DEG, 0f)
+
+            prefs.contains(KEY_CALIBRATION_OFFSET) -> {
+                val projection = prefs.getFloat(KEY_CALIBRATION_OFFSET, 0f) / SteeringCurve.GRAVITY
+                Math.toDegrees(asin(projection.coerceIn(-1f, 1f)).toDouble()).toFloat()
+            }
+
+            else -> 0f
+        }
+        set(value) = prefs.edit {
+            putFloat(KEY_CALIBRATION_OFFSET_DEG, value)
+            remove(KEY_CALIBRATION_OFFSET)
+        }
 
     var guideShown: Boolean
         get() = prefs.getBoolean(KEY_GUIDE_SHOWN, false)
@@ -135,6 +151,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_PEDAL_MODE = "pedalMode"
         private const val KEY_THROTTLE_LOCK = "throttleLock"
         private const val KEY_CALIBRATION_OFFSET = "calibrationOffset"
+        private const val KEY_CALIBRATION_OFFSET_DEG = "calibrationOffsetDeg"
         private const val KEY_GUIDE_SHOWN = "guideShowed"
         private const val KEY_LAST_RELEASE_NOTES = "releaseVersionText"
         private const val KEY_ADS_REMOVED = "prefadsetting"

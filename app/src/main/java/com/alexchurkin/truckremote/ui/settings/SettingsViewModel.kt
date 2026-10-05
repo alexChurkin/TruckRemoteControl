@@ -16,6 +16,7 @@ import com.alexchurkin.truckremote.data.sensor.TiltSensor
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.PedalMode
 import com.alexchurkin.truckremote.domain.SteeringCurve
+import com.alexchurkin.truckremote.domain.SteeringProcessor
 import com.alexchurkin.truckremote.util.isValidIpv4
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -74,18 +75,16 @@ class SettingsViewModel(
         billing.events.map { SettingsMessage(it.messageRes) },
     )
 
-    // Without the calibration offset, for "Straighten the wheel"
-    private var lastRawTiltY = 0f
+    private val steering = SteeringProcessor()
 
     /**
      * The steering the phone sends now, from -1 (full lock left) to 1, with the current settings.
      * The sensor works only while the preview is collected (the settings screen is shown).
      */
     val steeringPreview: Flow<Float> = tiltSensor.readings().map { reading ->
-        lastRawTiltY = reading.y
-        val curve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
-        val y = reading.y + settings.calibrationOffset
-        curve.apply(if (reading.reverseLandscape) -y else y) / SteeringCurve.GRAVITY
+        steering.curve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
+        steering.calibrationOffset = settings.calibrationOffset
+        steering.process(reading.angle, reading.timeNanos) / SteeringCurve.GRAVITY
     }
 
     fun setServerPort(port: Int) {
@@ -147,7 +146,7 @@ class SettingsViewModel(
 
     // The current tilt becomes the straight wheel
     fun calibrate() {
-        settings.calibrationOffset = -lastRawTiltY
+        settings.calibrationOffset = -steering.lastAngle
         ownMessages.trySend(SettingsMessage(R.string.calibration_completed))
     }
 

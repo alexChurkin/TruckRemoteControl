@@ -25,6 +25,7 @@ import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.PedalMode
 import com.alexchurkin.truckremote.domain.PedalHandler
 import com.alexchurkin.truckremote.domain.SteeringCurve
+import com.alexchurkin.truckremote.domain.SteeringProcessor
 import com.alexchurkin.truckremote.util.isValidIpv4
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -115,15 +116,12 @@ class MainViewModel(
     private val gasPedal = PedalHandler(this, lockDistancePx = Float.MAX_VALUE)
     private val foreground = MutableStateFlow(false)
 
-    // Settings are cached: tilt readings come very often
-    private var steeringCurve = SteeringCurve(deadZoneDeg = 0, maxAngleDeg = 90, exponent = 1f)
-    private var calibrationOffset = 0f
+    // Settings are cached in it: tilt readings come very often
+    private val steering = SteeringProcessor()
     private var forceFeedback = false
     private var analogPedalsMode = false
     private var pneumaticHorn = false
 
-    // Without calibration offset
-    private var lastRawTiltY = 0f
     private var searchingByBroadcast = false
     private var notFoundShown = false
     private var analogUnavailableWarned = false
@@ -399,15 +397,13 @@ class MainViewModel(
     /* Steering */
 
     private fun onTilt(reading: TiltReading) {
-        lastRawTiltY = reading.y
-        val y = reading.y + calibrationOffset
-        val steering = steeringCurve.apply(if (reading.reverseLandscape) -y else y)
-        controller.updateState { it.copy(steering = steering) }
+        val value = steering.process(reading.angle, reading.timeNanos)
+        controller.updateState { it.copy(steering = value) }
     }
 
     // The current position becomes the center
     fun calibrate() {
-        settings.calibrationOffset = -lastRawTiltY
+        settings.calibrationOffset = -steering.lastAngle
         send(MainEffect.Message(R.string.calibration_completed))
     }
 
@@ -417,8 +413,8 @@ class MainViewModel(
     }
 
     private fun applySettings() {
-        steeringCurve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
-        calibrationOffset = settings.calibrationOffset
+        steering.curve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
+        steering.calibrationOffset = settings.calibrationOffset
         forceFeedback = settings.forceFeedback
         pneumaticHorn = settings.pneumaticHorn
         _state.update { it.copy(showDashboard = settings.showDashboard) }

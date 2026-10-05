@@ -48,7 +48,9 @@ The app follows the [Android app architecture guide](https://developer.android.c
 - `data` — data layer: `controller` (UDP client of the server, `ControllerRepository` with the connection
   and truck state as flows), `settings`, `sensor` (tilt sensor as a flow), `device` (vibration, Wi-Fi),
   `billing`, `ads`, `analytics`.
-- `domain` — logic without Android dependencies: `SteeringCurve`, `PedalHandler`.
+- `domain` — logic without Android dependencies: `SteeringProcessor` (the steering angle from the fused
+  gyroscope and accelerometer is smoothed by the adaptive `OneEuroFilter`, then `SteeringCurve` applies the settings),
+  `PedalHandler`.
 - `ui` — screens: a view model holds the UI state (`StateFlow`) and one-off effects, the activity
   only renders the state and passes user actions (unidirectional data flow). The controller screen (`ui/main`)
   uses views (landscape, touches of several pedals at once), a dialog fragment for the menu and a Compose pager

@@ -282,32 +282,35 @@ class MainViewModelTest {
 
     @Test
     fun `tilt steers only on screen while connected, with calibration and curve`() {
-        // Full lock at 90°: the steering value is the gravity projection
+        // A second between the readings: the filter starts anew and passes them as is
+        var time = 0L
+        fun tiltTo(angle: Float) = tilt.readings.tryEmit(TiltReading(angle, time++ * 1_000_000_000L))
+        val g = SteeringCurve.GRAVITY
         settings.steeringMaxAngle = 90
-        tilt.readings.tryEmit(TiltReading(3f, reverseLandscape = false))
+        tiltTo(30f)
         assertEquals(0f, controller.state.steering)
 
         viewModel.setForeground(true)
         connect()
         // The default curve is smoother near the center (exponent 1.5)
-        val g = SteeringCurve.GRAVITY
-        tilt.readings.tryEmit(TiltReading(3f, reverseLandscape = false))
-        assertEquals((3f / g).pow(1.5f) * g, controller.state.steering, 0.001f)
+        tiltTo(30f)
+        assertEquals((1f / 3).pow(1.5f) * g, controller.state.steering, 0.001f)
 
         settings.steeringExponent = 1f
-        tilt.readings.tryEmit(TiltReading(3f, reverseLandscape = false))
-        assertEquals(3f, controller.state.steering, 0.001f)
+        tiltTo(30f)
+        assertEquals(g / 3, controller.state.steering, 0.001f)
+        tiltTo(-30f)
+        assertEquals(-g / 3, controller.state.steering, 0.001f)
 
-        tilt.readings.tryEmit(TiltReading(3f, reverseLandscape = true))
-        assertEquals(-3f, controller.state.steering, 0.001f)
-
+        // The current position becomes straight
+        tiltTo(30f)
         viewModel.calibrate()
-        tilt.readings.tryEmit(TiltReading(3f, reverseLandscape = false))
+        tiltTo(30f)
         assertEquals(0f, controller.state.steering, 0.001f)
 
         settings.steeringDeadZone = 15
         viewModel.resetCalibration()
-        tilt.readings.tryEmit(TiltReading(1f, reverseLandscape = false))
+        tiltTo(10f)
         assertEquals(0f, controller.state.steering, 0.001f)
 
         viewModel.setForeground(false)

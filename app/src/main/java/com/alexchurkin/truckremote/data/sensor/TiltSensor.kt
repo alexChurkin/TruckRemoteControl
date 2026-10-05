@@ -9,19 +9,21 @@ import android.hardware.display.DisplayManager
 import android.view.Display
 import android.view.Surface
 import androidx.core.content.ContextCompat
+import kotlin.math.abs
+import kotlin.math.atan2
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
 
 /**
- * Gravity projection on the device Y axis (m/s²) and whether the screen is in reverse landscape
- * (the steering direction is opposite then).
+ * The steering angle of the phone held sideways: degrees of its rotation in the plane of the screen,
+ * positive to the right (reverse landscape is taken into account), and the time of the measurement.
  */
-data class TiltReading(val y: Float, val reverseLandscape: Boolean)
+data class TiltReading(val angle: Float, val timeNanos: Long)
 
 interface TiltSensor {
-    // "gravity" or "accelerometer", for analytics
+    // "rotation_vector", "gravity" or "accelerometer", for analytics
     val kind: String
 
     // Readings while collected, the sensor is turned off when the collection stops
@@ -29,8 +31,13 @@ interface TiltSensor {
 }
 
 /*
- * Gravity sensor isn't affected by shaking and touches of the screen (e.g. pressing pedals).
- * Without a gyroscope it is only a filtered accelerometer with a delay, so the accelerometer is used then.
+ * The best available source of the gravity direction:
+ * - game rotation vector: the gyroscope and the accelerometer fused by the system (smooth, quick,
+ *   not affected by touches of the screen; the magnetometer isn't used, so magnets nearby don't matter);
+ * - gravity sensor: a fusion too on devices with a gyroscope;
+ * - accelerometer: noisy, the steering filter of the app smooths it.
+ * The angle is taken in the plane of the screen (atan2), so the sensitivity doesn't depend on how far
+ * the phone is tilted back.
  */
 class AndroidTiltSensor(context: Context) : TiltSensor {
 
@@ -40,27 +47,57 @@ class AndroidTiltSensor(context: Context) : TiltSensor {
 
     private val sensor: Sensor? = sensorManager?.let { manager ->
         val hasGyroscope = manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null
-        val gravity = if (hasGyroscope) manager.getDefaultSensor(Sensor.TYPE_GRAVITY) else null
-        gravity ?: manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val fused = if (hasGyroscope) {
+            manager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
+                ?: manager.getDefaultSensor(Sensor.TYPE_GRAVITY)
+        } else {
+            null
+        }
+        fused ?: manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     }
 
     override val kind: String
-        get() = if (sensor?.type == Sensor.TYPE_GRAVITY) "gravity" else "accelerometer"
+        get() = when (sensor?.type) {
+            Sensor.TYPE_GAME_ROTATION_VECTOR -> "rotation_vector"
+            Sensor.TYPE_GRAVITY -> "gravity"
+            else -> "accelerometer"
+        }
 
     override fun readings(): Flow<TiltReading> {
         val manager = sensorManager ?: return emptyFlow()
         val tiltSensor = sensor ?: return emptyFlow()
+        val rotation = FloatArray(ROTATION_MATRIX_SIZE)
         return callbackFlow {
             val listener = object : SensorEventListener {
                 override fun onSensorChanged(event: SensorEvent) {
-                    trySend(TiltReading(event.values[1], display?.rotation == Surface.ROTATION_270))
+                    val gravityX: Float
+                    val gravityY: Float
+                    if (event.sensor.type == Sensor.TYPE_GAME_ROTATION_VECTOR) {
+                        // The world "up" axis in the device coordinates: the last row of the rotation matrix
+                        SensorManager.getRotationMatrixFromVector(rotation, event.values)
+                        gravityX = rotation[UP_X]
+                        gravityY = rotation[UP_Y]
+                    } else {
+                        gravityX = event.values[0]
+                        gravityY = event.values[1]
+                    }
+                    val angle = Math.toDegrees(atan2(gravityY, abs(gravityX)).toDouble()).toFloat()
+                    val reverse = display?.rotation == Surface.ROTATION_270
+                    trySend(TiltReading(if (reverse) -angle else angle, event.timestamp))
                 }
 
                 override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) = Unit
             }
-            // The state is sent ~60 times per second, the game rate is enough
-            manager.registerListener(listener, tiltSensor, SensorManager.SENSOR_DELAY_GAME)
+            // 100 Hz: the state is sent ~60 times per second, the filter gets fresh values
+            manager.registerListener(listener, tiltSensor, SAMPLING_PERIOD_US)
             awaitClose { manager.unregisterListener(listener) }
         }
+    }
+
+    private companion object {
+        const val SAMPLING_PERIOD_US = 10_000
+        const val ROTATION_MATRIX_SIZE = 9
+        const val UP_X = 6
+        const val UP_Y = 7
     }
 }
