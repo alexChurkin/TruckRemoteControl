@@ -73,6 +73,21 @@ class PedalHandlerTest {
     }
 
     @Test
+    fun `barely pressed pedal isn't locked`() {
+        pedal.configure(analog = true, lockAllowed = true)
+        pedal.onDown(500f, 500f, viewHeight = 1000)
+        // 4%
+        pedal.onMove(500f, 476f)
+        pedal.onMove(700f, 476f)
+        assertFalse(pedal.isLocked)
+
+        // 5%
+        pedal.onMove(700f, 470f)
+        assertTrue(pedal.isLocked)
+        assertEquals(0.05f, pedal.level, DELTA)
+    }
+
+    @Test
     fun `digital lock keeps full press`() {
         pedal.configure(analog = false, lockAllowed = true)
         pedal.onDown(0f, 0f, viewHeight = 1000)

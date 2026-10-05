@@ -18,7 +18,8 @@ enum class PedalMode(val prefValue: String) {
     ;
 
     companion object {
-        fun fromPrefValue(value: String?) = entries.firstOrNull { it.prefValue == value } ?: Digital
+        // Analog unless the user chose the digital pedals
+        fun fromPrefValue(value: String?) = entries.firstOrNull { it.prefValue == value } ?: Analog
     }
 }
 
@@ -82,12 +83,17 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getInt(KEY_SERVER_UPDATE_HINT, 0)
         set(value) = prefs.edit { putInt(KEY_SERVER_UPDATE_HINT, value) }
 
+    // The controls are paused while the phone lies (screen down or up)
+    var autoPause: Boolean
+        get() = prefs.getBoolean(KEY_AUTO_PAUSE, true)
+        set(value) = prefs.edit { putBoolean(KEY_AUTO_PAUSE, value) }
+
     var pedalMode: PedalMode
         get() = PedalMode.fromPrefValue(prefs.getString(KEY_PEDAL_MODE, null))
         set(value) = prefs.edit { putString(KEY_PEDAL_MODE, value.prefValue) }
 
     var throttleLock: Boolean
-        get() = prefs.getBoolean(KEY_THROTTLE_LOCK, false)
+        get() = prefs.getBoolean(KEY_THROTTLE_LOCK, true)
         set(value) = prefs.edit { putBoolean(KEY_THROTTLE_LOCK, value) }
 
     // Degrees added to the steering angle (the straight position chosen by the user).
@@ -152,6 +158,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_LAST_GAME = "lastGame"
         private const val ATS_PREFIX = "ats."
         private const val KEY_SERVER_UPDATE_HINT = "serverUpdateHintRevision"
+        private const val KEY_AUTO_PAUSE = "autoPause"
         private const val KEY_PEDAL_MODE = "pedalMode"
         private const val KEY_THROTTLE_LOCK = "throttleLock"
         private const val KEY_CALIBRATION_OFFSET = "calibrationOffset"

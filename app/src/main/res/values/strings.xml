@@ -99,18 +99,15 @@
     <string name="actions_page">Page %1$d of %2$d</string>
 
     <string name="pedals">Pedals</string>
-    <string name="pedal_mode_title">Pedal mode</string>
-    <string name="pedal_mode_summary_digital">Digital: the pedal is fully pressed while you touch it (arrow keys in the game)</string>
-    <string name="pedal_mode_summary_analog">Analog: touch the pedal and drag up to press it harder, down to release (bind vJoy Y and Z axes to gas and brake in the game)</string>
-    <string-array name="pedal_mode_entries">
-        <item>Digital (full press)</item>
-        <item>Analog (press force)</item>
-    </string-array>
+    <string name="pedal_analog_title">Press force</string>
+    <string name="pedal_analog_summary">Touch a pedal and drag up to press it harder, down to release. Bind vJoy Y and Z axes to gas and brake in the game</string>
+    <string name="pedal_digital_title">Digital pedals</string>
+    <string name="pedal_digital_summary">A pedal is fully pressed while you touch it (arrow keys in the game)</string>
     <string name="throttle_lock_title">Throttle lock</string>
     <string name="throttle_lock_summary">While holding the gas, swipe sideways to keep its level. Touch the gas or the brake to release it</string>
     <string name="analog_pedals_unavailable">Analog pedals need Y and Z axes enabled in vJoy on the PC. Keys are used for now</string>
     <string name="pedal_level" translatable="false">%1$d%%</string>
-    <string name="gas_locked" translatable="false">🔒 %1$d%%</string>
+    <string name="gas_lock_icon" translatable="false">🔒</string>
     <string name="back">Back</string>
     <string name="server_port_invalid">Port must be from 10000 to 65535</string>
     <string name="server_ip_invalid">Enter an IP address like 192.168.1.10</string>
@@ -150,7 +147,11 @@
     <string name="steering_preview_left">Left %1$d%%</string>
     <string name="steering_preview_right">Right %1$d%%</string>
     <string name="steering_preview_center">Straight</string>
-    <string name="steering_preview_portrait">Turn the phone sideways to check the steering</string>
+    <string name="steering_test_title">Check the steering</string>
+    <string name="steering_test_summary">Shows how the wheel follows the phone. The screen rotation is locked during the check (%1$d s)</string>
+    <string name="steering_test_start">Check</string>
+    <string name="steering_test_stop">Stop</string>
+    <string name="steering_test_locked">Screen rotation is locked · %1$d s left</string>
     <string name="scan_qr_loading">The scanner is being downloaded by Google Play services, try again in a minute</string>
     <string name="show_dashboard_title">Instruments on the screen</string>
     <string name="show_dashboard_summary">Speed, cruise control and engine rpm between the pedals while the game is running</string>
@@ -178,6 +179,11 @@
     <string name="actions_empty">Empty</string>
     <string name="actions_edit_place">Change: %1$s</string>
     <string name="auto_pause_face_down">Auto pause: the phone lies screen down</string>
+    <string name="cruise_not_engaged_slow">Cruise control did not turn on: the speed is too low</string>
+    <string name="cruise_not_engaged">Cruise control did not turn on</string>
+    <string name="auto_pause_title">Auto pause</string>
+    <string name="auto_pause_summary">The controls are released while the phone lies screen down or up</string>
+    <string name="auto_pause_face_up">Auto pause: the phone lies screen up</string>
     <string name="auto_pause_no_sensor">Auto pause: the tilt sensor is silent</string>
     <string name="auto_pause_off">Auto pause is over</string>
     <string name="alert_air_pressure">Air pressure</string>

@@ -36,7 +36,6 @@ import com.alexchurkin.truckremote.ui.guide.GuideActivity
 import com.alexchurkin.truckremote.ui.settings.SettingsActivity
 import com.alexchurkin.truckremote.ui.widget.PedalHinge
 import com.alexchurkin.truckremote.ui.widget.showPedalPress
-import com.alexchurkin.truckremote.util.Toaster
 import com.alexchurkin.truckremote.util.enterFullscreen
 import com.alexchurkin.truckremote.util.showKeepingFullscreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -61,6 +60,9 @@ class MainActivity :
     // The truck state shown now: only changes are animated
     private var shownTruck: ServerState? = null
 
+    // The gas lock shown now: its change is animated
+    private var shownGasLocked: Boolean? = null
+
     // Every view has its own animation instances: one instance can't run on several views
     private val animations = HashMap<Pair<Int, Int>, Animation>()
 
@@ -72,6 +74,10 @@ class MainActivity :
     private var paused = false
     private var dimJob: Job? = null
 
+    private var messageJob: Job? = null
+
+    private var actionsShown = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -82,15 +88,15 @@ class MainActivity :
         )
         cruiseGestureDetector = GestureDetector(this, CruiseGestureListener())
         setUpViews()
+        if (savedInstanceState?.getBoolean(STATE_ACTIONS_SHOWN) == true) showActionsPanel(true, animate = false)
         enterFullscreen()
         observeViewModel()
 
-        if (savedInstanceState == null) {
-            when (viewModel.start(releaseNotesVersion())) {
-                StartAction.Guide -> startActivity(Intent(this, GuideActivity::class.java))
-                StartAction.ReleaseNotes -> showReleaseNotesDialog()
-                StartAction.None -> Unit
-            }
+        // Also for a screen restored after the app was killed in background: its new view model must connect
+        when (viewModel.start(releaseNotesVersion())) {
+            StartAction.Guide -> startActivity(Intent(this, GuideActivity::class.java))
+            StartAction.ReleaseNotes -> showReleaseNotesDialog()
+            StartAction.None -> Unit
         }
     }
 
@@ -112,6 +118,43 @@ class MainActivity :
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) enterFullscreen()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_ACTIONS_SHOWN, actionsShown)
+    }
+
+    // The quick actions panel takes the middle of the screen: the horn, the parking brake, the lights and
+    // the instruments give it their place and come back when it's closed
+    private fun showActionsPanel(show: Boolean, animate: Boolean) = with(binding) {
+        actionsShown = show
+        val shift = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ACTIONS_SHIFT_DP, resources.displayMetrics)
+        actionsPanel.fade(show, offset = shift, hiddenVisibility = View.GONE, animate = animate)
+        listOf(buttonHorn, buttonParking, buttonLights, dashboardView).forEach {
+            it.fade(!show, offset = -shift, hiddenVisibility = View.INVISIBLE, animate = animate)
+        }
+    }
+
+    // Fades in from [offset] or out to it; a hidden view doesn't take touches
+    private fun View.fade(show: Boolean, offset: Float, hiddenVisibility: Int, animate: Boolean) {
+        animate().cancel()
+        if (!animate) {
+            alpha = if (show) 1f else 0f
+            translationY = if (show) 0f else offset
+            visibility = if (show) View.VISIBLE else hiddenVisibility
+        } else if (show) {
+            if (visibility != View.VISIBLE) {
+                alpha = 0f
+                translationY = offset
+                visibility = View.VISIBLE
+            }
+            animate().alpha(1f).translationY(0f).setDuration(ACTIONS_ANIMATION_MS).withEndAction(null).start()
+        } else {
+            animate().alpha(0f).translationY(offset).setDuration(ACTIONS_ANIMATION_MS)
+                .withEndAction { visibility = hiddenVisibility }
+                .start()
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -138,7 +181,7 @@ class MainActivity :
         buttonParking.setOnClickListener { viewModel.onParkingBrake() }
         buttonLights.setOnClickListener { viewModel.onLights() }
 
-        actionsButton.setOnClickListener { actionsPanel.isVisible = !actionsPanel.isVisible }
+        actionsButton.setOnClickListener { showActionsPanel(!actionsShown, animate = true) }
         dashboardView.setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
             val dashboard = state.truck?.dashboard
@@ -217,12 +260,8 @@ class MainActivity :
             if (pedals.gasLocked) R.color.pedalFillLocked else R.color.pedalFillGas,
         )
         showLevelLabel(breakLevelLabel, showBrake, pedals.brakeLevel)
-        showLevelLabel(gasLevelLabel, showGas && !pedals.gasLocked, pedals.gasLevel)
-
-        gasLockLabel.isVisible = pedals.gasLocked
-        if (pedals.gasLocked) {
-            gasLockLabel.text = getString(R.string.gas_locked, (pedals.gasLevel * PERCENT).roundToInt())
-        }
+        showLevelLabel(gasLevelLabel, showGas, pedals.gasLevel)
+        showGasLock(pedals.gasLocked)
 
         // An analog pedal follows the finger, a digital one is pressed down smoothly
         breakImage.showPedalPress(pedals.brakeLevel, PedalHinge.Top, animated = !pedals.analog)
@@ -232,6 +271,37 @@ class MainActivity :
     private fun showLevelLabel(label: TextView, analog: Boolean, level: Float) {
         label.isInvisible = !analog || level <= 0f
         if (!label.isInvisible) label.text = getString(R.string.pedal_level, (level * PERCENT).roundToInt())
+    }
+
+    // The locked force is the same label: it moves aside, turns amber and a lock appears beside it
+    private fun showGasLock(locked: Boolean) {
+        val previous = shownGasLocked
+        if (previous == locked) return
+        shownGasLocked = locked
+
+        val label = binding.gasLevelLabel
+        val icon = binding.gasLockIcon
+        label.setTextColor(ContextCompat.getColor(this, if (locked) R.color.lockedAmber else R.color.white))
+        val shift = if (locked) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, LOCK_ICON_WIDTH_DP / 2, resources.displayMetrics)
+        } else {
+            0f
+        }
+        val iconAlpha = if (locked) 1f else 0f
+        val iconScale = if (locked) 1f else LOCK_ICON_HIDDEN_SCALE
+        label.animate().cancel()
+        icon.animate().cancel()
+        if (previous == null) {
+            label.translationX = shift
+            icon.translationX = shift
+            icon.alpha = iconAlpha
+            icon.scaleX = iconScale
+            icon.scaleY = iconScale
+        } else {
+            label.animate().translationX(shift).setDuration(LOCK_ANIMATION_MS).start()
+            icon.animate().translationX(shift).alpha(iconAlpha).scaleX(iconScale).scaleY(iconScale)
+                .setDuration(LOCK_ANIMATION_MS).start()
+        }
     }
 
     // The first state is shown without animations (e.g. after the screen is recreated)
@@ -344,7 +414,7 @@ class MainActivity :
 
     private fun showEffect(effect: MainEffect) {
         when (effect) {
-            is MainEffect.Message -> Toaster.show(
+            is MainEffect.Message -> showMessage(
                 if (effect.suffix == null) getString(effect.text) else "${getString(effect.text)} ${effect.suffix}",
             )
 
@@ -357,6 +427,18 @@ class MainActivity :
             MainEffect.ThrottleLockChanged -> binding.gasLayout.performHapticFeedback(
                 HapticFeedbackConstants.LONG_PRESS,
             )
+        }
+    }
+
+    // Only the latest message is shown, so quick events don't queue up
+    private fun showMessage(text: String) {
+        val view = binding.messageView
+        messageJob?.cancel()
+        view.text = text
+        view.animate().alpha(1f).setDuration(MESSAGE_FADE_MS).start()
+        messageJob = lifecycleScope.launch {
+            delay(MESSAGE_MS)
+            view.animate().alpha(0f).setDuration(MESSAGE_FADE_MS).start()
         }
     }
 
@@ -387,16 +469,16 @@ class MainActivity :
     private fun showSignalInfo() {
         val info = viewModel.signalInfo()
         if (!info.wifiEnabled) {
-            Toaster.show(R.string.no_wifi_conn_detected)
+            showMessage(getString(R.string.no_wifi_conn_detected))
             return
         }
         val signal = "${getString(R.string.signal_strength)} ${info.rssi} dBm"
         val quality = info.linkQuality
         if (quality == null) {
-            Toaster.show(signal)
+            showMessage(signal)
         } else {
             val loss = quality.lossPercent?.let { "$it%" } ?: "—"
-            Toaster.show("$signal\n${getString(R.string.link_quality, loss, quality.jitterMs)}")
+            showMessage("$signal\n${getString(R.string.link_quality, loss, quality.jitterMs)}")
         }
     }
 
@@ -495,6 +577,18 @@ class MainActivity :
 
         // Horizontal swipe distance on gas which locks the throttle
         const val THROTTLE_LOCK_DISTANCE_DP = 70f
+
+        // Width of the lock in the layout: the press force and the lock stay centered over the pedal
+        const val LOCK_ICON_WIDTH_DP = 28f
+        const val LOCK_ICON_HIDDEN_SCALE = 0.5f
+        const val LOCK_ANIMATION_MS = 180L
+
+        const val MESSAGE_MS = 2500L
+        const val MESSAGE_FADE_MS = 150L
+
+        const val STATE_ACTIONS_SHOWN = "actionsShown"
+        const val ACTIONS_ANIMATION_MS = 200L
+        const val ACTIONS_SHIFT_DP = 16f
 
         const val DIM_DELAY_MS = 3000L
         const val DIMMED_BRIGHTNESS = 0.03f

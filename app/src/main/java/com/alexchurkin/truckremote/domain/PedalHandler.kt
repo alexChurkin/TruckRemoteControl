@@ -74,7 +74,7 @@ class PedalHandler(private val listener: Listener, var lockDistancePx: Float) {
             }
         }
 
-        if (lockAllowed && currentLevel > 0 && abs(x - downX) > lockDistancePx) {
+        if (lockAllowed && currentLevel >= MIN_LOCK_LEVEL && abs(x - downX) > lockDistancePx) {
             isLocked = true
             listener.onPedalLockChanged(this, true)
         }
@@ -109,5 +109,9 @@ class PedalHandler(private val listener: Listener, var lockDistancePx: Float) {
     private companion object {
         // Part of the pedal area height that changes the level from 0 to 1
         const val TRAVEL_HEIGHT_PART = 0.6f
+
+        // A pedal that is barely pressed isn't locked: a sideways move of a finger that has just touched it
+        // would lock the gas at about zero
+        const val MIN_LOCK_LEVEL = 0.05f
     }
 }

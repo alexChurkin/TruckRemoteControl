@@ -95,13 +95,10 @@
     <string name="actions_page">Старонка %1$d з %2$d</string>
 
     <string name="pedals">Педалі</string>
-    <string name="pedal_mode_title">Рэжым педаляў</string>
-    <string name="pedal_mode_summary_digital">Лічбавы: педаль націснута цалкам, пакуль вы яе кранаеце (клавішы-стрэлкі ў гульні)</string>
-    <string name="pedal_mode_summary_analog">Аналагавы: дакраніцеся да педалі і вядзіце ўверх, каб націснуць мацней, уніз — каб адпусціць (у гульні прызначце восі Y і Z vJoy на газ і тормаз)</string>
-    <string-array name="pedal_mode_entries">
-        <item>Лічбавы</item>
-        <item>Аналагавы</item>
-    </string-array>
+    <string name="pedal_analog_title">Сіла націску</string>
+    <string name="pedal_analog_summary">Дакраніцеся да педалі і вядзіце ўверх, каб націснуць мацней, уніз — каб адпусціць. У гульні прызначце восі Y і Z vJoy на газ і тормаз</string>
+    <string name="pedal_digital_title">Лічбавыя педалі</string>
+    <string name="pedal_digital_summary">Педаль націснута цалкам, пакуль вы яе кранаеце (клавішы-стрэлкі ў гульні)</string>
     <string name="throttle_lock_title">Фіксацыя газу</string>
     <string name="throttle_lock_summary">Утрымліваючы газ, правядзіце пальцам убок — узровень газу зафіксуецца. Дакраніцеся да газу або тормазу, каб адпусціць</string>
     <string name="analog_pedals_unavailable">Для аналагавых педаляў уключыце восі Y і Z у vJoy на ПК. Пакуль выкарыстоўваюцца клавішы</string>
@@ -144,7 +141,11 @@
     <string name="steering_preview_left">Улева %1$d%%</string>
     <string name="steering_preview_right">Управа %1$d%%</string>
     <string name="steering_preview_center">Прама</string>
-    <string name="steering_preview_portrait">Павярніце тэлефон гарызантальна, каб праверыць руль</string>
+    <string name="steering_test_title">Праверка руля</string>
+    <string name="steering_test_summary">Пакажа, як руль ідзе за тэлефонам. На час праверкі (%1$d с) паварот экрана блакіруецца</string>
+    <string name="steering_test_start">Праверыць</string>
+    <string name="steering_test_stop">Стоп</string>
+    <string name="steering_test_locked">Паварот экрана заблакіраваны · засталося %1$d с</string>
     <string name="scan_qr_loading">Сэрвісы Google Play загружаюць сканер, паспрабуйце праз хвіліну</string>
     <string name="show_dashboard_title">Прыборы на экране</string>
     <string name="show_dashboard_summary">Хуткасць, круіз-кантроль і абароты паміж педалямі, пакуль працуе гульня</string>
@@ -172,6 +173,11 @@
     <string name="actions_empty">Пуста</string>
     <string name="actions_edit_place">Замяніць: %1$s</string>
     <string name="auto_pause_face_down">Аўтапаўза: тэлефон ляжыць экранам уніз</string>
+    <string name="cruise_not_engaged_slow">Круіз-кантроль не ўключыўся: занадта нізкая хуткасць</string>
+    <string name="cruise_not_engaged">Круіз-кантроль не ўключыўся</string>
+    <string name="auto_pause_title">Аўтапаўза</string>
+    <string name="auto_pause_summary">Кіраванне адпускаецца, пакуль тэлефон ляжыць экранам уніз або ўверх</string>
+    <string name="auto_pause_face_up">Аўтапаўза: тэлефон ляжыць экранам уверх</string>
     <string name="auto_pause_no_sensor">Аўтапаўза: няма даных датчыка нахілу</string>
     <string name="auto_pause_off">Аўтапаўза знята</string>
     <string name="alert_air_pressure">Ціск паветра</string>
@@ -205,6 +211,6 @@
     <string-array name="speed_units_entries">
         <item>Як у гульні</item>
         <item>км/г</item>
-        <item>мілі</item>
+        <item>міль/г</item>
     </string-array>
 </resources>

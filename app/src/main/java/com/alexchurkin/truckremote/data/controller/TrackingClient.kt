@@ -154,6 +154,9 @@ class TrackingClient(private val listener: Listener) {
         @Volatile
         private var exchanging = false
 
+        // The previous message was "paused" (the sender thread only)
+        private var wasPaused = false
+
         fun start() {
             mainThread = thread(name = "TrackingClient", isDaemon = true) { run() }
         }
@@ -188,15 +191,27 @@ class TrackingClient(private val listener: Listener) {
         private fun run() {
             report(ConnectionState.Searching)
             try {
-                while (running) connectAndExchange()
+                while (running) connectOrRecover()
             } catch (_: InterruptedException) {
                 // Stopped
-            } catch (e: IOException) {
-                logD("Connection error: $e")
             }
             socket.close()
             lastServerState = null
             report(ConnectionState.Disconnected)
+        }
+
+        // A network error (e.g. the network is gone or the server port is closed) doesn't end the session:
+        // it goes on with a new socket
+        private fun connectOrRecover() {
+            try {
+                connectAndExchange()
+            } catch (e: IOException) {
+                if (!running) return
+                logD("Connection error: $e")
+                sendFailed = true
+                report(if (connectedOnce) ConnectionState.Lost else ConnectionState.NotFound)
+                Thread.sleep(reconnectDelayMs(failedAttempts++))
+            }
         }
 
         // Returns when the connection is lost or the server isn't found (after a delay)
@@ -206,6 +221,9 @@ class TrackingClient(private val listener: Listener) {
                 failedAttempts = 0
                 report(ConnectionState.Connected)
                 exchangeMessages()
+                // The socket may be tied to a network that is gone (sending doesn't always fail then):
+                // a new one is used
+                sendFailed = true
                 if (running) report(ConnectionState.Lost)
             } else if (running) {
                 if (!connectedOnce) report(ConnectionState.NotFound)
@@ -254,17 +272,31 @@ class TrackingClient(private val listener: Listener) {
             }
         }
 
-        // The server that answered first is used
-        private fun receiveHelloAnswer(answer: DatagramPacket): Boolean = try {
-            socket.receive(answer)
-            socket.broadcast = false
-            socket.connect(answer.socketAddress)
-            serverAddress = answer.address.hostAddress
-            binary = String(answer.data, 0, answer.length) == ControllerProtocol.BINARY_HELLO_ANSWER
-            true
-        } catch (_: SocketTimeoutException) {
+        // The server that answered first is used. Other packets (the truck state of the session being resumed)
+        // aren't answers: taking one would choose the wrong protocol
+        private fun receiveHelloAnswer(answer: DatagramPacket): Boolean {
+            val deadline = SystemClock.elapsedRealtime() + HANDSHAKE_TIMEOUT_MS
+            try {
+                while (SystemClock.elapsedRealtime() < deadline) {
+                    answer.length = BUFFER_SIZE
+                    socket.receive(answer)
+                    val text = String(answer.data, 0, answer.length)
+                    if (BinaryProtocol.isBinary(answer.data, answer.length) ||
+                        !text.startsWith(ControllerProtocol.HELLO_ANSWER)
+                    ) {
+                        continue
+                    }
+                    socket.broadcast = false
+                    socket.connect(answer.socketAddress)
+                    serverAddress = answer.address.hostAddress
+                    binary = text == ControllerProtocol.BINARY_HELLO_ANSWER
+                    return true
+                }
+            } catch (_: SocketTimeoutException) {
+                // No answer
+            }
             logD("No answer to hello")
-            false
+            return false
         }
 
         /*
@@ -332,6 +364,9 @@ class TrackingClient(private val listener: Listener) {
                 if (paused) {
                     if (binary) send(BinaryProtocol.PAUSED) else send(ControllerProtocol.PAUSED)
                 } else {
+                    // In background the system may block the network, so the server has dropped the paused session:
+                    // hello restores it at once (it is harmless for a session that is alive)
+                    if (wasPaused) send(ControllerProtocol.HELLO)
                     val current = synchronized(stateLock) { state }
                     sequence++
                     if (binary) {
@@ -347,6 +382,7 @@ class TrackingClient(private val listener: Listener) {
                 logD("Send error: $e")
                 sendFailed = true
             }
+            wasPaused = paused
             return if (paused) PAUSED_INTERVAL_MS else SEND_INTERVAL_MS
         }
 

@@ -40,6 +40,7 @@ data class SettingsUiState(
     val forceFeedback: Boolean,
     val pneumaticHorn: Boolean,
     val showDashboard: Boolean,
+    val autoPause: Boolean,
     val steeringDeadZone: Int,
     val steeringMaxAngle: Int,
     val steeringExponent: Float,
@@ -150,6 +151,10 @@ class SettingsViewModel(
         settings.showDashboard = value
     }
 
+    fun setAutoPause(value: Boolean) {
+        settings.autoPause = value
+    }
+
     fun setSteeringDeadZone(degrees: Int) {
         game.steeringDeadZone = degrees
     }
@@ -214,6 +219,7 @@ class SettingsViewModel(
         forceFeedback = settings.forceFeedback,
         pneumaticHorn = settings.pneumaticHorn,
         showDashboard = settings.showDashboard,
+        autoPause = settings.autoPause,
         steeringDeadZone = game.steeringDeadZone,
         steeringMaxAngle = game.steeringMaxAngle,
         steeringExponent = game.steeringExponent,

@@ -2,8 +2,10 @@
 
 package com.alexchurkin.truckremote.ui.settings
 
-import android.content.res.Configuration
+import android.content.pm.ActivityInfo
+import android.os.SystemClock
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -57,6 +59,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -70,7 +74,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
@@ -104,11 +107,13 @@ import com.mikepenz.aboutlibraries.ui.compose.variant.LibraryActionKind
 import com.mikepenz.aboutlibraries.util.withContext
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 
 // Shown page and open dialog are kept in saved state, so they survive rotation together with the typed text
-private enum class SettingsPage {
-    Main,
-    Licenses,
+private enum class SettingsPage(@param:StringRes val title: Int) {
+    Main(R.string.settings),
+    Licenses(R.string.third_party_title),
+    About(R.string.about_app),
 }
 
 private enum class SettingsDialog {
@@ -116,8 +121,15 @@ private enum class SettingsDialog {
     Port,
     ServerIp,
     Language,
-    About,
 }
+
+// The steering check: it runs for a while with the screen rotation locked (tilting the phone would rotate the screen)
+private data class SteeringTest(
+    // null while the check isn't running
+    val secondsLeft: Int? = null,
+    val onStart: () -> Unit = {},
+    val onStop: () -> Unit = {},
+)
 
 data class SettingsActions(
     val onBack: () -> Unit = {},
@@ -127,6 +139,7 @@ data class SettingsActions(
     val onForceFeedbackChange: (Boolean) -> Unit = {},
     val onPneumaticHornChange: (Boolean) -> Unit = {},
     val onShowDashboardChange: (Boolean) -> Unit = {},
+    val onAutoPauseChange: (Boolean) -> Unit = {},
     val onSteeringDeadZoneChange: (Int) -> Unit = {},
     val onSteeringMaxAngleChange: (Int) -> Unit = {},
     val onSteeringExponentChange: (Float) -> Unit = {},
@@ -173,6 +186,7 @@ fun SettingsScreen(
             onForceFeedbackChange = viewModel::setForceFeedback,
             onPneumaticHornChange = viewModel::setPneumaticHorn,
             onShowDashboardChange = viewModel::setShowDashboard,
+            onAutoPauseChange = viewModel::setAutoPause,
             onSteeringDeadZoneChange = viewModel::setSteeringDeadZone,
             onSteeringMaxAngleChange = viewModel::setSteeringMaxAngle,
             onSteeringExponentChange = viewModel::setSteeringExponent,
@@ -221,9 +235,10 @@ private fun SettingsContent(
     // Hoisted, so the position is kept while the licenses are shown
     val mainListState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val onNavigateBack = { if (page == SettingsPage.Licenses) page = SettingsPage.Main else actions.onBack() }
+    val onNavigateBack = { if (page != SettingsPage.Main) page = SettingsPage.Main else actions.onBack() }
+    val steeringTest = rememberSteeringTest()
 
-    BackHandler(enabled = page == SettingsPage.Licenses) { page = SettingsPage.Main }
+    BackHandler(enabled = page != SettingsPage.Main) { page = SettingsPage.Main }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -231,13 +246,7 @@ private fun SettingsContent(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        stringResource(
-                            if (page == SettingsPage.Licenses) R.string.third_party_title else R.string.settings,
-                        ),
-                    )
-                },
+                title = { Text(stringResource(page.title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -255,14 +264,17 @@ private fun SettingsContent(
             SettingsPage.Main -> SettingsList(
                 state = state,
                 steering = steering,
+                steeringTest = steeringTest,
                 actions = actions,
                 listState = mainListState,
                 onOpenDialog = { dialog = it },
-                onOpenLicenses = { page = SettingsPage.Licenses },
+                onOpenPage = { page = it },
                 contentPadding = innerPadding,
             )
 
             SettingsPage.Licenses -> LicensesList(contentPadding = innerPadding)
+
+            SettingsPage.About -> AboutPage(contentPadding = innerPadding)
         }
 
         when (dialog) {
@@ -301,10 +313,44 @@ private fun SettingsContent(
                 },
                 onDismiss = { dialog = SettingsDialog.None },
             )
-
-            SettingsDialog.About -> AboutDialog(onDismiss = { dialog = SettingsDialog.None })
         }
     }
+}
+
+// The end of the check survives the rotation it may cause (a phone held upright is turned to landscape)
+@Composable
+private fun rememberSteeringTest(): SteeringTest {
+    // Elapsed realtime (ms) when the check ends, 0 while it isn't running
+    var end by rememberSaveable { mutableLongStateOf(0L) }
+    var secondsLeft by remember { mutableIntStateOf(STEERING_TEST_SECONDS) }
+    val activity = LocalActivity.current
+
+    LaunchedEffect(end) {
+        while (true) {
+            val left = end - SystemClock.elapsedRealtime()
+            if (left <= 0) break
+            secondsLeft = ((left + MS_IN_SECOND - 1) / MS_IN_SECOND).toInt()
+            delay(STEERING_TEST_TICK_MS)
+        }
+        end = 0L
+    }
+    // As on the controller screen: landscape only, so tilting the phone as a wheel doesn't rotate the screen
+    LaunchedEffect(activity, end != 0L) {
+        activity?.requestedOrientation = if (end != 0L) {
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+        }
+    }
+
+    return SteeringTest(
+        secondsLeft = if (end != 0L) secondsLeft else null,
+        onStart = {
+            secondsLeft = STEERING_TEST_SECONDS
+            end = SystemClock.elapsedRealtime() + STEERING_TEST_SECONDS * MS_IN_SECOND
+        },
+        onStop = { end = 0L },
+    )
 }
 
 /*
@@ -315,27 +361,18 @@ private fun SettingsContent(
 private fun SettingsList(
     state: SettingsUiState,
     steering: Float?,
+    steeringTest: SteeringTest,
     actions: SettingsActions,
     listState: LazyListState,
     onOpenDialog: (SettingsDialog) -> Unit,
-    onOpenLicenses: () -> Unit,
+    onOpenPage: (SettingsPage) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxSize(), state = listState, contentPadding = contentPadding) {
         gameSection(state, actions)
-        steeringSection(state, steering, actions)
-
-        centeredItem { SectionHeader(R.string.pedals) }
-        centeredItem { PedalModeItem(mode = state.pedalMode, onModeChange = actions.onPedalModeChange) }
-        centeredItem {
-            SwitchItem(
-                title = stringResource(R.string.throttle_lock_title),
-                summary = stringResource(R.string.throttle_lock_summary),
-                checked = state.throttleLock,
-                onCheckedChange = actions.onThrottleLockChange,
-            )
-        }
+        steeringSection(state, steering, steeringTest, actions)
+        pedalsSection(state, actions)
 
         centeredItem { SectionHeader(R.string.section_buttons) }
         centeredItem {
@@ -352,6 +389,14 @@ private fun SettingsList(
                 labels = stringArrayResource(R.array.speed_units_entries).toList(),
                 selected = state.speedUnits.ordinal,
                 onSelect = { actions.onSpeedUnitsChange(SpeedUnits.entries[it]) },
+            )
+        }
+        centeredItem {
+            SwitchItem(
+                title = stringResource(R.string.auto_pause_title),
+                summary = stringResource(R.string.auto_pause_summary),
+                checked = state.autoPause,
+                onCheckedChange = actions.onAutoPauseChange,
             )
         }
         centeredItem {
@@ -403,16 +448,45 @@ private fun SettingsList(
             ClickableItem(
                 title = stringResource(R.string.third_party_title),
                 summary = stringResource(R.string.third_party_summary),
-                onClick = onOpenLicenses,
+                onClick = { onOpenPage(SettingsPage.Licenses) },
             )
         }
         centeredItem {
             ClickableItem(
                 title = stringResource(R.string.about_app),
                 summary = "${stringResource(R.string.version)} ${BuildConfig.VERSION_NAME}",
-                onClick = { onOpenDialog(SettingsDialog.About) },
+                onClick = { onOpenPage(SettingsPage.About) },
             )
         }
+    }
+}
+
+// Analog pedals are the main mode, the digital ones are an option for those who don't use the vJoy axes
+private fun LazyListScope.pedalsSection(state: SettingsUiState, actions: SettingsActions) {
+    centeredItem { SectionHeader(R.string.pedals) }
+    if (state.pedalMode == PedalMode.Analog) {
+        centeredItem {
+            InfoItem(
+                title = stringResource(R.string.pedal_analog_title),
+                summary = stringResource(R.string.pedal_analog_summary),
+            )
+        }
+    }
+    centeredItem {
+        SwitchItem(
+            title = stringResource(R.string.throttle_lock_title),
+            summary = stringResource(R.string.throttle_lock_summary),
+            checked = state.throttleLock,
+            onCheckedChange = actions.onThrottleLockChange,
+        )
+    }
+    centeredItem {
+        SwitchItem(
+            title = stringResource(R.string.pedal_digital_title),
+            summary = stringResource(R.string.pedal_digital_summary),
+            checked = state.pedalMode == PedalMode.Digital,
+            onCheckedChange = { actions.onPedalModeChange(if (it) PedalMode.Digital else PedalMode.Analog) },
+        )
     }
 }
 
@@ -447,9 +521,14 @@ private fun LazyListScope.gameSection(state: SettingsUiState, actions: SettingsA
     }
 }
 
-private fun LazyListScope.steeringSection(state: SettingsUiState, steering: Float?, actions: SettingsActions) {
+private fun LazyListScope.steeringSection(
+    state: SettingsUiState,
+    steering: Float?,
+    steeringTest: SteeringTest,
+    actions: SettingsActions,
+) {
     centeredItem { SectionHeader(R.string.section_steering) }
-    centeredItem { SteeringPreview(steering) }
+    centeredItem { SteeringPreview(steering, steeringTest) }
     centeredItem {
         val range = AppSettings.STEERING_MAX_ANGLE_RANGE
         SliderItem(
@@ -756,11 +835,11 @@ private fun SliderItem(
     }
 }
 
-// What the phone sends now: the wheel turns and the bar fills while the phone is tilted
+// What the phone sends during the check: the wheel turns and the bar fills while the phone is tilted
 @Composable
-private fun SteeringPreview(steering: Float?, modifier: Modifier = Modifier) {
-    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val value = if (landscape) steering ?: 0f else 0f
+private fun SteeringPreview(steering: Float?, test: SteeringTest, modifier: Modifier = Modifier) {
+    val secondsLeft = test.secondsLeft
+    val value = if (secondsLeft != null) steering ?: 0f else 0f
     val percent = (value * PERCENT).roundToInt()
     ListItem(
         leadingContent = {
@@ -776,17 +855,34 @@ private fun SteeringPreview(steering: Float?, modifier: Modifier = Modifier) {
         headlineContent = {
             Text(
                 when {
-                    !landscape -> stringResource(R.string.steering_preview_portrait)
+                    secondsLeft == null -> stringResource(R.string.steering_test_title)
                     percent < 0 -> stringResource(R.string.steering_preview_left, -percent)
                     percent > 0 -> stringResource(R.string.steering_preview_right, percent)
                     else -> stringResource(R.string.steering_preview_center)
                 },
             )
         },
-        supportingContent = if (landscape) {
-            { SteeringBar(value, Modifier.padding(top = 8.dp)) }
-        } else {
-            null
+        supportingContent = {
+            if (secondsLeft == null) {
+                Text(stringResource(R.string.steering_test_summary, STEERING_TEST_SECONDS))
+            } else {
+                Column {
+                    SteeringBar(value, Modifier.padding(top = 8.dp))
+                    Text(
+                        text = stringResource(R.string.steering_test_locked, secondsLeft),
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
+        },
+        trailingContent = {
+            TextButton(onClick = if (secondsLeft == null) test.onStart else test.onStop) {
+                Text(
+                    stringResource(
+                        if (secondsLeft == null) R.string.steering_test_start else R.string.steering_test_stop,
+                    ),
+                )
+            }
         },
         modifier = modifier,
     )
@@ -879,42 +975,6 @@ private fun ChoiceItem(
 }
 
 @Composable
-private fun PedalModeItem(mode: PedalMode, onModeChange: (PedalMode) -> Unit, modifier: Modifier = Modifier) {
-    val labels = stringArrayResource(R.array.pedal_mode_entries)
-    Column(modifier = modifier.padding(bottom = 8.dp)) {
-        ListItem(
-            headlineContent = { Text(stringResource(R.string.pedal_mode_title)) },
-            // Describes the selected mode
-            supportingContent = {
-                Text(
-                    stringResource(
-                        when (mode) {
-                            PedalMode.Digital -> R.string.pedal_mode_summary_digital
-                            PedalMode.Analog -> R.string.pedal_mode_summary_analog
-                        },
-                    ),
-                )
-            },
-        )
-        SingleChoiceSegmentedButtonRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-        ) {
-            PedalMode.entries.forEachIndexed { index, entry ->
-                SegmentedButton(
-                    selected = entry == mode,
-                    onClick = { onModeChange(entry) },
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = PedalMode.entries.size),
-                ) {
-                    Text(labels[index])
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun TextInputDialog(
     title: String,
     initialValue: String,
@@ -972,7 +1032,8 @@ private fun LanguageDialog(current: AppLanguage, onSelect: (AppLanguage) -> Unit
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.language_title)) },
         text = {
-            Column(modifier = Modifier.selectableGroup()) {
+            // Landscape: the list is higher than the dialog, it is scrolled instead of being squeezed
+            Column(modifier = Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
                 AppLanguage.entries.forEach { language ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -1001,25 +1062,43 @@ private fun LanguageDialog(current: AppLanguage, onSelect: (AppLanguage) -> Unit
     )
 }
 
+// A full screen page as the licenses: the text is too long for a dialog in landscape
 @Composable
-private fun AboutDialog(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.about_app)) },
-        text = {
+private fun AboutPage(contentPadding: PaddingValues, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(contentPadding),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = MAX_CONTENT_WIDTH)
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+        ) {
+            Text(text = stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = "${stringResource(R.string.version)} ${BuildConfig.VERSION_NAME}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
             Text(
                 text = stringResource(R.string.about_app_text),
-                modifier = Modifier.verticalScroll(rememberScrollState()),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(top = 24.dp),
             )
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
-        },
-    )
+        }
+    }
 }
 
 private const val DISABLED_ALPHA = 0.38f
 private const val PERCENT = 100
+private const val MS_IN_SECOND = 1000L
+private const val STEERING_TEST_SECONDS = 15
+private const val STEERING_TEST_TICK_MS = 200L
 private const val RESPONSIVE_MAX = 3
 private const val SMOOTH_MIN = 7
 
@@ -1044,6 +1123,7 @@ private fun SettingsPreview() {
                 forceFeedback = true,
                 pneumaticHorn = false,
                 showDashboard = true,
+                autoPause = true,
                 steeringDeadZone = 3,
                 steeringMaxAngle = 60,
                 steeringExponent = 1.5f,

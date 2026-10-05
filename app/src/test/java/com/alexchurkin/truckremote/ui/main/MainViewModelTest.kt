@@ -38,6 +38,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -113,10 +114,27 @@ class MainViewModelTest {
     @Test
     fun `first start shows the guide, a new version shows release notes`() {
         assertEquals(StartAction.Guide, viewModel.start(releaseNotesVersion = 3))
+        // Every start of the app has its own view model
+        assertEquals(StartAction.None, createViewModel().start(releaseNotesVersion = 3))
+        val updated = createViewModel()
+        assertEquals(StartAction.ReleaseNotes, updated.start(releaseNotesVersion = 4))
+        updated.onReleaseNotesShown(4)
+        assertEquals(StartAction.None, createViewModel().start(releaseNotesVersion = 4))
+    }
+
+    @Test
+    fun `screen recreated with its view model doesn't connect again, a restored one connects`() {
+        viewModel.start(releaseNotesVersion = 3)
+        assertNotNull(controller.lastConnect)
+
+        // Rotation: the same view model
+        controller.lastConnect = null
         assertEquals(StartAction.None, viewModel.start(releaseNotesVersion = 3))
-        assertEquals(StartAction.ReleaseNotes, viewModel.start(releaseNotesVersion = 4))
-        viewModel.onReleaseNotesShown(4)
-        assertEquals(StartAction.None, viewModel.start(releaseNotesVersion = 4))
+        assertNull(controller.lastConnect)
+
+        // The app was killed in background: the restored screen gets a new view model
+        createViewModel().start(releaseNotesVersion = 3)
+        assertNotNull(controller.lastConnect)
     }
 
     @Test
@@ -179,6 +197,7 @@ class MainViewModelTest {
 
     @Test
     fun `digital pedals are keys`() {
+        settings.pedalMode = PedalMode.Digital
         connect()
         viewModel.onPedalDown(Pedal.Brake, 0f, 500f, 1000)
 
@@ -191,8 +210,7 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `analog pedals are levels when the server supports them, keys otherwise`() {
-        settings.pedalMode = PedalMode.Analog
+    fun `pedals are analog by default, levels when the server supports them, keys otherwise`() {
         connect(TRUCK.copy(analogPedalsAvailable = false))
         viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
         assertTrue(controller.state.gasPressed)
@@ -219,8 +237,8 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `throttle lock is off by default`() {
-        settings.pedalMode = PedalMode.Analog
+    fun `throttle lock can be turned off`() {
+        settings.throttleLock = false
         connect(TRUCK.copy(analogPedalsAvailable = true))
         viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
         viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
@@ -232,9 +250,7 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `brake releases the locked throttle`() = runTest {
-        settings.pedalMode = PedalMode.Analog
-        settings.throttleLock = true
+    fun `throttle is locked by default and the brake releases it`() = runTest {
         val effects = collectEffects()
         connect(TRUCK.copy(analogPedalsAvailable = true))
         viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
@@ -364,6 +380,60 @@ class MainViewModelTest {
         assertEquals(AutoPause.FaceDown, viewModel.state.value.autoPause)
 
         tilt.readings.tryEmit(TiltReading(0f, 2, screenUp = 0.3f))
+        assertNull(viewModel.state.value.autoPause)
+        assertFalse(controller.pausedByUserNow)
+    }
+
+    @Test
+    fun `phone lying screen up pauses the controller until it is picked up`() {
+        viewModel.setForeground(true)
+        connect()
+
+        // Held as a wheel, tilted back a lot: no pause
+        tilt.readings.tryEmit(TiltReading(0f, 0, screenUp = 0.9f))
+        assertNull(viewModel.state.value.autoPause)
+
+        tilt.readings.tryEmit(TiltReading(0f, 1, screenUp = 0.99f))
+        assertEquals(AutoPause.FaceUp, viewModel.state.value.autoPause)
+        assertTrue(controller.pausedByUserNow)
+
+        // Still almost flat: the hysteresis keeps the pause
+        tilt.readings.tryEmit(TiltReading(0f, 2, screenUp = 0.95f))
+        assertEquals(AutoPause.FaceUp, viewModel.state.value.autoPause)
+
+        tilt.readings.tryEmit(TiltReading(0f, 3, screenUp = 0.5f))
+        assertNull(viewModel.state.value.autoPause)
+        assertFalse(controller.pausedByUserNow)
+    }
+
+    @Test
+    fun `cruise control that did not turn on is reported`() = runTest {
+        val effects = collectEffects()
+        connect(TRUCK.copy(dashboard = DASHBOARD.copy(speed = 3f, cruiseSpeed = 0f)))
+
+        assertTrue(viewModel.onCruiseToggle())
+        dispatcher.scheduler.advanceTimeBy(2000)
+        assertTrue(MainEffect.Message(R.string.cruise_not_engaged_slow) in effects)
+
+        // Fast enough and the game turned it on: nothing is reported
+        effects.clear()
+        controller.truckState.value = TRUCK.copy(dashboard = DASHBOARD.copy(speed = 20f, cruiseSpeed = 0f))
+        assertTrue(viewModel.onCruiseToggle())
+        controller.truckState.value = TRUCK.copy(dashboard = DASHBOARD.copy(speed = 20f, cruiseSpeed = 20f))
+        dispatcher.scheduler.advanceTimeBy(2000)
+        assertTrue(effects.none { it is MainEffect.Message })
+    }
+
+    @Test
+    fun `auto pause can be turned off`() {
+        settings.autoPause = false
+        viewModel.setForeground(true)
+        connect()
+
+        tilt.readings.tryEmit(TiltReading(0f, 0, screenUp = -0.9f))
+        assertNull(viewModel.state.value.autoPause)
+
+        tilt.readings.tryEmit(TiltReading(0f, 1, screenUp = 0.99f))
         assertNull(viewModel.state.value.autoPause)
         assertFalse(controller.pausedByUserNow)
     }

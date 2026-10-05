@@ -26,9 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
@@ -57,6 +62,11 @@ import kotlinx.coroutines.launch
 private const val KMH_IN_MS = 3.6f
 private const val MPH_IN_MS = 2.236936f
 private const val RED_ZONE = 0.9f
+
+// The economical range of truck engines
+private const val ECONOMY_RPM_FROM = 1000
+private const val ECONOMY_RPM_TO = 1500
+private const val RPM_TRACK_ALPHA = 0.3f
 private const val METERS_IN_KILOMETER = 1000f
 private const val METERS_IN_MILE = 1609.344f
 private const val PRECISE_DISTANCE_BELOW = 10f
@@ -264,20 +274,47 @@ private fun SpeedLimitSign(limit: Int, american: Boolean) {
     }
 }
 
-// Thin bar of the engine rpm, the last part of the range is red
+/*
+ * Bar of the engine rpm with the zones of a truck tachometer: low rpm, the economical (green) range,
+ * high rpm and the red zone at the end. Every zone is dim on the track and bright where the bar has reached it.
+ */
 @Composable
 private fun RpmBar(rpm: Int, rpmMax: Int, modifier: Modifier = Modifier, width: Dp = 190.dp) {
     val fraction = if (rpmMax > 0) (rpm.toFloat() / rpmMax).coerceIn(0f, 1f) else 0f
-    val track = colorResource(R.color.dashboardTrack)
-    val fill = colorResource(if (fraction >= RED_ZONE) R.color.indicatorRed else R.color.dashboardRpm)
-    Canvas(modifier = modifier.size(width, 4.dp)) {
-        val radius = CornerRadius(size.height / 2)
-        drawRoundRect(color = track, cornerRadius = radius)
-        drawRoundRect(
-            color = fill,
-            size = Size(size.width * fraction, size.height),
-            cornerRadius = radius,
-        )
+    val economyStart = if (rpmMax > 0) (ECONOMY_RPM_FROM.toFloat() / rpmMax).coerceAtMost(RED_ZONE) else 0f
+    val economyEnd = if (rpmMax > 0) (ECONOMY_RPM_TO.toFloat() / rpmMax).coerceAtMost(RED_ZONE) else 0f
+    // The end of every zone (a part of the range) with its color
+    val zones = listOf(
+        economyStart to colorResource(R.color.dashboardRpm),
+        economyEnd to colorResource(R.color.indicatorGreen),
+        RED_ZONE to colorResource(R.color.dashboardCaution),
+        1f to colorResource(R.color.indicatorRed),
+    )
+    Canvas(modifier = modifier.size(width, 6.dp)) {
+        val bar = Path().apply {
+            addRoundRect(RoundRect(Rect(Offset.Zero, size), CornerRadius(size.height / 2)))
+        }
+        clipPath(bar) {
+            var start = 0f
+            zones.forEach { (end, color) ->
+                if (end > start) {
+                    drawRect(
+                        color = color.copy(alpha = RPM_TRACK_ALPHA),
+                        topLeft = Offset(size.width * start, 0f),
+                        size = Size(size.width * (end - start), size.height),
+                    )
+                    val reached = minOf(end, fraction)
+                    if (reached > start) {
+                        drawRect(
+                            color = color,
+                            topLeft = Offset(size.width * start, 0f),
+                            size = Size(size.width * (reached - start), size.height),
+                        )
+                    }
+                    start = end
+                }
+            }
+        }
     }
 }
 

@@ -55,8 +55,10 @@ import com.alexchurkin.truckremote.data.settings.ActionLayout
 import kotlinx.coroutines.launch
 
 private const val COLUMNS = 4
-private val ItemWidth = 78.dp
-private val ItemHeight = 66.dp
+
+// A bit wider than high: the panel has the place of the middle controls it hides, up to the blinkers
+private val ItemWidth = 90.dp
+private val ItemHeight = 76.dp
 private val ItemMargin = 3.dp
 private val PageWidth = (ItemWidth + ItemMargin * 2) * COLUMNS
 private val ItemShape = RoundedCornerShape(10.dp)
@@ -347,15 +349,15 @@ private fun ActionTile(button: ActionButton?, background: Color, modifier: Modif
             painter = painterResource(button.icon),
             contentDescription = null,
             colorFilter = ColorFilter.tint(Color.White),
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(28.dp),
         )
-        Spacer(Modifier.height(2.dp))
+        Spacer(Modifier.height(4.dp))
         // Long labels (e.g. in Russian) take two lines under the icon
         BasicText(
             text = stringResource(button.label),
-            style = TextStyle(color = Color.White, textAlign = TextAlign.Center, lineHeight = 13.sp),
+            style = TextStyle(color = Color.White, textAlign = TextAlign.Center, lineHeight = 14.sp),
             maxLines = 2,
-            autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = 12.sp, stepSize = 0.5.sp),
+            autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = 13.sp, stepSize = 0.5.sp),
         )
     }
 }

@@ -12,6 +12,7 @@ import androidx.fragment.app.DialogFragment
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.databinding.DialogMenuBinding
 import com.alexchurkin.truckremote.util.enterFullscreen
+import com.alexchurkin.truckremote.util.layoutInDisplayCutout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -37,6 +38,7 @@ class MenuDialogFragment : DialogFragment() {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             )
+            window?.layoutInDisplayCutout()
             setOnShowListener {
                 // The whole menu is shown at once, also in landscape
                 findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)?.let {
@@ -48,6 +50,8 @@ class MenuDialogFragment : DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         requireActivity().enterFullscreen()
         val binding = DialogMenuBinding.inflate(inflater, container, false)
+        // The sheet container is wider than the menu and takes the touches beside it
+        binding.root.setOnClickListener { dismiss() }
         mapOf(
             binding.autoConnectItem to Item.AutoConnect,
             binding.defaultConnectItem to Item.DefaultConnect,

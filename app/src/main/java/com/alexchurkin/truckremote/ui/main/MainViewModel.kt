@@ -30,7 +30,9 @@ import com.alexchurkin.truckremote.domain.PedalHandler
 import com.alexchurkin.truckremote.domain.SteeringCurve
 import com.alexchurkin.truckremote.domain.SteeringProcessor
 import com.alexchurkin.truckremote.util.isValidIpv4
+import kotlin.math.abs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +49,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 enum class Pedal {
     Brake,
@@ -63,6 +66,7 @@ data class PedalsUiState(
 
 enum class AutoPause {
     FaceDown,
+    FaceUp,
     NoSensor,
 }
 
@@ -73,7 +77,7 @@ data class MainUiState(
     val truck: ServerState? = null,
     val pedals: PedalsUiState = PedalsUiState(),
     val pausedByUser: Boolean = false,
-    // Nothing is controlled while the phone lies screen down or the tilt sensor is silent
+    // Nothing is controlled while the phone lies (screen down or up) or the tilt sensor is silent
     val autoPause: AutoPause? = null,
     // Instruments are shown while the server sends them (the game and its telemetry plugin are running)
     val showDashboard: Boolean = true,
@@ -146,7 +150,12 @@ class MainViewModel(
     private var searchingByBroadcast = false
     private var notFoundShown = false
     private var analogUnavailableWarned = false
-    private var faceDown = false
+
+    // FaceDown or FaceUp while the phone lies
+    private var lying: AutoPause? = null
+    private var autoPauseEnabled = true
+    private var cruiseCheck: Job? = null
+    private var started = false
 
     init {
         applySettings()
@@ -174,8 +183,11 @@ class MainViewModel(
 
     /* Screen lifecycle */
 
-    // Called once when the screen is created; connects and tells what to show first
+    // Called when the screen is created; connects and tells what to show first. A rotated screen keeps the view model
+    // (nothing is done again), a screen restored after the app was killed in background gets a new one and connects
     fun start(releaseNotesVersion: Int): StartAction {
+        if (started) return StartAction.None
+        started = true
         connect(useSpecifiedServer = settings.useSpecifiedServer)
         return when {
             !settings.guideShown -> {
@@ -355,7 +367,24 @@ class MainViewModel(
     fun onCruiseToggle(): Boolean {
         if (!isControllable) return false
         controller.updateState { it.copy(cruiseClick = !it.cruiseClick) }
+        checkCruiseEngaged()
         return true
+    }
+
+    // The game doesn't turn the cruise control on below a certain speed (and e.g. while braking):
+    // that is told instead of doing nothing silently. Known only with the instruments of the truck
+    private fun checkCruiseEngaged() {
+        cruiseCheck?.cancel()
+        val dashboard = state.value.truck?.dashboard ?: return
+        // It was on: the click turns it off
+        if (dashboard.cruiseSpeed > 0f) return
+        cruiseCheck = viewModelScope.launch {
+            delay(CRUISE_CHECK_MS)
+            val now = state.value.truck?.dashboard ?: return@launch
+            if (now.cruiseSpeed > 0f || !isControllable) return@launch
+            val slow = abs(now.speed) < CRUISE_MIN_SPEED
+            send(MainEffect.Message(if (slow) R.string.cruise_not_engaged_slow else R.string.cruise_not_engaged))
+        }
     }
 
     // Returns true if the horn works now (the button is animated then)
@@ -451,9 +480,19 @@ class MainViewModel(
             setAutoPause(AutoPause.NoSensor)
             return
         }
-        // Hysteresis: a phone held flat doesn't flicker between the states
-        faceDown = reading.screenUp < if (faceDown) FACE_DOWN_EXIT else FACE_DOWN_ENTER
-        setAutoPause(if (faceDown) AutoPause.FaceDown else null)
+        // Hysteresis: a phone held almost flat doesn't flicker between the states
+        lying = when {
+            !autoPauseEnabled -> null
+
+            reading.screenUp < (if (lying == AutoPause.FaceDown) FACE_DOWN_EXIT else FACE_DOWN_ENTER) ->
+                AutoPause.FaceDown
+
+            reading.screenUp > (if (lying == AutoPause.FaceUp) FACE_UP_EXIT else FACE_UP_ENTER) ->
+                AutoPause.FaceUp
+
+            else -> null
+        }
+        setAutoPause(lying)
         val value = steering.process(reading.angle, reading.timeNanos)
         controller.updateState { it.copy(steering = value) }
     }
@@ -462,13 +501,15 @@ class MainViewModel(
     private fun setAutoPause(reason: AutoPause?) {
         val previous = state.value.autoPause
         if (reason == previous) return
-        if (reason == null) faceDown = false
+        if (reason == null) lying = null
         _state.update { it.copy(autoPause = reason) }
-        if (!state.value.isConnected) return
+        // Also without a connection: the pause mustn't stay in the client after the connection comes back
         controller.setPausedByUser(reason != null || state.value.pausedByUser)
+        if (!state.value.isConnected) return
         when (reason) {
             null -> send(MainEffect.Message(R.string.auto_pause_off))
             AutoPause.FaceDown -> send(MainEffect.Message(R.string.auto_pause_face_down))
+            AutoPause.FaceUp -> send(MainEffect.Message(R.string.auto_pause_face_up))
             AutoPause.NoSensor -> send(MainEffect.Message(R.string.auto_pause_no_sensor))
         }
         if (reason != null) releasePedals()
@@ -492,6 +533,7 @@ class MainViewModel(
         steering.smoothness = game.steeringSmoothness
         forceFeedback = settings.forceFeedback
         pneumaticHorn = settings.pneumaticHorn
+        autoPauseEnabled = settings.autoPause
         _state.update {
             it.copy(
                 showDashboard = settings.showDashboard,
@@ -513,9 +555,20 @@ class MainViewModel(
     companion object {
         private const val SENSOR_TIMEOUT_MS = 1000L
 
+        // The truck state with the cruise speed comes several times per second
+        private const val CRUISE_CHECK_MS = 1500L
+
+        // m/s (30 km/h): the games don't turn the cruise control on below it
+        private const val CRUISE_MIN_SPEED = 8.3f
+
         // Where the screen faces (see TiltReading.screenUp): about 37° and 30° below horizontal
         private const val FACE_DOWN_ENTER = -0.6f
         private const val FACE_DOWN_EXIT = -0.5f
+
+        // Lying screen up: about 14° and 20° from horizontal. A phone held as a wheel is tilted back much less,
+        // and when it lies there is no steering angle to read anyway
+        private const val FACE_UP_ENTER = 0.97f
+        private const val FACE_UP_EXIT = 0.94f
 
         val Factory = viewModelFactory {
             initializer {

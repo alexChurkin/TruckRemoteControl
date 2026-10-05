@@ -3,7 +3,6 @@ package com.alexchurkin.truckremote
 import android.app.Application
 import android.content.Context
 import com.alexchurkin.truckremote.di.AppContainer
-import com.alexchurkin.truckremote.util.Toaster
 
 class TruckRemoteApp : Application() {
 
@@ -13,7 +12,6 @@ class TruckRemoteApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
-        Toaster.initialize(this)
         // Restores ads removal bought earlier (e.g. after reinstalling) before an ad is shown
         container.billing.checkPurchases()
         container.ads.initialize(this)

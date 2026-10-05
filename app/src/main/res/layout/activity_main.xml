@@ -19,7 +19,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/breakLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/backgroundpress"
@@ -47,20 +47,21 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:srcCompat="@drawable/pedal_break" />
 
-            <!-- Press force of an analog pedal, on the inner side: the finger doesn't cover it -->
+            <!-- Press force of an analog pedal, over the pedal -->
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/breakLevelLabel"
                 style="@style/PedalLevelLabel"
-                android:layout_marginStart="12dp"
-                app:layout_constraintStart_toEndOf="@id/breakImage"
-                app:layout_constraintTop_toTopOf="@id/breakImage" />
+                android:layout_marginBottom="8dp"
+                app:layout_constraintBottom_toTopOf="@id/breakImage"
+                app:layout_constraintEnd_toEndOf="@id/breakImage"
+                app:layout_constraintStart_toStartOf="@id/breakImage" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/gasLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/backgroundpress"
@@ -105,27 +106,23 @@
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/gasLevelLabel"
                 style="@style/PedalLevelLabel"
-                android:layout_marginEnd="12dp"
-                app:layout_constraintEnd_toStartOf="@id/gasImage"
-                app:layout_constraintTop_toTopOf="@id/gasImage" />
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/gasLockLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:background="@drawable/lock_label_background"
-                android:paddingStart="8dp"
-                android:paddingTop="3dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="3dp"
-                android:textColor="@color/black"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:visibility="gone"
                 app:layout_constraintBottom_toTopOf="@id/gasImage"
                 app:layout_constraintEnd_toEndOf="@id/gasImage"
                 app:layout_constraintStart_toStartOf="@id/gasImage" />
+
+            <!-- Appears beside the press force when the gas is locked: the force moves aside for it -->
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/gasLockIcon"
+                android:layout_width="28dp"
+                android:layout_height="wrap_content"
+                android:alpha="0"
+                android:gravity="center"
+                android:importantForAccessibility="no"
+                android:text="@string/gas_lock_icon"
+                android:textSize="18sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/gasLevelLabel"
+                app:layout_constraintEnd_toStartOf="@id/gasLevelLabel" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.appcompat.widget.LinearLayoutCompat>
@@ -234,8 +231,35 @@
         android:id="@+id/actionsPanel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         android:visibility="gone"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toTopOf="@id/actionsButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonAllSignals"
+        app:layout_constraintVertical_bias="1" />
+
+    <!-- Short messages (connection, auto pause): a system toast keeps away from the display cutout,
+         so it isn't in the middle of the screen -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/messageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:accessibilityLiveRegion="polite"
+        android:alpha="0"
+        android:background="@drawable/message_background"
+        android:elevation="6dp"
+        android:gravity="center"
+        android:maxWidth="420dp"
+        android:paddingStart="20dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/m3_onSurface"
+        android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@id/actionsButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

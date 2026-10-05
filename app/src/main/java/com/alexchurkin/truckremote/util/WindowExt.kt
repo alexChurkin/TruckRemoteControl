@@ -2,6 +2,7 @@ package com.alexchurkin.truckremote.util
 
 import android.app.Activity
 import android.app.Dialog
+import android.os.Build
 import android.view.Surface
 import android.view.View
 import android.view.Window
@@ -22,6 +23,21 @@ fun Window.hideSystemBars() {
 
 fun Activity.enterFullscreen() = window.hideSystemBars()
 
+/**
+ * A dialog over a fullscreen activity: by default its window keeps away from the display cutout, which is
+ * on one side in landscape, so the dialog isn't in the middle of the screen. The cutout area is used as well.
+ */
+fun Window.layoutInDisplayCutout() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
+    attributes = attributes.apply {
+        layoutInDisplayCutoutMode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+        } else {
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
+    }
+}
+
 val Activity.isReverseLandscape: Boolean
     get() = ContextCompat.getDisplayOrDefault(this).rotation == Surface.ROTATION_270
 
@@ -39,6 +55,7 @@ fun Dialog.showKeepingFullscreen() {
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
     )
+    window.layoutInDisplayCutout()
     show()
     window.hideSystemBars()
     window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)

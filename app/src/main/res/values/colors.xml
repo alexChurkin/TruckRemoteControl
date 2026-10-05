@@ -18,7 +18,6 @@
     <color name="actionItemActive">#1E7A3F</color>
 
     <color name="white">#ffffff</color>
-    <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
 
     <!-- Material 3 dark scheme from the brand green, the same as ui/theme/Theme.kt -->
