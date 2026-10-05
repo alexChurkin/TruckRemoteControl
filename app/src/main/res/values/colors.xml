@@ -5,6 +5,10 @@
     <color name="backgroundGray">#313131</color>
     <color name="indicatorRed">#DA4343</color>
     <color name="indicatorGreen">#2CC75F</color>
+    <!-- Press force inside the pedals -->
+    <color name="pedalFillGas">#A62CC75F</color>
+    <color name="pedalFillBrake">#A6DA4343</color>
+    <color name="pedalFillLocked">#A6FFB300</color>
     <color name="indicatorYellow">#FFB300</color>
 
     <color name="lockedAmber">#FFB300</color>

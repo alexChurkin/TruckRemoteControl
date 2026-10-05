@@ -115,6 +115,7 @@
     <string name="throttle_lock_title">Throttle lock</string>
     <string name="throttle_lock_summary">While holding the gas, swipe sideways to keep its level. Touch the gas or the brake to release it</string>
     <string name="analog_pedals_unavailable">Analog pedals need Y and Z axes enabled in vJoy on the PC. Keys are used for now</string>
+    <string name="pedal_level" translatable="false">%1$d%%</string>
     <string name="gas_locked" translatable="false">🔒 %1$d%%</string>
     <string name="back">Back</string>
     <string name="server_port_invalid">Port must be from 10000 to 65535</string>

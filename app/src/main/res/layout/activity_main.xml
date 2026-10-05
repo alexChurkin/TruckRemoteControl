@@ -36,7 +36,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/connection_indicator_red" />
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <com.alexchurkin.truckremote.ui.widget.PedalImageView
                 android:id="@+id/breakImage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -47,14 +47,13 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:srcCompat="@drawable/pedal_break" />
 
-            <com.alexchurkin.truckremote.ui.widget.PedalLevelView
-                android:id="@+id/breakLevelView"
-                android:layout_width="8dp"
-                android:layout_height="160dp"
-                android:layout_marginEnd="14dp"
-                android:visibility="invisible"
-                app:layout_constraintBottom_toBottomOf="@id/breakImage"
-                app:layout_constraintEnd_toStartOf="@id/breakImage" />
+            <!-- Press force of an analog pedal, on the inner side: the finger doesn't cover it -->
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/breakLevelLabel"
+                style="@style/PedalLevelLabel"
+                android:layout_marginStart="12dp"
+                app:layout_constraintStart_toEndOf="@id/breakImage"
+                app:layout_constraintTop_toTopOf="@id/breakImage" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -92,7 +91,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/pauseButton"
                 app:srcCompat="@drawable/ic_settings" />
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <com.alexchurkin.truckremote.ui.widget.PedalImageView
                 android:id="@+id/gasImage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -103,14 +102,12 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/pedal_gas" />
 
-            <com.alexchurkin.truckremote.ui.widget.PedalLevelView
-                android:id="@+id/gasLevelView"
-                android:layout_width="8dp"
-                android:layout_height="160dp"
-                android:layout_marginStart="14dp"
-                android:visibility="invisible"
-                app:layout_constraintBottom_toBottomOf="@id/gasImage"
-                app:layout_constraintStart_toEndOf="@id/gasImage" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/gasLevelLabel"
+                style="@style/PedalLevelLabel"
+                android:layout_marginEnd="12dp"
+                app:layout_constraintEnd_toStartOf="@id/gasImage"
+                app:layout_constraintTop_toTopOf="@id/gasImage" />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/gasLockLabel"
@@ -126,9 +123,9 @@
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/gasLevelView"
-                app:layout_constraintEnd_toEndOf="@id/gasLevelView"
-                app:layout_constraintStart_toStartOf="@id/gasLevelView" />
+                app:layout_constraintBottom_toTopOf="@id/gasImage"
+                app:layout_constraintEnd_toEndOf="@id/gasImage"
+                app:layout_constraintStart_toStartOf="@id/gasImage" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.appcompat.widget.LinearLayoutCompat>

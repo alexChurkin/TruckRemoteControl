@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.AnimRes
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -99,8 +101,7 @@ class MainActivity :
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setUpViews() = with(binding) {
-        breakLevelView.fillColor = ContextCompat.getColor(this@MainActivity, R.color.indicatorRed)
-        gasLevelView.fillColor = ContextCompat.getColor(this@MainActivity, R.color.indicatorGreen)
+        breakImage.fillColor = ContextCompat.getColor(this@MainActivity, R.color.pedalFillBrake)
 
         breakLayout.setOnTouchListener { view, event ->
             onPedalTouch(Pedal.Brake, view, event)
@@ -166,12 +167,18 @@ class MainActivity :
         )
     }
 
+    // The force of analog pedals (and of the locked gas) is shown inside them, with the percent beside them
     private fun showPedals(pedals: PedalsUiState) = with(binding) {
-        breakLevelView.visibility = if (pedals.analog) View.VISIBLE else View.INVISIBLE
-        breakLevelView.setState(pedals.brakeLevel, locked = false)
-
-        gasLevelView.visibility = if (pedals.analog || pedals.gasLocked) View.VISIBLE else View.INVISIBLE
-        gasLevelView.setState(pedals.gasLevel, pedals.gasLocked)
+        val showBrake = pedals.analog
+        val showGas = pedals.analog || pedals.gasLocked
+        breakImage.level = if (showBrake) pedals.brakeLevel else 0f
+        gasImage.level = if (showGas) pedals.gasLevel else 0f
+        gasImage.fillColor = ContextCompat.getColor(
+            this@MainActivity,
+            if (pedals.gasLocked) R.color.pedalFillLocked else R.color.pedalFillGas,
+        )
+        showLevelLabel(breakLevelLabel, showBrake, pedals.brakeLevel)
+        showLevelLabel(gasLevelLabel, showGas && !pedals.gasLocked, pedals.gasLevel)
 
         gasLockLabel.isVisible = pedals.gasLocked
         if (pedals.gasLocked) {
@@ -181,6 +188,11 @@ class MainActivity :
         // An analog pedal follows the finger, a digital one is pressed down smoothly
         breakImage.showPedalPress(pedals.brakeLevel, PedalHinge.Top, animated = !pedals.analog)
         gasImage.showPedalPress(pedals.gasLevel, PedalHinge.Bottom, animated = !pedals.analog)
+    }
+
+    private fun showLevelLabel(label: TextView, analog: Boolean, level: Float) {
+        label.isInvisible = !analog || level <= 0f
+        if (!label.isInvisible) label.text = getString(R.string.pedal_level, (level * PERCENT).roundToInt())
     }
 
     // The first state is shown without animations (e.g. after the screen is recreated)
