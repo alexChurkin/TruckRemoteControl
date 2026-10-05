@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.alexchurkin.truckremote.domain.SteeringCurve
+import com.alexchurkin.truckremote.domain.SteeringProcessor
 import kotlin.math.asin
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -77,6 +78,16 @@ class AppSettings(private val prefs: SharedPreferences) {
             .coerceIn(STEERING_EXPONENT_RANGE)
         set(value) = prefs.edit { putFloat(KEY_STEERING_EXPONENT, value) }
 
+    // See SteeringProcessor.smoothness
+    var steeringSmoothness: Int
+        get() = prefs.getInt(KEY_STEERING_SMOOTHNESS, SteeringProcessor.DEFAULT_SMOOTHNESS)
+            .coerceIn(SteeringProcessor.SMOOTHNESS_RANGE)
+        set(value) = prefs.edit { putInt(KEY_STEERING_SMOOTHNESS, value) }
+
+    var actionLayout: ActionLayout
+        get() = ActionLayout.decode(prefs.getString(KEY_ACTION_LAYOUT, null))
+        set(value) = prefs.edit { putString(KEY_ACTION_LAYOUT, value.encode()) }
+
     var pedalMode: PedalMode
         get() = PedalMode.fromPrefValue(prefs.getString(KEY_PEDAL_MODE, null))
         set(value) = prefs.edit { putString(KEY_PEDAL_MODE, value.prefValue) }
@@ -148,6 +159,8 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_STEERING_DEAD_ZONE = "steeringDeadZone"
         private const val KEY_STEERING_MAX_ANGLE = "steeringMaxAngle"
         private const val KEY_STEERING_EXPONENT = "steeringExponent"
+        private const val KEY_STEERING_SMOOTHNESS = "steeringSmoothness"
+        private const val KEY_ACTION_LAYOUT = "actionLayout"
         private const val KEY_PEDAL_MODE = "pedalMode"
         private const val KEY_THROTTLE_LOCK = "throttleLock"
         private const val KEY_CALIBRATION_OFFSET = "calibrationOffset"

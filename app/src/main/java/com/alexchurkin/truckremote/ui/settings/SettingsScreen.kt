@@ -90,6 +90,7 @@ import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.settings.AppLanguage
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.PedalMode
+import com.alexchurkin.truckremote.domain.SteeringProcessor
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.Library
@@ -127,6 +128,7 @@ data class SettingsActions(
     val onSteeringDeadZoneChange: (Int) -> Unit = {},
     val onSteeringMaxAngleChange: (Int) -> Unit = {},
     val onSteeringExponentChange: (Float) -> Unit = {},
+    val onSteeringSmoothnessChange: (Int) -> Unit = {},
     val onCalibrate: () -> Unit = {},
     val onResetCalibration: () -> Unit = {},
     val onPedalModeChange: (PedalMode) -> Unit = {},
@@ -168,6 +170,7 @@ fun SettingsScreen(
             onSteeringDeadZoneChange = viewModel::setSteeringDeadZone,
             onSteeringMaxAngleChange = viewModel::setSteeringMaxAngle,
             onSteeringExponentChange = viewModel::setSteeringExponent,
+            onSteeringSmoothnessChange = viewModel::setSteeringSmoothness,
             onCalibrate = viewModel::calibrate,
             onResetCalibration = viewModel::resetCalibration,
             onPedalModeChange = viewModel::setPedalMode,
@@ -444,7 +447,33 @@ private fun LazyListScope.steeringSection(state: SettingsUiState, steering: Floa
             onValueChange = { actions.onSteeringExponentChange((it / EXPONENT_STEP).roundToInt() * EXPONENT_STEP) },
         )
     }
+    smoothnessItem(state, actions)
     calibrationItems(state, actions)
+}
+
+// Filtering of the tilt: a quicker reaction or no jitter at all
+private fun LazyListScope.smoothnessItem(state: SettingsUiState, actions: SettingsActions) {
+    centeredItem {
+        val range = SteeringProcessor.SMOOTHNESS_RANGE
+        SliderItem(
+            title = stringResource(R.string.steering_smoothness_title),
+            summary = {
+                val level = it.roundToInt()
+                stringResource(
+                    when {
+                        level <= RESPONSIVE_MAX -> R.string.steering_smoothness_responsive
+                        level >= SMOOTH_MIN -> R.string.steering_smoothness_smooth
+                        else -> R.string.steering_smoothness_balanced
+                    },
+                    level,
+                )
+            },
+            value = state.steeringSmoothness.toFloat(),
+            valueRange = range.first.toFloat()..range.last.toFloat(),
+            steps = range.last - range.first - 1,
+            onValueChange = { actions.onSteeringSmoothnessChange(it.roundToInt()) },
+        )
+    }
 }
 
 private fun LazyListScope.calibrationItems(state: SettingsUiState, actions: SettingsActions) {
@@ -913,6 +942,8 @@ private fun AboutDialog(onDismiss: () -> Unit) {
 
 private const val DISABLED_ALPHA = 0.38f
 private const val PERCENT = 100
+private const val RESPONSIVE_MAX = 3
+private const val SMOOTH_MIN = 7
 
 // Degrees of the preview wheel at the full lock
 private const val MAX_WHEEL_ROTATION = 120f
@@ -938,6 +969,7 @@ private fun SettingsPreview() {
                 steeringDeadZone = 3,
                 steeringMaxAngle = 60,
                 steeringExponent = 1.5f,
+                steeringSmoothness = 5,
                 calibrated = true,
                 pedalMode = PedalMode.Analog,
                 throttleLock = true,

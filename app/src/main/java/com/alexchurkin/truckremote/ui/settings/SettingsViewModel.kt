@@ -39,6 +39,7 @@ data class SettingsUiState(
     val steeringDeadZone: Int,
     val steeringMaxAngle: Int,
     val steeringExponent: Float,
+    val steeringSmoothness: Int,
     val calibrated: Boolean,
     val pedalMode: PedalMode,
     val throttleLock: Boolean,
@@ -84,6 +85,7 @@ class SettingsViewModel(
     val steeringPreview: Flow<Float> = tiltSensor.readings().map { reading ->
         steering.curve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
         steering.calibrationOffset = settings.calibrationOffset
+        steering.smoothness = settings.steeringSmoothness
         steering.process(reading.angle, reading.timeNanos) / SteeringCurve.GRAVITY
     }
 
@@ -144,6 +146,10 @@ class SettingsViewModel(
         settings.steeringExponent = value
     }
 
+    fun setSteeringSmoothness(level: Int) {
+        settings.steeringSmoothness = level
+    }
+
     // The current tilt becomes the straight wheel
     fun calibrate() {
         settings.calibrationOffset = -steering.lastAngle
@@ -176,6 +182,7 @@ class SettingsViewModel(
         steeringDeadZone = settings.steeringDeadZone,
         steeringMaxAngle = settings.steeringMaxAngle,
         steeringExponent = settings.steeringExponent,
+        steeringSmoothness = settings.steeringSmoothness,
         calibrated = settings.calibrationOffset != 0f,
         pedalMode = settings.pedalMode,
         throttleLock = settings.throttleLock,

@@ -139,10 +139,14 @@ class MainActivity :
             }
         }
         actionsPanel.setContent {
+            val state by viewModel.state.collectAsStateWithLifecycle()
             ActionsPanel(
+                layout = state.actionLayout,
                 activeActions = activeActions,
                 onClick = viewModel::onAction,
                 onHold = viewModel::onActionHold,
+                onAssign = viewModel::onActionAssign,
+                onReset = viewModel::onActionLayoutReset,
             )
         }
     }

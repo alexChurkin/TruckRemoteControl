@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Змены ў версіі</string>
-    <string name="version_changes_text">Аналагавыя педалі (дакраніцеся і вядзіце ўверх, каб націснуць мацней), фіксацыя газу (уключаецца ў наладах) і тры старонкі хуткіх дзеянняў: грузавік (рухавік, прычэп, дворнікі…), ваджэнне (рэтардэр, маторны тормаз, хуткасць круізу, хуткая паркоўка) і агляд (камеры, карта, прыборная панэль, радыё). Для іх абнавіце Truck Remote Server на ПК. Адчувальнасць руля цяпер наладжваецца ў праграме з жывым папярэднім праглядам, сервер можна знайсці па QR-кодзе. Руль выкарыстоўвае гіраскоп разам з акселерометрам і адаптыўны фільтр: плаўна і без запазнення.</string>
+    <string name="version_changes_text">Аналагавыя педалі (дакраніцеся і вядзіце ўверх, каб націснуць мацней), фіксацыя газу (уключаецца ў наладах) і тры старонкі хуткіх дзеянняў: грузавік (рухавік, прычэп, дворнікі…), ваджэнне (рэтардэр, маторны тормаз, хуткасць круізу, хуткая паркоўка) і агляд (камеры, карта, прыборная панэль, радыё). Для іх абнавіце Truck Remote Server на ПК. Адчувальнасць руля цяпер наладжваецца ў праграме з жывым папярэднім праглядам, сервер можна знайсці па QR-кодзе. Руль выкарыстоўвае гіраскоп разам з акселерометрам і адаптыўны фільтр: плаўна і без запазнення. Доўгі націск на хуткую кнопку дазваляе паставіць на яе месца любое іншае дзеянне, плаўнасць руля наладжваецца ў наладах.</string>
 
     <string name="searching_on_local">Пошук сервераў у лакальнай сетцы…</string>
     <string name="signal_strength">Сіла сігналу Wi-Fi:</string>
@@ -160,4 +160,15 @@
     <string name="dashboard_gear_neutral">N</string>
     <string name="dashboard_gear_reverse">R%1$d</string>
     <string name="section_buttons">Экран і кнопкі</string>
+    <string name="steering_smoothness_title">Плаўнасць руля</string>
+    <string name="steering_smoothness_responsive">%1$d: спагадна, самы хуткі водгук</string>
+    <string name="steering_smoothness_balanced">%1$d: збалансавана</string>
+    <string name="steering_smoothness_smooth">%1$d: мякка, без найменшага дрыжання</string>
+    <string name="actions_edit_hint">Націсніце на месца, каб паставіць туды іншае дзеянне</string>
+    <string name="actions_pick_hint">Выберыце дзеянне. Калі яно ўжо ёсць на панэлі, кнопкі памяняюцца месцамі</string>
+    <string name="actions_pick_cancel">Скасаваць</string>
+    <string name="actions_edit_reset">Скінуць</string>
+    <string name="actions_edit_done">Гатова</string>
+    <string name="actions_empty">Пуста</string>
+    <string name="actions_edit_place">Замяніць: %1$s</string>
 </resources>

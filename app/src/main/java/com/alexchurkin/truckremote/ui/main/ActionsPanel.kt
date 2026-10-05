@@ -5,7 +5,9 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -43,11 +45,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.controller.ControllerAction
+import com.alexchurkin.truckremote.data.settings.ActionLayout
 import kotlinx.coroutines.launch
 
 private const val COLUMNS = 4
@@ -55,57 +59,176 @@ private val ItemWidth = 78.dp
 private val ItemHeight = 66.dp
 private val ItemMargin = 3.dp
 private val PageWidth = (ItemWidth + ItemMargin * 2) * COLUMNS
+private val ItemShape = RoundedCornerShape(10.dp)
 
 /**
  * The quick actions panel: pages of buttons (swiped sideways) with page indicators under them.
  * [onClick] and [onHold] return true if the action was sent (the button gives haptic feedback then),
  * [activeActions] are on in the game (e.g. the engine is running).
+ * A long press on a button (or on an empty place) starts editing the [layout]: a tapped place shows
+ * all actions to choose from, [onAssign] puts the chosen one there, [onReset] brings the default layout back.
  */
 @Composable
 fun ActionsPanel(
+    layout: ActionLayout,
     activeActions: Set<ControllerAction>,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
+    onAssign: (page: Int, slot: Int, action: ControllerAction?) -> Unit,
+    onReset: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val pagerState = rememberPagerState { ActionPages.size }
+    val view = LocalView.current
+    val pagerState = rememberPagerState { ActionLayout.PAGES }
     val scope = rememberCoroutineScope()
+    var editing by remember { mutableStateOf(false) }
+    var picking by remember { mutableStateOf<Place?>(null) }
+    val target = picking
     Column(
         modifier = modifier
             .background(colorResource(R.color.actionsPanel), RoundedCornerShape(14.dp))
             .padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        HorizontalPager(state = pagerState, modifier = Modifier.width(PageWidth)) { page ->
-            ActionGrid(ActionPages[page], activeActions, onClick, onHold)
+        if (editing) {
+            BasicText(
+                text = stringResource(if (target != null) R.string.actions_pick_hint else R.string.actions_edit_hint),
+                style = TextStyle(
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                ),
+                modifier = Modifier.width(PageWidth).padding(horizontal = 8.dp, vertical = 4.dp),
+            )
         }
-        PageIndicator(
-            pageCount = ActionPages.size,
-            currentPage = pagerState.currentPage,
-            onSelect = { scope.launch { pagerState.animateScrollToPage(it) } },
-            modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
-        )
+        HorizontalPager(state = pagerState, modifier = Modifier.width(PageWidth)) { page ->
+            if (target != null) {
+                // All actions in the default order, the empty place among them
+                PickerGrid(
+                    choices = ActionLayout.Default.pages[page],
+                    current = layout.pages[target.page][target.slot],
+                    onPick = { action ->
+                        onAssign(target.page, target.slot, action)
+                        picking = null
+                        scope.launch { pagerState.scrollToPage(target.page) }
+                    },
+                )
+            } else {
+                ActionGrid(
+                    slots = layout.pages[page],
+                    activeActions = activeActions,
+                    editing = editing,
+                    onClick = onClick,
+                    onHold = onHold,
+                    onLongPress = {
+                        editing = true
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                    },
+                    onEdit = { slot -> picking = Place(page, slot) },
+                )
+            }
+        }
+        Box(modifier = Modifier.width(PageWidth), contentAlignment = Alignment.Center) {
+            PageIndicator(
+                pageCount = ActionLayout.PAGES,
+                currentPage = pagerState.currentPage,
+                onSelect = { scope.launch { pagerState.animateScrollToPage(it) } },
+                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
+            )
+            if (editing) {
+                if (target != null) {
+                    PanelTextButton(
+                        text = stringResource(R.string.actions_pick_cancel),
+                        onClick = {
+                            picking = null
+                            scope.launch { pagerState.scrollToPage(target.page) }
+                        },
+                        modifier = Modifier.align(Alignment.CenterStart),
+                    )
+                } else {
+                    PanelTextButton(
+                        text = stringResource(R.string.actions_edit_reset),
+                        onClick = onReset,
+                        modifier = Modifier.align(Alignment.CenterStart),
+                    )
+                    PanelTextButton(
+                        text = stringResource(R.string.actions_edit_done),
+                        onClick = { editing = false },
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private data class Place(val page: Int, val slot: Int)
+
+@Composable
+private fun ActionGrid(
+    slots: List<ControllerAction?>,
+    activeActions: Set<ControllerAction>,
+    editing: Boolean,
+    onClick: (ControllerAction) -> Boolean,
+    onHold: (ControllerAction, Boolean) -> Boolean,
+    onLongPress: () -> Unit,
+    onEdit: (slot: Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        slots.withIndex().chunked(COLUMNS).forEach { row ->
+            Row {
+                row.forEach { (slot, action) ->
+                    val itemModifier = Modifier.padding(ItemMargin)
+                    when {
+                        editing -> EditItem(action, onEdit = { onEdit(slot) }, modifier = itemModifier)
+
+                        action == null -> EmptyItem(onLongPress, itemModifier)
+
+                        else -> ActionItem(
+                            button = action.button(),
+                            active = action in activeActions,
+                            onClick = onClick,
+                            onHold = onHold,
+                            onLongPress = onLongPress,
+                            modifier = itemModifier,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun ActionGrid(
-    buttons: List<ActionButton>,
-    activeActions: Set<ControllerAction>,
-    onClick: (ControllerAction) -> Boolean,
-    onHold: (ControllerAction, Boolean) -> Boolean,
+private fun PickerGrid(
+    choices: List<ControllerAction?>,
+    current: ControllerAction?,
+    onPick: (ControllerAction?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
-        buttons.chunked(COLUMNS).forEach { row ->
+        choices.chunked(COLUMNS).forEach { row ->
             Row {
-                row.forEach { button ->
-                    ActionItem(
-                        button = button,
-                        active = button.action in activeActions,
-                        onClick = onClick,
-                        onHold = onHold,
-                        modifier = Modifier.padding(ItemMargin),
+                row.forEach { action ->
+                    val description = action?.let { stringResource(it.button().label) }
+                        ?: stringResource(R.string.actions_empty)
+                    ActionTile(
+                        button = action?.button(),
+                        background = colorResource(
+                            if (action ==
+                                current
+                            ) {
+                                R.color.actionItemActive
+                            } else {
+                                R.color.actionItem
+                            },
+                        ),
+                        modifier = Modifier
+                            .padding(ItemMargin)
+                            .clip(ItemShape)
+                            .clickable(role = Role.Button) { onPick(action) }
+                            .semantics { contentDescription = description },
                     )
                 }
             }
@@ -119,6 +242,7 @@ private fun ActionItem(
     active: Boolean,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
+    onLongPress: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val view = LocalView.current
@@ -134,7 +258,7 @@ private fun ActionItem(
     )
     val action = button.action
     val input = if (action.isHold) {
-        // Held while pressed; a swipe to another page cancels the press and releases the action
+        // Held while pressed (so a long press doesn't edit it); a swipe to another page releases the action
         Modifier.pointerInput(action) {
             detectTapGestures(
                 onPress = {
@@ -149,20 +273,62 @@ private fun ActionItem(
             )
         }
     } else {
-        Modifier.clickable(interactionSource = interactionSource, indication = null, role = Role.Button) {
+        Modifier.combinedClickable(
+            interactionSource = interactionSource,
+            indication = null,
+            role = Role.Button,
+            onLongClick = onLongPress,
+        ) {
             if (onClick(action)) view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
     }
+    ActionTile(
+        button = button,
+        background = animateColorAsState(background, label = "background").value,
+        modifier = modifier.clip(ItemShape).then(input),
+    )
+}
+
+// An empty place is invisible until the layout is edited
+@Composable
+private fun EmptyItem(onLongPress: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .size(ItemWidth, ItemHeight)
+            .pointerInput(Unit) { detectTapGestures(onLongPress = { onLongPress() }) },
+    )
+}
+
+@Composable
+private fun EditItem(action: ControllerAction?, onEdit: () -> Unit, modifier: Modifier = Modifier) {
+    val label = action?.let { stringResource(it.button().label) } ?: stringResource(R.string.actions_empty)
+    val description = stringResource(R.string.actions_edit_place, label)
+    ActionTile(
+        button = action?.button(),
+        background = if (action != null) colorResource(R.color.actionItem) else Color.Transparent,
+        modifier = modifier
+            .clip(ItemShape)
+            .border(1.dp, Color.White.copy(alpha = 0.6f), ItemShape)
+            .clickable(role = Role.Button, onClick = onEdit)
+            .semantics { contentDescription = description },
+    )
+}
+
+// The icon with the label under it; null button: an empty place
+@Composable
+private fun ActionTile(button: ActionButton?, background: Color, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .size(ItemWidth, ItemHeight)
-            .clip(RoundedCornerShape(10.dp))
-            .background(animateColorAsState(background, label = "background").value)
-            .then(input)
+            .background(background)
             .padding(start = 4.dp, end = 4.dp, top = 6.dp, bottom = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        if (button == null) {
+            BasicText(text = "+", style = TextStyle(color = Color.White.copy(alpha = 0.6f), fontSize = 24.sp))
+            return@Column
+        }
         Image(
             painter = painterResource(button.icon),
             contentDescription = null,
@@ -178,6 +344,18 @@ private fun ActionItem(
             autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = 12.sp, stepSize = 0.5.sp),
         )
     }
+}
+
+@Composable
+private fun PanelTextButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    BasicText(
+        text = text,
+        style = TextStyle(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold),
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    )
 }
 
 // Material 3 style: the current page is a wider pill, the others are dots

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Изменения в версии</string>
-    <string name="version_changes_text">Аналоговые педали (коснитесь и ведите вверх, чтобы нажать сильнее), фиксация газа (включается в настройках) и три страницы быстрых действий: грузовик (двигатель, прицеп, дворники…), вождение (ретардер, моторный тормоз, скорость круиза, быстрая парковка) и обзор (камеры, карта, приборная панель, радио). Для них обновите Truck Remote Server на ПК. Чувствительность руля теперь настраивается в приложении с живым предпросмотром, сервер можно найти по QR-коду. Руль использует гироскоп вместе с акселерометром и адаптивный фильтр: плавно и без запаздывания.</string>
+    <string name="version_changes_text">Аналоговые педали (коснитесь и ведите вверх, чтобы нажать сильнее), фиксация газа (включается в настройках) и три страницы быстрых действий: грузовик (двигатель, прицеп, дворники…), вождение (ретардер, моторный тормоз, скорость круиза, быстрая парковка) и обзор (камеры, карта, приборная панель, радио). Для них обновите Truck Remote Server на ПК. Чувствительность руля теперь настраивается в приложении с живым предпросмотром, сервер можно найти по QR-коду. Руль использует гироскоп вместе с акселерометром и адаптивный фильтр: плавно и без запаздывания. Долгое нажатие на быструю кнопку позволяет поставить на её место любое другое действие, плавность руля настраивается в настройках.</string>
 
     <string name="searching_on_local">Поиск серверов в локальной сети…</string>
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
@@ -160,4 +160,15 @@
     <string name="dashboard_gear_neutral">N</string>
     <string name="dashboard_gear_reverse">R%1$d</string>
     <string name="section_buttons">Экран и кнопки</string>
+    <string name="steering_smoothness_title">Плавность руля</string>
+    <string name="steering_smoothness_responsive">%1$d: отзывчиво, самый быстрый отклик</string>
+    <string name="steering_smoothness_balanced">%1$d: сбалансированно</string>
+    <string name="steering_smoothness_smooth">%1$d: мягко, без малейшей дрожи</string>
+    <string name="actions_edit_hint">Нажмите на место, чтобы поставить туда другое действие</string>
+    <string name="actions_pick_hint">Выберите действие. Если оно уже есть на панели, кнопки поменяются местами</string>
+    <string name="actions_pick_cancel">Отмена</string>
+    <string name="actions_edit_reset">Сбросить</string>
+    <string name="actions_edit_done">Готово</string>
+    <string name="actions_empty">Пусто</string>
+    <string name="actions_edit_place">Заменить: %1$s</string>
 </resources>

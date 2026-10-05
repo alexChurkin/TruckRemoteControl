@@ -5,7 +5,7 @@
 
     <integer name="version">15</integer>
     <string name="version_changes_title">New in this version</string>
-    <string name="version_changes_text">Analog pedals (touch and drag up to press harder), throttle lock (turn it on in settings) and three pages of quick actions: truck (engine, trailer, wipers…), driving (retarder, engine brake, cruise speed, quick park) and view (cameras, map, dashboard, radio). Update Truck Remote Server on your PC to use them. Steering sensitivity is now set in the app with a live preview, the server can be found by its QR code. The steering uses the gyroscope together with the accelerometer and an adaptive filter: smooth, without a lag.</string>
+    <string name="version_changes_text">Analog pedals (touch and drag up to press harder), throttle lock (turn it on in settings) and three pages of quick actions: truck (engine, trailer, wipers…), driving (retarder, engine brake, cruise speed, quick park) and view (cameras, map, dashboard, radio). Update Truck Remote Server on your PC to use them. Steering sensitivity is now set in the app with a live preview, the server can be found by its QR code. The steering uses the gyroscope together with the accelerometer and an adaptive filter: smooth, without a lag. Long press a quick action to put any other action in its place; the steering smoothness is set in the settings.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -166,4 +166,15 @@
     <string name="dashboard_gear_neutral">N</string>
     <string name="dashboard_gear_reverse">R%1$d</string>
     <string name="section_buttons">Screen and buttons</string>
+    <string name="steering_smoothness_title">Steering smoothness</string>
+    <string name="steering_smoothness_responsive">%1$d: responsive, the quickest reaction</string>
+    <string name="steering_smoothness_balanced">%1$d: balanced</string>
+    <string name="steering_smoothness_smooth">%1$d: smooth, no jitter at all</string>
+    <string name="actions_edit_hint">Tap a place to put another action there</string>
+    <string name="actions_pick_hint">Choose the action. If it is already on the panel, the buttons swap places</string>
+    <string name="actions_pick_cancel">Cancel</string>
+    <string name="actions_edit_reset">Reset</string>
+    <string name="actions_edit_done">Done</string>
+    <string name="actions_empty">Empty</string>
+    <string name="actions_edit_place">Change: %1$s</string>
 </resources>

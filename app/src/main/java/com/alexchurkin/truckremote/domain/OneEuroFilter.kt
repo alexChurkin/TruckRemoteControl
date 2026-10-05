@@ -44,15 +44,15 @@ class OneEuroFilter(
         return 1f / (1f + tau / dt)
     }
 
-    private companion object {
+    companion object {
         // Tuned for the steering angle in degrees
         const val DEFAULT_MIN_CUTOFF = 1.2f
         const val DEFAULT_BETA = 0.04f
-        const val DEFAULT_DERIVATIVE_CUTOFF = 1f
-        const val NANOS_IN_SECOND = 1_000_000_000f
+        private const val DEFAULT_DERIVATIVE_CUTOFF = 1f
+        private const val NANOS_IN_SECOND = 1_000_000_000f
 
-        const val MIN_DT = 0.001f
-        const val MAX_DT = 0.1f
-        const val RESTART_GAP = 0.25f
+        private const val MIN_DT = 0.001f
+        private const val MAX_DT = 0.1f
+        private const val RESTART_GAP = 0.25f
     }
 }

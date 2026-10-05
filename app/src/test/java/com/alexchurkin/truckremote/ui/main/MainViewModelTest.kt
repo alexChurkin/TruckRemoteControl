@@ -13,6 +13,7 @@ import com.alexchurkin.truckremote.data.device.Haptics
 import com.alexchurkin.truckremote.data.device.WifiStatus
 import com.alexchurkin.truckremote.data.sensor.TiltReading
 import com.alexchurkin.truckremote.data.sensor.TiltSensor
+import com.alexchurkin.truckremote.data.settings.ActionLayout
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.PedalMode
 import com.alexchurkin.truckremote.domain.SteeringCurve
@@ -278,6 +279,18 @@ class MainViewModelTest {
         controller.connectionState.value = ConnectionState.NotFound
 
         assertEquals(1, effects.count { it == MainEffect.ServerNotFound })
+    }
+
+    @Test
+    fun `panel layout is edited and reset`() {
+        viewModel.onActionAssign(page = 1, slot = 7, action = ControllerAction.Engine)
+
+        assertEquals(ControllerAction.Engine, viewModel.state.value.actionLayout.pages[1][7])
+        assertNull(viewModel.state.value.actionLayout.pages[0][0])
+        assertEquals(viewModel.state.value.actionLayout, settings.actionLayout)
+
+        viewModel.onActionLayoutReset()
+        assertEquals(ActionLayout.Default, viewModel.state.value.actionLayout)
     }
 
     @Test

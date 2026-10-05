@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Зміни у версії</string>
-    <string name="version_changes_text">Аналогові педалі (торкніться й ведіть угору, щоб натиснути сильніше), фіксація газу (вмикається в налаштуваннях) і три сторінки швидких дій: вантажівка (двигун, причіп, двірники…), водіння (ретардер, моторне гальмо, швидкість круїзу, швидке паркування) та огляд (камери, карта, приладова панель, радіо). Для них оновіть Truck Remote Server на ПК. Чутливість керма тепер налаштовується в застосунку з живим попереднім переглядом, сервер можна знайти за QR-кодом. Кермо використовує гіроскоп разом з акселерометром та адаптивний фільтр: плавно й без запізнення.</string>
+    <string name="version_changes_text">Аналогові педалі (торкніться й ведіть угору, щоб натиснути сильніше), фіксація газу (вмикається в налаштуваннях) і три сторінки швидких дій: вантажівка (двигун, причіп, двірники…), водіння (ретардер, моторне гальмо, швидкість круїзу, швидке паркування) та огляд (камери, карта, приладова панель, радіо). Для них оновіть Truck Remote Server на ПК. Чутливість керма тепер налаштовується в застосунку з живим попереднім переглядом, сервер можна знайти за QR-кодом. Кермо використовує гіроскоп разом з акселерометром та адаптивний фільтр: плавно й без запізнення. Довге натискання на швидку кнопку дозволяє поставити на її місце будь-яку іншу дію, плавність керма налаштовується в налаштуваннях.</string>
 
     <string name="searching_on_local">Пошук серверів у локальній мережі…</string>
     <string name="signal_strength">Сила сигналу Wi-Fi:</string>
@@ -160,4 +160,15 @@
     <string name="dashboard_gear_neutral">N</string>
     <string name="dashboard_gear_reverse">R%1$d</string>
     <string name="section_buttons">Екран і кнопки</string>
+    <string name="steering_smoothness_title">Плавність керма</string>
+    <string name="steering_smoothness_responsive">%1$d: чутливо, найшвидший відгук</string>
+    <string name="steering_smoothness_balanced">%1$d: збалансовано</string>
+    <string name="steering_smoothness_smooth">%1$d: м\'яко, без найменшого тремтіння</string>
+    <string name="actions_edit_hint">Натисніть на місце, щоб поставити туди іншу дію</string>
+    <string name="actions_pick_hint">Виберіть дію. Якщо вона вже є на панелі, кнопки поміняються місцями</string>
+    <string name="actions_pick_cancel">Скасувати</string>
+    <string name="actions_edit_reset">Скинути</string>
+    <string name="actions_edit_done">Готово</string>
+    <string name="actions_empty">Порожньо</string>
+    <string name="actions_edit_place">Замінити: %1$s</string>
 </resources>

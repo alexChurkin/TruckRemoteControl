@@ -21,6 +21,7 @@ import com.alexchurkin.truckremote.data.device.Haptics
 import com.alexchurkin.truckremote.data.device.WifiStatus
 import com.alexchurkin.truckremote.data.sensor.TiltReading
 import com.alexchurkin.truckremote.data.sensor.TiltSensor
+import com.alexchurkin.truckremote.data.settings.ActionLayout
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.PedalMode
 import com.alexchurkin.truckremote.domain.PedalHandler
@@ -65,6 +66,7 @@ data class MainUiState(
     val pausedByUser: Boolean = false,
     // Instruments are shown while the server sends them (the game and its telemetry plugin are running)
     val showDashboard: Boolean = true,
+    val actionLayout: ActionLayout = ActionLayout.Default,
 ) {
     val isConnected: Boolean
         get() = connection.isConnected
@@ -308,6 +310,15 @@ class MainViewModel(
         return true
     }
 
+    // Puts the action into a place of the quick actions panel (see ActionLayout.with)
+    fun onActionAssign(page: Int, slot: Int, action: ControllerAction?) {
+        settings.actionLayout = state.value.actionLayout.with(page, slot, action)
+    }
+
+    fun onActionLayoutReset() {
+        settings.actionLayout = ActionLayout.Default
+    }
+
     // A swipe up on the gas or the cruise button of the dashboard; returns true if it was sent
     fun onCruiseToggle(): Boolean {
         if (!isControllable) return false
@@ -415,9 +426,10 @@ class MainViewModel(
     private fun applySettings() {
         steering.curve = SteeringCurve(settings.steeringDeadZone, settings.steeringMaxAngle, settings.steeringExponent)
         steering.calibrationOffset = settings.calibrationOffset
+        steering.smoothness = settings.steeringSmoothness
         forceFeedback = settings.forceFeedback
         pneumaticHorn = settings.pneumaticHorn
-        _state.update { it.copy(showDashboard = settings.showDashboard) }
+        _state.update { it.copy(showDashboard = settings.showDashboard, actionLayout = settings.actionLayout) }
         analogPedalsMode = settings.pedalMode == PedalMode.Analog
         brakePedal.configure(analogPedalsMode, lockAllowed = false)
         gasPedal.configure(analogPedalsMode, lockAllowed = settings.throttleLock)
