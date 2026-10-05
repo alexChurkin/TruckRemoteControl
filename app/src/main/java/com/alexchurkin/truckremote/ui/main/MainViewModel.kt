@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.TruckRemoteApp
 import com.alexchurkin.truckremote.data.analytics.Analytics
+import com.alexchurkin.truckremote.data.controller.BinaryProtocol
 import com.alexchurkin.truckremote.data.controller.ConnectionState
 import com.alexchurkin.truckremote.data.controller.ControllerAction
 import com.alexchurkin.truckremote.data.controller.ControllerRepository
@@ -94,6 +95,9 @@ sealed interface MainEffect {
     data object ShowAd : MainEffect
 
     data object ThrottleLockChanged : MainEffect
+
+    // The server on the PC is older than the app: the dashboard, warnings or the job aren't shown
+    data object ServerOutdated : MainEffect
 }
 
 // What the screen shows on its first start
@@ -277,6 +281,12 @@ class MainViewModel(
     private fun onTruckState(truck: ServerState?) {
         val analogBefore = state.value.truck?.analogPedalsAvailable
         _state.update { it.copy(truck = truck) }
+        if (truck != null && truck.serverRevision < BinaryProtocol.REVISION &&
+            settings.serverUpdateHintRevision < BinaryProtocol.REVISION
+        ) {
+            settings.serverUpdateHintRevision = BinaryProtocol.REVISION
+            send(MainEffect.ServerOutdated)
+        }
         // Pedals state should be sent in the right form (axes or keys)
         if (truck != null && truck.analogPedalsAvailable != analogBefore) sendPedalsState()
     }

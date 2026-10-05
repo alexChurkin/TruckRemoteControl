@@ -174,6 +174,39 @@ class BinaryProtocolTest {
     }
 
     @Test
+    fun `job is decoded, an empty cargo is no job`() {
+        val cargo = "Брёвна".toByteArray()
+        val city = "Berlin".toByteArray()
+        val message = ByteBuffer.allocate(7 + cargo.size + city.size).order(ByteOrder.LITTLE_ENDIAN)
+            .put(0x05)
+            .putInt(-20)
+            .put(cargo.size.toByte())
+            .put(cargo)
+            .put(city.size.toByte())
+            .put(city)
+            .array()
+
+        assertTrue(BinaryProtocol.isJob(message, message.size))
+        assertEquals(Job("Брёвна", "Berlin", -20), BinaryProtocol.decodeJob(message, message.size))
+        val noJob = byteArrayOf(0x05, 0, 0, 0, 0, 0, 0)
+        assertNull(BinaryProtocol.decodeJob(noJob, noJob.size))
+        // Cut in the middle of the city
+        assertNull(BinaryProtocol.decodeJob(message, message.size - 2))
+    }
+
+    @Test
+    fun `server revision comes from the state size or its byte`() {
+        val state = ByteArray(38).also {
+            it[0] = 0x02
+            it[37] = 3
+        }
+        assertEquals(3, BinaryProtocol.decodeServerState(state, 38)!!.serverRevision)
+        assertEquals(2, BinaryProtocol.decodeServerState(state, 37)!!.serverRevision)
+        assertEquals(1, BinaryProtocol.decodeServerState(state, 22)!!.serverRevision)
+        assertFalse(BinaryProtocol.isJob(state, 38))
+    }
+
+    @Test
     fun `text and short messages aren't binary states`() {
         val text = "True,False,False,False,1,0".toByteArray()
         assertFalse(BinaryProtocol.isBinary(text, text.size))

@@ -44,6 +44,9 @@ class TrackingClient(private val listener: Listener) {
 
         fun onServerState(state: ServerState)
 
+        // The job is sent once a second, null - no job
+        fun onJob(job: Job?)
+
         // About once per second while connected
         fun onLinkQuality(quality: LinkQuality)
     }
@@ -358,10 +361,14 @@ class TrackingClient(private val listener: Listener) {
             }
             val now = SystemClock.elapsedRealtime()
             lastMessageTime = now
-            ControllerProtocol.decodeServerMessage(packet.data, packet.length)?.let {
-                meter.onMessage(now, it.sequence)
-                lastServerState = it
-                listener.onServerState(it)
+            if (BinaryProtocol.isJob(packet.data, packet.length)) {
+                listener.onJob(BinaryProtocol.decodeJob(packet.data, packet.length))
+            } else {
+                ControllerProtocol.decodeServerMessage(packet.data, packet.length)?.let {
+                    meter.onMessage(now, it.sequence)
+                    lastServerState = it
+                    listener.onServerState(it)
+                }
             }
             if (resuming) {
                 resuming = false

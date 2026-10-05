@@ -8,6 +8,7 @@ import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.TextView
@@ -18,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -40,6 +42,8 @@ import com.alexchurkin.truckremote.util.showKeepingFullscreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -63,6 +67,10 @@ class MainActivity :
     // Actions that are on in the game: their buttons are highlighted
     private var activeActions by mutableStateOf(emptySet<ControllerAction>())
     private var actionBadges by mutableStateOf(emptyMap<ControllerAction, String>())
+
+    // The screen is dimmed a moment after the controls are paused (to save the battery), a touch brightens it
+    private var paused = false
+    private var dimJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,6 +102,11 @@ class MainActivity :
     override fun onPause() {
         super.onPause()
         viewModel.setForeground(false)
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (paused && event.actionMasked == MotionEvent.ACTION_DOWN) scheduleDimming()
+        return super.dispatchTouchEvent(event)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -132,6 +145,7 @@ class MainActivity :
             if (state.showDashboard && dashboard != null) {
                 DashboardPanel(
                     dashboard = dashboard,
+                    job = state.truck?.job,
                     onCruiseToggle = viewModel::onCruiseToggle,
                     onCruiseStep = { up ->
                         viewModel.onAction(if (up) ControllerAction.CruiseUp else ControllerAction.CruiseDown)
@@ -165,6 +179,10 @@ class MainActivity :
     /* Rendering */
 
     private fun render(state: MainUiState) {
+        if (state.isPaused != paused) {
+            paused = state.isPaused
+            scheduleDimming()
+        }
         showConnectionIndicator(state)
         binding.pauseButton.setImageResource(
             if (state.isPaused) R.drawable.pause_btn_paused else R.drawable.pause_btn_resumed,
@@ -268,6 +286,24 @@ class MainActivity :
         }
     }
 
+    private fun scheduleDimming() {
+        dimJob?.cancel()
+        setDimmed(false)
+        if (paused) {
+            dimJob = lifecycleScope.launch {
+                delay(DIM_DELAY_MS)
+                setDimmed(true)
+            }
+        }
+    }
+
+    private fun setDimmed(dimmed: Boolean) {
+        val brightness = if (dimmed) DIMMED_BRIGHTNESS else WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+        if (window.attributes.screenBrightness != brightness) {
+            window.attributes = window.attributes.apply { screenBrightness = brightness }
+        }
+    }
+
     private fun showLights(mode: Int, animate: Boolean) = with(binding.buttonLights) {
         when (mode) {
             LIGHTS_OFF -> {
@@ -313,6 +349,8 @@ class MainActivity :
 
             MainEffect.ServerNotFound -> showServerNotFoundHint()
 
+            MainEffect.ServerOutdated -> showServerOutdatedHint()
+
             MainEffect.ShowAd -> app.container.ads.tryShowFullscreenAd(this)
 
             MainEffect.ThrottleLockChanged -> binding.gasLayout.performHapticFeedback(
@@ -328,6 +366,19 @@ class MainActivity :
             .setMessage(R.string.server_not_found_text)
             .setPositiveButton(android.R.string.ok, null)
             .setNeutralButton(R.string.settings) { _, _ -> startActivity(Intent(this, SettingsActivity::class.java)) }
+            .create()
+            .showKeepingFullscreen()
+    }
+
+    private fun showServerOutdatedHint() {
+        if (isFinishing) return
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.server_outdated_title)
+            .setMessage(R.string.server_outdated_text)
+            .setPositiveButton(R.string.server_outdated_download) { _, _ ->
+                startActivity(Intent(Intent.ACTION_VIEW, getString(R.string.server_releases_link).toUri()))
+            }
+            .setNegativeButton(R.string.server_outdated_later, null)
             .create()
             .showKeepingFullscreen()
     }
@@ -443,6 +494,9 @@ class MainActivity :
 
         // Horizontal swipe distance on gas which locks the throttle
         const val THROTTLE_LOCK_DISTANCE_DP = 70f
+
+        const val DIM_DELAY_MS = 3000L
+        const val DIMMED_BRIGHTNESS = 0.03f
 
         // Pixels per millisecond
         const val CRUISE_MIN_VELOCITY = 1.5f

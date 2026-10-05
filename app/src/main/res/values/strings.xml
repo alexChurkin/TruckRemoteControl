@@ -5,7 +5,7 @@
 
     <integer name="version">15</integer>
     <string name="version_changes_title">New in this version</string>
-    <string name="version_changes_text">Analog pedals (touch and drag up to press harder), throttle lock (turn it on in settings) and three pages of quick actions: truck (engine, trailer, wipers…), driving (retarder, engine brake, cruise speed, quick park) and view (cameras, map, dashboard, radio). Update Truck Remote Server on your PC to use them. Steering sensitivity is now set in the app with a live preview, the server can be found by its QR code. The steering uses the gyroscope together with the accelerometer and an adaptive filter: smooth, without a lag. Long press a quick action to put any other action in its place; the steering smoothness is set in the settings. On the dashboard: warnings (air, oil, overheating, fuel, wear, rest) and the distance and time to the destination; the panel shows the diff lock, the lift axle and the retarder level (update Truck Remote Server). Auto pause: the controls are released while the phone lies screen down.</string>
+    <string name="version_changes_text">Analog pedals (touch and drag up to press harder), throttle lock (turn it on in settings) and three pages of quick actions: truck (engine, trailer, wipers…), driving (retarder, engine brake, cruise speed, quick park) and view (cameras, map, dashboard, radio). Update Truck Remote Server on your PC to use them. Steering sensitivity is now set in the app with a live preview, the server can be found by its QR code. The steering uses the gyroscope together with the accelerometer and an adaptive filter: smooth, without a lag. Long press a quick action to put any other action in its place; the steering smoothness is set in the settings. On the dashboard: warnings (air, oil, overheating, fuel, wear, rest) and the distance and time to the destination; the panel shows the diff lock, the lift axle and the retarder level (update Truck Remote Server). Auto pause: the controls are released while the phone lies screen down. The cargo, destination and time left are shown during a job; the screen is dimmed while the controls are paused.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -192,4 +192,12 @@
     <string name="dashboard_time_minutes">%1$d min</string>
     <string name="dashboard_unit_km">km</string>
     <string name="dashboard_unit_mi">mi</string>
+    <string name="server_outdated_title">Update Truck Remote Server</string>
+    <string name="server_outdated_text">The server on the PC is older than the app: the dashboard, warnings and the cargo info may not be shown. Download the new version and replace the old one.</string>
+    <string name="server_outdated_download">Download</string>
+    <string name="server_outdated_later">Later</string>
+    <string name="dashboard_job">%1$s → %2$s · %3$s</string>
+    <string name="dashboard_job_left">%1$s left</string>
+    <string name="dashboard_job_late">%1$s late</string>
+    <string name="server_releases_link" translatable="false">https://github.com/alexChurkin/TruckRemoteServer/releases/latest</string>
 </resources>

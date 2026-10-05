@@ -49,6 +49,10 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
 
     private val client = TrackingClient(this)
 
+    // The last job received, joined to the truck state
+    @Volatile
+    private var job: Job? = null
+
     private val _connectionState = MutableStateFlow(ConnectionState.Disconnected)
     override val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
@@ -92,6 +96,7 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
     override fun onConnectionStateChanged(state: ConnectionState) {
         _connectionState.value = state
         if (!state.isConnected) {
+            job = null
             _truckState.value = null
             _linkQuality.value = null
         }
@@ -100,7 +105,11 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
     // The server sends its state 50 times per second, the state flow keeps only changes
     override fun onServerState(state: ServerState) {
         if (state.ffbDurationMs > 0) _forceFeedback.tryEmit(state.ffbDurationMs)
-        _truckState.value = state.copy(ffbDurationMs = 0, sequence = null)
+        _truckState.value = state.copy(ffbDurationMs = 0, sequence = null, job = job)
+    }
+
+    override fun onJob(job: Job?) {
+        this.job = job
     }
 
     override fun onLinkQuality(quality: LinkQuality) {

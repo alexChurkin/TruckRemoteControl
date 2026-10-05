@@ -93,6 +93,17 @@ data class ServerState(
     val retarderLevel: Int = 0,
     // 0: the truck has no retarder
     val retarderSteps: Int = 0,
+    // The current job (binary protocol), null without a job or while the server doesn't send it
+    val job: Job? = null,
+    // What the server sends (see BinaryProtocol.REVISION): 0 - the text protocol
+    val serverRevision: Int = 0,
+)
+
+data class Job(
+    val cargo: String,
+    val destinationCity: String,
+    // Game minutes until the delivery deadline, negative when late
+    val deliveryMinutesLeft: Int,
 )
 
 // Warning lamps of the truck dashboard

@@ -16,21 +16,28 @@ import kotlin.math.roundToInt
  * joystick axes of the server). Actions: a click counter (mod 256) or 1 while a hold action is held.
  * Paused controller: type 0x03, goodbye: type 0x04.
  *
- * Server state, 22 bytes (37 in the extended state): type 0x02 | sequence u32 | flags u16 |
+ * Server state, 22 bytes (37 and 38 in the extended state): type 0x02 | sequence u32 | flags u16 |
  * force feedback duration u16 (ms) | speed i16 (cm/s) | speed limit u16 (cm/s) | cruise speed u16 (cm/s) |
  * gear i8 | rpm u16 | max rpm u16 | fuel u8 (percent) | game u8 (1 - ETS2, 2 - ATS) |
  * flags2 u16 | retarder level u8 | retarder steps u8 | wear u8 (percent) | rest stop i16 (game minutes) |
- * route distance u32 (m) | route time u32 (s).
+ * route distance u32 (m) | route time u32 (s) | server revision u8 (a 22-byte state is revision 1, 37 bytes - 2).
  * Flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer, 5 wipers, 6 beacon,
  * 7 analog pedals available, 8-9 lights mode, 10 telemetry available (the dashboard values are real).
  * Flags2: 0-6 warnings (see [TruckWarning], in its order), 7 differential lock, 8 lift axle, 9 engine brake.
+ * Job, sent once a second by revision 3+: type 0x05 | delivery minutes left i32 | cargo length u8 | cargo UTF-8 |
+ * destination city length u8 | destination city UTF-8; no cargo - no job.
  */
 object BinaryProtocol {
     const val VERSION = 2
 
+    // The server revision this app makes use of entirely (an older server is worth updating)
+    const val REVISION = 3
+
     private const val STATE_TYPE: Byte = 0x02
     private const val PAUSED_TYPE: Byte = 0x03
     private const val GOODBYE_TYPE: Byte = 0x04
+    private const val JOB_TYPE: Byte = 0x05
+    private const val JOB_HEADER_SIZE = 5
     private const val FIRST_TEXT_CHAR = 0x20
 
     private const val CONTROLLER_HEADER_SIZE = 16
@@ -44,6 +51,9 @@ object BinaryProtocol {
     private const val REST_STOP_OFFSET = 27
     private const val ROUTE_DISTANCE_OFFSET = 29
     private const val ROUTE_TIME_OFFSET = 33
+    private const val REVISION_OFFSET = 37
+    private const val REVISION_BASIC = 1
+    private const val REVISION_EXTENDED = 2
     private const val DIFFERENTIAL_LOCK_BIT = 7
     private const val LIFT_AXLE_BIT = 8
     private const val ENGINE_BRAKE_BIT = 9
@@ -130,23 +140,48 @@ object BinaryProtocol {
             beaconOn = bit(BEACON_BIT),
             analogPedalsAvailable = bit(ANALOG_PEDALS_BIT),
             sequence = sequence,
-            dashboard = if (dashboard != null && extended) {
-                dashboard.copy(
-                    warnings = TruckWarning.entries.filter { bit2(it.ordinal) }.toSet(),
-                    wearPercent = all.get(WEAR_OFFSET).toInt() and BYTE_MASK,
-                    restStopMinutes = all.getShort(REST_STOP_OFFSET).toInt(),
-                    routeDistance = (all.getInt(ROUTE_DISTANCE_OFFSET).toLong() and UINT32_MASK).toFloat(),
-                    routeTimeSeconds = all.getInt(ROUTE_TIME_OFFSET).toLong() and UINT32_MASK,
-                )
-            } else {
-                dashboard
-            },
+            dashboard = if (dashboard != null && extended) withExtras(dashboard, all, flags2) else dashboard,
             differentialLock = bit2(DIFFERENTIAL_LOCK_BIT),
             liftAxle = bit2(LIFT_AXLE_BIT),
             engineBrake = bit2(ENGINE_BRAKE_BIT),
             retarderLevel = if (extended) all.get(RETARDER_LEVEL_OFFSET).toInt() and BYTE_MASK else 0,
             retarderSteps = if (extended) all.get(RETARDER_STEPS_OFFSET).toInt() and BYTE_MASK else 0,
+            serverRevision = revision(all, length),
         )
+    }
+
+    // The extended part of the state: the whole message in the buffer
+    private fun withExtras(dashboard: Dashboard, all: ByteBuffer, flags2: Int) = dashboard.copy(
+        warnings = TruckWarning.entries.filter { flags2 and (1 shl it.ordinal) != 0 }.toSet(),
+        wearPercent = all.get(WEAR_OFFSET).toInt() and BYTE_MASK,
+        restStopMinutes = all.getShort(REST_STOP_OFFSET).toInt(),
+        routeDistance = (all.getInt(ROUTE_DISTANCE_OFFSET).toLong() and UINT32_MASK).toFloat(),
+        routeTimeSeconds = all.getInt(ROUTE_TIME_OFFSET).toLong() and UINT32_MASK,
+    )
+
+    private fun revision(all: ByteBuffer, length: Int) = when {
+        length > REVISION_OFFSET -> all.get(REVISION_OFFSET).toInt() and BYTE_MASK
+        length >= SERVER_EXTENDED_SIZE -> REVISION_EXTENDED
+        else -> REVISION_BASIC
+    }
+
+    fun isJob(data: ByteArray, length: Int) = length >= JOB_HEADER_SIZE && data[0] == JOB_TYPE
+
+    // null without a job (or if the message is malformed)
+    fun decodeJob(data: ByteArray, length: Int): Job? {
+        val buffer = ByteBuffer.wrap(data, 1, length - 1).order(ByteOrder.LITTLE_ENDIAN)
+        val minutesLeft = buffer.getInt()
+        fun text(): String? {
+            if (!buffer.hasRemaining()) return null
+            val size = buffer.get().toInt() and BYTE_MASK
+            if (buffer.remaining() < size) return null
+            return String(data, buffer.position(), size, Charsets.UTF_8).also {
+                buffer.position(buffer.position() + size)
+            }
+        }
+        val cargo = text()?.takeIf { it.isNotEmpty() } ?: return null
+        val city = text() ?: return null
+        return Job(cargo, city, minutesLeft)
     }
 
     // The buffer is after the force feedback duration

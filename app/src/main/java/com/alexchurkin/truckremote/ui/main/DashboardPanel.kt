@@ -41,11 +41,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.controller.Dashboard
+import com.alexchurkin.truckremote.data.controller.Job
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
@@ -66,12 +68,14 @@ private const val REPEAT_INTERVAL_MS = 220L
 /**
  * Instruments in the middle of the controller screen: speed with its unit, the gear, the speed limit sign,
  * engine rpm and the cruise control (its speed is changed here). Only what matters is shown:
- * the speed limit when there is one, the route while driving by the navigation, warnings when there are problems.
+ * the speed limit when there is one, the route while driving by the navigation, the [job] (cargo, destination and
+ * the time left), warnings when there are problems.
  * [onCruiseToggle] and [onCruiseStep] return true if the command was sent (the button gives haptic feedback then).
  */
 @Composable
 fun DashboardPanel(
     dashboard: Dashboard,
+    job: Job?,
     onCruiseToggle: () -> Boolean,
     onCruiseStep: (up: Boolean) -> Boolean,
     modifier: Modifier = Modifier,
@@ -108,6 +112,7 @@ fun DashboardPanel(
                 modifier = Modifier.padding(top = 6.dp),
             )
         }
+        if (job != null) JobLine(job, Modifier.padding(top = 2.dp))
         CruiseControl(
             speed = (dashboard.cruiseSpeed * factor).roundToInt(),
             unit = unit,
@@ -129,14 +134,38 @@ private fun routeText(dashboard: Dashboard): String {
     } else {
         String.format(LocalConfiguration.current.locales[0], "%.1f", distance)
     }
-    val minutes = ((dashboard.routeTimeSeconds + SECONDS_IN_MINUTE / 2) / SECONDS_IN_MINUTE).toInt()
-    val time = if (minutes >= MINUTES_IN_HOUR) {
-        stringResource(R.string.dashboard_time_hours, minutes / MINUTES_IN_HOUR, minutes % MINUTES_IN_HOUR)
-    } else {
-        stringResource(R.string.dashboard_time_minutes, minutes)
-    }
+    val time = durationText(((dashboard.routeTimeSeconds + SECONDS_IN_MINUTE / 2) / SECONDS_IN_MINUTE).toInt())
     val unit = stringResource(if (dashboard.imperial) R.string.dashboard_unit_mi else R.string.dashboard_unit_km)
     return stringResource(R.string.dashboard_route, distanceText, unit, time)
+}
+
+@Composable
+private fun durationText(minutes: Int) = if (minutes >= MINUTES_IN_HOUR) {
+    stringResource(R.string.dashboard_time_hours, minutes / MINUTES_IN_HOUR, minutes % MINUTES_IN_HOUR)
+} else {
+    stringResource(R.string.dashboard_time_minutes, minutes)
+}
+
+// "Logs → Berlin · 3 h 10 min left" (game time), the delay in the caution color
+@Composable
+private fun JobLine(job: Job, modifier: Modifier = Modifier) {
+    val late = job.deliveryMinutesLeft < 0
+    val deadline = if (late) {
+        stringResource(R.string.dashboard_job_late, durationText(-job.deliveryMinutesLeft))
+    } else {
+        stringResource(R.string.dashboard_job_left, durationText(job.deliveryMinutesLeft))
+    }
+    BasicText(
+        text = stringResource(R.string.dashboard_job, job.cargo, job.destinationCity, deadline),
+        style = TextStyle(
+            color = colorResource(if (late) R.color.dashboardCaution else R.color.dashboardSecondary),
+            fontSize = 13.sp,
+            textAlign = TextAlign.Center,
+        ),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier.widthIn(max = 460.dp),
+    )
 }
 
 // Small labels of what needs attention: red ones are serious

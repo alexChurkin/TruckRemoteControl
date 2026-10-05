@@ -2,6 +2,7 @@ package com.alexchurkin.truckremote.ui.main
 
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.analytics.Analytics
+import com.alexchurkin.truckremote.data.controller.BinaryProtocol
 import com.alexchurkin.truckremote.data.controller.ConnectionState
 import com.alexchurkin.truckremote.data.controller.ControllerAction
 import com.alexchurkin.truckremote.data.controller.ControllerRepository
@@ -294,6 +295,28 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `outdated server hint is shown once`() = runTest {
+        val effects = collectEffects()
+        connect(TRUCK.copy(serverRevision = 2))
+        controller.truckState.value = TRUCK.copy(serverRevision = 2, engineOn = true)
+        assertEquals(1, effects.count { it == MainEffect.ServerOutdated })
+
+        // Not again after the app is restarted
+        controller.connectionState.value = ConnectionState.Disconnected
+        viewModel = createViewModel()
+        val laterEffects = collectEffects()
+        connect(TRUCK.copy(serverRevision = 1))
+        assertEquals(0, laterEffects.count { it == MainEffect.ServerOutdated })
+    }
+
+    @Test
+    fun `up to date server gets no hint`() = runTest {
+        val effects = collectEffects()
+        connect(TRUCK.copy(serverRevision = BinaryProtocol.REVISION))
+        assertEquals(0, effects.count { it == MainEffect.ServerOutdated })
+    }
+
+    @Test
     fun `phone screen down pauses the controller until it is picked up`() {
         viewModel.setForeground(true)
         connect()
@@ -451,6 +474,7 @@ class MainViewModelTest {
             rightBlinker = false,
             lightsMode = 0,
             ffbDurationMs = 0,
+            serverRevision = BinaryProtocol.REVISION,
         )
     }
 }

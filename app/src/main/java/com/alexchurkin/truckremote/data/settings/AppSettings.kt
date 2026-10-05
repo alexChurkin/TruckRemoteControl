@@ -84,6 +84,11 @@ class AppSettings(private val prefs: SharedPreferences) {
             .coerceIn(SteeringProcessor.SMOOTHNESS_RANGE)
         set(value) = prefs.edit { putInt(KEY_STEERING_SMOOTHNESS, value) }
 
+    // The server revision the "update the server" hint was shown for: it is shown once
+    var serverUpdateHintRevision: Int
+        get() = prefs.getInt(KEY_SERVER_UPDATE_HINT, 0)
+        set(value) = prefs.edit { putInt(KEY_SERVER_UPDATE_HINT, value) }
+
     var actionLayout: ActionLayout
         get() = ActionLayout.decode(prefs.getString(KEY_ACTION_LAYOUT, null))
         set(value) = prefs.edit { putString(KEY_ACTION_LAYOUT, value.encode()) }
@@ -161,6 +166,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_STEERING_EXPONENT = "steeringExponent"
         private const val KEY_STEERING_SMOOTHNESS = "steeringSmoothness"
         private const val KEY_ACTION_LAYOUT = "actionLayout"
+        private const val KEY_SERVER_UPDATE_HINT = "serverUpdateHintRevision"
         private const val KEY_PEDAL_MODE = "pedalMode"
         private const val KEY_THROTTLE_LOCK = "throttleLock"
         private const val KEY_CALIBRATION_OFFSET = "calibrationOffset"
