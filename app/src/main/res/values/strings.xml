@@ -132,7 +132,6 @@
     <string name="language_title">Language</string>
     <string name="language_system">System default</string>
     <string name="section_steering">Steering</string>
-    <string name="section_buttons">Buttons and feedback</string>
     <string name="section_app">App</string>
     <string name="steering_sensitivity_title">Sensitivity</string>
     <string name="calibrate_title">Straighten the wheel</string>
@@ -153,4 +152,18 @@
     <string name="steering_preview_center">Straight</string>
     <string name="steering_preview_portrait">Turn the phone sideways to check the steering</string>
     <string name="scan_qr_loading">The scanner is being downloaded by Google Play services, try again in a minute</string>
+    <string name="show_dashboard_title">Instruments on the screen</string>
+    <string name="show_dashboard_summary">Speed, cruise control and engine rpm between the pedals while the game is running</string>
+    <string name="dashboard_kmh">km/h</string>
+    <string name="dashboard_mph">mph</string>
+    <string name="dashboard_cruise">Cruise</string>
+    <string name="dashboard_cruise_on">Turn the cruise control on</string>
+    <string name="dashboard_cruise_off">Turn the cruise control off</string>
+    <string name="dashboard_cruise_up">Raise the cruise speed</string>
+    <string name="dashboard_cruise_down">Lower the cruise speed</string>
+    <string name="dashboard_low_fuel">Fuel %1$d%%</string>
+    <string name="dashboard_speed_limit">Speed limit %1$d</string>
+    <string name="dashboard_gear_neutral">N</string>
+    <string name="dashboard_gear_reverse">R%1$d</string>
+    <string name="section_buttons">Screen and buttons</string>
 </resources>

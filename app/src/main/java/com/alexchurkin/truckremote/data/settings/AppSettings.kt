@@ -51,6 +51,11 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_PNEUMATIC_HORN, false)
         set(value) = prefs.edit { putBoolean(KEY_PNEUMATIC_HORN, value) }
 
+    // Speed, cruise control and other instruments in the middle of the controller screen
+    var showDashboard: Boolean
+        get() = prefs.getBoolean(KEY_SHOW_DASHBOARD, true)
+        set(value) = prefs.edit { putBoolean(KEY_SHOW_DASHBOARD, value) }
+
     // Previous versions had only a switch, its dead zone was about 6 degrees
     var steeringDeadZone: Int
         get() = prefs.getInt(
@@ -121,6 +126,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_FORCE_FEEDBACK = "useFFB"
         private const val KEY_LAST_SERVER_IP = "lastServerIp"
         private const val KEY_PNEUMATIC_HORN = "pneumaticSignal"
+        private const val KEY_SHOW_DASHBOARD = "showDashboard"
         private const val KEY_DEAD_ZONE = "deadzone"
         private const val LEGACY_DEAD_ZONE = 6
         private const val KEY_STEERING_DEAD_ZONE = "steeringDeadZone"

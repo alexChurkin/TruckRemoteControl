@@ -84,6 +84,24 @@ data class ServerState(
     val analogPedalsAvailable: Boolean = false,
     // Number of the message, sent by server 1.4+ (lets the controller measure packet loss)
     val sequence: Long? = null,
+    // Instruments of the truck (binary protocol), null while the game or its telemetry plugin isn't running
+    val dashboard: Dashboard? = null,
+)
+
+data class Dashboard(
+    // m/s, negative when reversing
+    val speed: Float,
+    // m/s, 0 - no limit
+    val speedLimit: Float,
+    // m/s, 0 - the cruise control is off
+    val cruiseSpeed: Float,
+    // The gear on the dashboard: negative - reverse, 0 - neutral
+    val gear: Int,
+    val engineRpm: Int,
+    val engineRpmMax: Int,
+    val fuelPercent: Int,
+    // American Truck Simulator shows miles per hour
+    val imperial: Boolean,
 )
 
 object ControllerProtocol {

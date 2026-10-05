@@ -126,7 +126,6 @@
     <string name="language_title">Мова</string>
     <string name="language_system">Як у сістэме</string>
     <string name="section_steering">Руль</string>
-    <string name="section_buttons">Кнопкі і аддача</string>
     <string name="section_app">Праграма</string>
     <string name="steering_sensitivity_title">Адчувальнасць</string>
     <string name="calibrate_title">Выраўнаваць руль</string>
@@ -147,4 +146,18 @@
     <string name="steering_preview_center">Прама</string>
     <string name="steering_preview_portrait">Павярніце тэлефон гарызантальна, каб праверыць руль</string>
     <string name="scan_qr_loading">Сэрвісы Google Play загружаюць сканер, паспрабуйце праз хвіліну</string>
+    <string name="show_dashboard_title">Прыборы на экране</string>
+    <string name="show_dashboard_summary">Хуткасць, круіз-кантроль і абароты паміж педалямі, пакуль працуе гульня</string>
+    <string name="dashboard_kmh">км/г</string>
+    <string name="dashboard_mph">міль/г</string>
+    <string name="dashboard_cruise">Круіз</string>
+    <string name="dashboard_cruise_on">Уключыць круіз-кантроль</string>
+    <string name="dashboard_cruise_off">Выключыць круіз-кантроль</string>
+    <string name="dashboard_cruise_up">Павысіць хуткасць круізу</string>
+    <string name="dashboard_cruise_down">Панізіць хуткасць круізу</string>
+    <string name="dashboard_low_fuel">Паліва %1$d%%</string>
+    <string name="dashboard_speed_limit">Абмежаванне хуткасці %1$d</string>
+    <string name="dashboard_gear_neutral">N</string>
+    <string name="dashboard_gear_reverse">R%1$d</string>
+    <string name="section_buttons">Экран і кнопкі</string>
 </resources>

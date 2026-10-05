@@ -219,6 +219,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/ic_actions" />
 
+    <!-- Instruments of the truck (DashboardPanel), under the quick actions panel -->
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/dashboardView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/actionsButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonParking" />
+
     <!-- Pages of quick actions (ActionsPanel) -->
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/actionsPanel"

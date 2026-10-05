@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.alexchurkin.truckremote.R
@@ -124,6 +125,19 @@ class MainActivity :
         buttonLights.setOnClickListener { viewModel.onLights() }
 
         actionsButton.setOnClickListener { actionsPanel.isVisible = !actionsPanel.isVisible }
+        dashboardView.setContent {
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            val dashboard = state.truck?.dashboard
+            if (state.showDashboard && dashboard != null) {
+                DashboardPanel(
+                    dashboard = dashboard,
+                    onCruiseToggle = viewModel::onCruiseToggle,
+                    onCruiseStep = { up ->
+                        viewModel.onAction(if (up) ControllerAction.CruiseUp else ControllerAction.CruiseDown)
+                    },
+                )
+            }
+        }
         actionsPanel.setContent {
             ActionsPanel(
                 activeActions = activeActions,
@@ -343,7 +357,7 @@ class MainActivity :
             val isFastVerticalSwipeUp = velocityY < 0 &&
                 abs(velocityY) / MS_IN_SECOND > CRUISE_MIN_VELOCITY &&
                 movedX / movedY < CRUISE_MAX_SIDEWAYS_RATIO
-            if (isFastVerticalSwipeUp && viewModel.onCruiseSwipe()) {
+            if (isFastVerticalSwipeUp && viewModel.onCruiseToggle()) {
                 binding.gasImage.startCachedAnimation(R.anim.gas_cruise)
             }
             return false

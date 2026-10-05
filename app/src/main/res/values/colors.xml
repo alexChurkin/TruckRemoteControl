@@ -39,4 +39,9 @@
     <color name="m3_outline">#869584</color>
     <color name="m3_outlineVariant">#3D4A3D</color>
     <color name="m3_error">#FFB4AB</color>
+    <!-- Instruments on the controller screen -->
+    <color name="dashboardSecondary">#B0B0B0</color>
+    <color name="dashboardTrack">#33FFFFFF</color>
+    <color name="dashboardRpm">#E0E0E0</color>
+    <color name="dashboardCaution">#FFB300</color>
 </resources>

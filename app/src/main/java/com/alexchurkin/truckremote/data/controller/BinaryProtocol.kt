@@ -16,9 +16,11 @@ import kotlin.math.roundToInt
  * joystick axes of the server). Actions: a click counter (mod 256) or 1 while a hold action is held.
  * Paused controller: type 0x03, goodbye: type 0x04.
  *
- * Server state, 9 bytes: type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms).
+ * Server state, 22 bytes: type 0x02 | sequence u32 | flags u16 | force feedback duration u16 (ms) |
+ * speed i16 (cm/s) | speed limit u16 (cm/s) | cruise speed u16 (cm/s) | gear i8 | rpm u16 | max rpm u16 |
+ * fuel u8 (percent) | game u8 (1 - ETS2, 2 - ATS).
  * Flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer, 5 wipers, 6 beacon,
- * 7 analog pedals available, 8-9 lights mode.
+ * 7 analog pedals available, 8-9 lights mode, 10 telemetry available (the dashboard values are real).
  */
 object BinaryProtocol {
     const val VERSION = 2
@@ -30,6 +32,9 @@ object BinaryProtocol {
 
     private const val CONTROLLER_HEADER_SIZE = 16
     private const val SERVER_STATE_SIZE = 9
+    private const val SERVER_DASHBOARD_SIZE = 22
+    private const val CENTIMETERS_IN_METER = 100f
+    private const val GAME_ATS = 2
     private const val LEVEL_SCALE = 0xFFFF
     private const val BYTE_MASK = 0xFF
     private const val UINT32_MASK = 0xFFFFFFFFL
@@ -56,6 +61,7 @@ object BinaryProtocol {
     private const val BEACON_BIT = 6
     private const val ANALOG_PEDALS_BIT = 7
     private const val LIGHTS_SHIFT = 8
+    private const val TELEMETRY_BIT = 10
     private const val TWO_BITS = 0x3
     private const val UINT16_MASK = 0xFFFF
 
@@ -105,8 +111,21 @@ object BinaryProtocol {
             beaconOn = bit(BEACON_BIT),
             analogPedalsAvailable = bit(ANALOG_PEDALS_BIT),
             sequence = sequence,
+            dashboard = if (length >= SERVER_DASHBOARD_SIZE && bit(TELEMETRY_BIT)) decodeDashboard(buffer) else null,
         )
     }
+
+    // The buffer is after the force feedback duration
+    private fun decodeDashboard(buffer: ByteBuffer) = Dashboard(
+        speed = buffer.getShort() / CENTIMETERS_IN_METER,
+        speedLimit = (buffer.getShort().toInt() and UINT16_MASK) / CENTIMETERS_IN_METER,
+        cruiseSpeed = (buffer.getShort().toInt() and UINT16_MASK) / CENTIMETERS_IN_METER,
+        gear = buffer.get().toInt(),
+        engineRpm = buffer.getShort().toInt() and UINT16_MASK,
+        engineRpmMax = buffer.getShort().toInt() and UINT16_MASK,
+        fuelPercent = buffer.get().toInt() and BYTE_MASK,
+        imperial = (buffer.get().toInt() and BYTE_MASK) == GAME_ATS,
+    )
 
     private fun flag(value: Boolean, bit: Int) = if (value) 1 shl bit else 0
 

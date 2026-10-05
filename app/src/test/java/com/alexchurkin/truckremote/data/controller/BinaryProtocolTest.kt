@@ -106,6 +106,38 @@ class BinaryProtocolTest {
     }
 
     @Test
+    fun `dashboard is decoded while telemetry is available`() {
+        fun message(telemetry: Boolean) = ByteBuffer.allocate(22).order(ByteOrder.LITTLE_ENDIAN)
+            .put(0x02)
+            .putInt(1)
+            .putShort((if (telemetry) 1 shl 10 else 0).toShort())
+            .putShort(0)
+            .putShort((-250).toShort())
+            .putShort(2459)
+            .putShort(2222)
+            .put((-1).toByte())
+            .putShort(1500)
+            .putShort(2500)
+            .put(38)
+            .put(2)
+            .array()
+
+        val dashboard = BinaryProtocol.decodeServerState(message(true), 22)!!.dashboard!!
+
+        assertEquals(-2.5f, dashboard.speed, 0.001f)
+        assertEquals(24.59f, dashboard.speedLimit, 0.001f)
+        assertEquals(22.22f, dashboard.cruiseSpeed, 0.001f)
+        assertEquals(-1, dashboard.gear)
+        assertEquals(1500, dashboard.engineRpm)
+        assertEquals(2500, dashboard.engineRpmMax)
+        assertEquals(38, dashboard.fuelPercent)
+        assertTrue(dashboard.imperial)
+        assertNull(BinaryProtocol.decodeServerState(message(false), 22)!!.dashboard)
+        // A state of an earlier server version has no dashboard
+        assertNull(BinaryProtocol.decodeServerState(message(true), 9)!!.dashboard)
+    }
+
+    @Test
     fun `text and short messages aren't binary states`() {
         val text = "True,False,False,False,1,0".toByteArray()
         assertFalse(BinaryProtocol.isBinary(text, text.size))

@@ -62,6 +62,8 @@ data class MainUiState(
     val truck: ServerState? = null,
     val pedals: PedalsUiState = PedalsUiState(),
     val pausedByUser: Boolean = false,
+    // Instruments are shown while the server sends them (the game and its telemetry plugin are running)
+    val showDashboard: Boolean = true,
 ) {
     val isConnected: Boolean
         get() = connection.isConnected
@@ -308,8 +310,8 @@ class MainViewModel(
         return true
     }
 
-    // Returns true if the swipe turned the cruise control on or off
-    fun onCruiseSwipe(): Boolean {
+    // A swipe up on the gas or the cruise button of the dashboard; returns true if it was sent
+    fun onCruiseToggle(): Boolean {
         if (!isControllable) return false
         controller.updateState { it.copy(cruiseClick = !it.cruiseClick) }
         return true
@@ -419,6 +421,7 @@ class MainViewModel(
         calibrationOffset = settings.calibrationOffset
         forceFeedback = settings.forceFeedback
         pneumaticHorn = settings.pneumaticHorn
+        _state.update { it.copy(showDashboard = settings.showDashboard) }
         analogPedalsMode = settings.pedalMode == PedalMode.Analog
         brakePedal.configure(analogPedalsMode, lockAllowed = false)
         gasPedal.configure(analogPedalsMode, lockAllowed = settings.throttleLock)

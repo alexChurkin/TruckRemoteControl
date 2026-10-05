@@ -123,6 +123,7 @@ data class SettingsActions(
     val onServerIpChange: (String) -> Unit = {},
     val onForceFeedbackChange: (Boolean) -> Unit = {},
     val onPneumaticHornChange: (Boolean) -> Unit = {},
+    val onShowDashboardChange: (Boolean) -> Unit = {},
     val onSteeringDeadZoneChange: (Int) -> Unit = {},
     val onSteeringMaxAngleChange: (Int) -> Unit = {},
     val onSteeringExponentChange: (Float) -> Unit = {},
@@ -163,6 +164,7 @@ fun SettingsScreen(
             onServerIpChange = viewModel::setServerIp,
             onForceFeedbackChange = viewModel::setForceFeedback,
             onPneumaticHornChange = viewModel::setPneumaticHorn,
+            onShowDashboardChange = viewModel::setShowDashboard,
             onSteeringDeadZoneChange = viewModel::setSteeringDeadZone,
             onSteeringMaxAngleChange = viewModel::setSteeringMaxAngle,
             onSteeringExponentChange = viewModel::setSteeringExponent,
@@ -322,6 +324,14 @@ private fun SettingsList(
         }
 
         centeredItem { SectionHeader(R.string.section_buttons) }
+        centeredItem {
+            SwitchItem(
+                title = stringResource(R.string.show_dashboard_title),
+                summary = stringResource(R.string.show_dashboard_summary),
+                checked = state.showDashboard,
+                onCheckedChange = actions.onShowDashboardChange,
+            )
+        }
         centeredItem {
             SwitchItem(
                 title = stringResource(R.string.ffb_text),
@@ -924,6 +934,7 @@ private fun SettingsPreview() {
                 serverIp = "192.168.1.10",
                 forceFeedback = true,
                 pneumaticHorn = false,
+                showDashboard = true,
                 steeringDeadZone = 3,
                 steeringMaxAngle = 60,
                 steeringExponent = 1.5f,

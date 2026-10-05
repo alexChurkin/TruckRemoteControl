@@ -34,6 +34,7 @@ data class SettingsUiState(
     val serverIp: String,
     val forceFeedback: Boolean,
     val pneumaticHorn: Boolean,
+    val showDashboard: Boolean,
     val steeringDeadZone: Int,
     val steeringMaxAngle: Int,
     val steeringExponent: Float,
@@ -128,6 +129,10 @@ class SettingsViewModel(
         settings.pneumaticHorn = value
     }
 
+    fun setShowDashboard(value: Boolean) {
+        settings.showDashboard = value
+    }
+
     fun setSteeringDeadZone(degrees: Int) {
         settings.steeringDeadZone = degrees
     }
@@ -168,6 +173,7 @@ class SettingsViewModel(
         serverIp = settings.specifiedServerIp,
         forceFeedback = settings.forceFeedback,
         pneumaticHorn = settings.pneumaticHorn,
+        showDashboard = settings.showDashboard,
         steeringDeadZone = settings.steeringDeadZone,
         steeringMaxAngle = settings.steeringMaxAngle,
         steeringExponent = settings.steeringExponent,

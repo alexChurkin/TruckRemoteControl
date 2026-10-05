@@ -126,7 +126,6 @@
     <string name="language_title">Мова</string>
     <string name="language_system">Як у системі</string>
     <string name="section_steering">Кермо</string>
-    <string name="section_buttons">Кнопки й віддача</string>
     <string name="section_app">Застосунок</string>
     <string name="steering_sensitivity_title">Чутливість</string>
     <string name="calibrate_title">Вирівняти кермо</string>
@@ -147,4 +146,18 @@
     <string name="steering_preview_center">Прямо</string>
     <string name="steering_preview_portrait">Поверніть телефон горизонтально, щоб перевірити кермо</string>
     <string name="scan_qr_loading">Сервіси Google Play завантажують сканер, спробуйте за хвилину</string>
+    <string name="show_dashboard_title">Прилади на екрані</string>
+    <string name="show_dashboard_summary">Швидкість, круїз-контроль та оберти між педалями, поки працює гра</string>
+    <string name="dashboard_kmh">км/год</string>
+    <string name="dashboard_mph">миль/год</string>
+    <string name="dashboard_cruise">Круїз</string>
+    <string name="dashboard_cruise_on">Увімкнути круїз-контроль</string>
+    <string name="dashboard_cruise_off">Вимкнути круїз-контроль</string>
+    <string name="dashboard_cruise_up">Підвищити швидкість круїзу</string>
+    <string name="dashboard_cruise_down">Знизити швидкість круїзу</string>
+    <string name="dashboard_low_fuel">Пальне %1$d%%</string>
+    <string name="dashboard_speed_limit">Обмеження швидкості %1$d</string>
+    <string name="dashboard_gear_neutral">N</string>
+    <string name="dashboard_gear_reverse">R%1$d</string>
+    <string name="section_buttons">Екран і кнопки</string>
 </resources>
