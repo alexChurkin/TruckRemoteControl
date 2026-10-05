@@ -23,6 +23,8 @@ style:
   MagicNumber:
     # Colors of the Material 3 palette
     excludes: ['**/test/**', '**/androidTest/**', '**/ui/theme/**']
+    # Fixed codes of enum entries (e.g. action codes of the protocol)
+    ignoreEnums: true
   ReturnCount:
     # Guard clauses (early returns of a parser) keep the code flat
     max: 3

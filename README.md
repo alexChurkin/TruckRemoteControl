@@ -50,9 +50,12 @@ The app follows the [Android app architecture guide](https://developer.android.c
 - `domain` — logic without Android dependencies: `SteeringCurve`, `PedalHandler`.
 - `ui` — screens: a view model holds the UI state (`StateFlow`) and one-off effects, the activity
   only renders the state and passes user actions (unidirectional data flow). The controller screen (`ui/main`)
-  uses views (landscape, touches of several pedals at once) and a dialog fragment for the menu,
+  uses views (landscape, touches of several pedals at once), a dialog fragment for the menu and a Compose pager
+  for the quick actions panel (`ActionsPanel`, buttons by pages in `ActionButton.kt`),
   the settings screen (`ui/settings`) is Jetpack Compose with Material 3, the guide (`ui/guide`) shows
   its pages as fragments.
+- `data/controller/BinaryProtocol` — the compact binary protocol of the server 1.3+ (the text one is kept for older
+  servers); actions are sent by fixed codes, so buttons can be moved freely.
 - `di/AppContainer` — manual dependency injection: the app-wide objects are created once,
   view models get them through their factories (fakes are used in unit tests).
 

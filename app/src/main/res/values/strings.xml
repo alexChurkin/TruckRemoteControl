@@ -5,7 +5,7 @@
 
     <integer name="version">15</integer>
     <string name="version_changes_title">New in this version</string>
-    <string name="version_changes_text">Analog pedals (hold and drag to set the force), throttle lock (swipe sideways while holding gas) and quick actions: engine, trailer, wipers, beacon and more. Update Truck Remote Server on your PC to use them.</string>
+    <string name="version_changes_text">Analog pedals (touch and drag up to press harder), throttle lock (turn it on in settings) and three pages of quick actions: truck (engine, trailer, wipers…), driving (retarder, engine brake, cruise speed, quick park) and view (cameras, map, dashboard, radio). Update Truck Remote Server on your PC to use them.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
@@ -87,6 +87,22 @@
     <string name="action_beacon">Beacon</string>
     <string name="action_diff_lock">Diff lock</string>
     <string name="action_lift_axle">Lift axle</string>
+    <string name="action_retarder_up">Retarder +</string>
+    <string name="action_retarder_down">Retarder −</string>
+    <string name="action_engine_brake">Engine brake</string>
+    <string name="action_cruise_up">Cruise +</string>
+    <string name="action_cruise_down">Cruise −</string>
+    <string name="action_cruise_resume">Resume cruise</string>
+    <string name="action_quick_park">Quick park</string>
+    <string name="action_camera_interior">Cab camera</string>
+    <string name="action_camera_chase">Chase camera</string>
+    <string name="action_camera_cycle">Next camera</string>
+    <string name="action_map">Map</string>
+    <string name="action_display">Dashboard</string>
+    <string name="action_hud">HUD</string>
+    <string name="action_radio_next">Next station</string>
+    <string name="action_quick_save">Quick save</string>
+    <string name="actions_page">Page %1$d of %2$d</string>
 
     <string name="pedals">Pedals</string>
     <string name="pedal_mode_title">Pedal mode</string>

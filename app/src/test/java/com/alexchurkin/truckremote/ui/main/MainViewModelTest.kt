@@ -127,6 +127,20 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `hold action is held only while connected, but is always released`() {
+        assertFalse(viewModel.onActionHold(ControllerAction.EngineBrake, true))
+        assertTrue(controller.state.heldActions.isEmpty())
+
+        connect()
+        assertTrue(viewModel.onActionHold(ControllerAction.EngineBrake, true))
+        assertEquals(setOf(ControllerAction.EngineBrake), controller.state.heldActions)
+
+        controller.connectionState.value = ConnectionState.Lost
+        assertTrue(viewModel.onActionHold(ControllerAction.EngineBrake, false))
+        assertTrue(controller.state.heldActions.isEmpty())
+    }
+
+    @Test
     fun `buttons work only when connected and not paused`() {
         viewModel.onLeftSignal()
         assertFalse(viewModel.onAction(ControllerAction.Engine))
@@ -136,7 +150,7 @@ class MainViewModelTest {
         viewModel.onLeftSignal()
         assertTrue(viewModel.onAction(ControllerAction.Engine))
         assertTrue(controller.state.leftSignalClick)
-        assertEquals(1, controller.state.actionCounters[ControllerAction.Engine.ordinal])
+        assertEquals(1, controller.state.actionCounters[ControllerAction.Engine])
 
         viewModel.togglePause()
         viewModel.onLeftSignal()
@@ -359,9 +373,9 @@ class MainViewModelTest {
             state = transform(state)
         }
 
-        override fun clickAction(action: ControllerAction) = updateState { current ->
-            current.copy(actionCounters = current.actionCounters.toMutableList().also { it[action.ordinal]++ })
-        }
+        override fun clickAction(action: ControllerAction) = updateState { it.withClick(action) }
+
+        override fun setActionHeld(action: ControllerAction, held: Boolean) = updateState { it.withHeld(action, held) }
     }
 
     private class FakeTiltSensor : TiltSensor {

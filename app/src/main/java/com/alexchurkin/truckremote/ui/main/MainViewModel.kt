@@ -301,6 +301,13 @@ class MainViewModel(
         return true
     }
 
+    // A hold action is held while its button is pressed; returns true if it was sent
+    fun onActionHold(action: ControllerAction, held: Boolean): Boolean {
+        if (held && !isControllable) return false
+        controller.setActionHeld(action, held)
+        return true
+    }
+
     // Returns true if the swipe turned the cruise control on or off
     fun onCruiseSwipe(): Boolean {
         if (!isControllable) return false

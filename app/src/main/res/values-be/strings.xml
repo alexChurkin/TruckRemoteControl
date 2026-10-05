@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Змены ў версіі</string>
-    <string name="version_changes_text">Аналагавыя педалі (заціснiце і вядзіце, каб задаць сілу), фіксацыя газу (правядзіце ўбок, утрымліваючы газ) і хуткія дзеянні: рухавік, прычэп, дворнікі, маячкі і іншае. Для іх абнавіце Truck Remote Server на ПК.</string>
+    <string name="version_changes_text">Аналагавыя педалі (дакраніцеся і вядзіце ўверх, каб націснуць мацней), фіксацыя газу (уключаецца ў наладах) і тры старонкі хуткіх дзеянняў: грузавік (рухавік, прычэп, дворнікі…), ваджэнне (рэтардэр, маторны тормаз, хуткасць круізу, хуткая паркоўка) і агляд (камеры, карта, прыборная панэль, радыё). Для іх абнавіце Truck Remote Server на ПК.</string>
 
     <string name="searching_on_local">Пошук сервераў у лакальнай сетцы…</string>
     <string name="signal_strength">Сіла сігналу Wi-Fi:</string>
@@ -83,6 +83,22 @@
     <string name="action_beacon">Маячкі</string>
     <string name="action_diff_lock">Блок. дыф.</string>
     <string name="action_lift_axle">Пад\'ём восі</string>
+    <string name="action_retarder_up">Рэтардэр +</string>
+    <string name="action_retarder_down">Рэтардэр −</string>
+    <string name="action_engine_brake">Маторны тормаз</string>
+    <string name="action_cruise_up">Круіз +</string>
+    <string name="action_cruise_down">Круіз −</string>
+    <string name="action_cruise_resume">Вярнуць круіз</string>
+    <string name="action_quick_park">Хуткая паркоўка</string>
+    <string name="action_camera_interior">Камера ў кабіне</string>
+    <string name="action_camera_chase">Камера ззаду</string>
+    <string name="action_camera_cycle">Іншая камера</string>
+    <string name="action_map">Карта</string>
+    <string name="action_display">Прыборная панэль</string>
+    <string name="action_hud">Інтэрфейс</string>
+    <string name="action_radio_next">Наступная станцыя</string>
+    <string name="action_quick_save">Хуткае захаванне</string>
+    <string name="actions_page">Старонка %1$d з %2$d</string>
 
     <string name="pedals">Педалі</string>
     <string name="pedal_mode_title">Рэжым педаляў</string>

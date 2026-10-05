@@ -11,21 +11,20 @@ class ControllerProtocolTest {
     @Test
     fun `default state is encoded in server field order`() {
         assertEquals(
-            "0.0,false,false,false,false,false,false,false,0,false,0.000,0.000,0,0,0,0,0,0,0,0,#7",
+            "0.0,false,false,false,false,false,false,false,0,false,0.000,0.000,#7",
             ControllerProtocol.encode(ControllerState(), sequence = 7),
         )
     }
 
     @Test
-    fun `pedal levels and action counters are appended`() {
+    fun `pedal levels are appended to the text state, actions aren't`() {
         val state = ControllerState(
             steering = -1.5f,
             gasPressed = true,
             horn = HornState.Pneumatic,
             gasLevel = 0.6f,
             brakeLevel = 0.25f,
-            actionCounters = listOf(1, 2, 0, 0, 0, 0, 0, 3),
-        )
+        ).withClick(ControllerAction.Engine)
         val parts = ControllerProtocol.encode(state, sequence = 1).split(',')
 
         assertEquals("-1.5", parts[0])
@@ -33,9 +32,8 @@ class ControllerProtocolTest {
         assertEquals("2", parts[8])
         assertEquals("0.600", parts[10])
         assertEquals("0.250", parts[11])
-        assertEquals(listOf("1", "2", "0", "0", "0", "0", "0", "3"), parts.subList(12, 20))
         // Sequence is the last field: old servers read only the fields they know
-        assertEquals("#1", parts.last())
+        assertEquals(listOf("#1"), parts.drop(12))
     }
 
     @Test

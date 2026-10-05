@@ -13,6 +13,9 @@ import android.view.animation.AnimationUtils
 import androidx.activity.viewModels
 import androidx.annotation.AnimRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -54,18 +57,8 @@ class MainActivity :
     // Every view has its own animation instances: one instance can't run on several views
     private val animations = HashMap<Pair<Int, Int>, Animation>()
 
-    private val actionViews by lazy {
-        mapOf(
-            binding.actionEngine to ControllerAction.Engine,
-            binding.actionTrailer to ControllerAction.Trailer,
-            binding.actionActivate to ControllerAction.Activate,
-            binding.actionLightHorn to ControllerAction.LightHorn,
-            binding.actionWipers to ControllerAction.Wipers,
-            binding.actionBeacon to ControllerAction.Beacon,
-            binding.actionDiffLock to ControllerAction.DiffLock,
-            binding.actionLiftAxle to ControllerAction.LiftAxle,
-        )
-    }
+    // Actions that are on in the game: their buttons are highlighted
+    private var activeActions by mutableStateOf(emptySet<ControllerAction>())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -130,10 +123,12 @@ class MainActivity :
         buttonLights.setOnClickListener { viewModel.onLights() }
 
         actionsButton.setOnClickListener { actionsPanel.isVisible = !actionsPanel.isVisible }
-        actionViews.forEach { (view, action) ->
-            view.setOnClickListener {
-                if (viewModel.onAction(action)) view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            }
+        actionsPanel.setContent {
+            ActionsPanel(
+                activeActions = activeActions,
+                onClick = viewModel::onAction,
+                onHold = viewModel::onActionHold,
+            )
         }
     }
 
@@ -217,10 +212,12 @@ class MainActivity :
             showBlinkers(previous, truck)
         }
 
-        actionEngine.isActivated = truck.engineOn
-        actionTrailer.isActivated = truck.trailerAttached
-        actionWipers.isActivated = truck.wipersOn
-        actionBeacon.isActivated = truck.beaconOn
+        activeActions = buildSet {
+            if (truck.engineOn) add(ControllerAction.Engine)
+            if (truck.trailerAttached) add(ControllerAction.Trailer)
+            if (truck.wipersOn) add(ControllerAction.Wipers)
+            if (truck.beaconOn) add(ControllerAction.Beacon)
+        }
     }
 
     private fun showLights(mode: Int, animate: Boolean) = with(binding.buttonLights) {

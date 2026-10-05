@@ -85,11 +85,9 @@ class TrackingClient(private val listener: Listener) {
         synchronized(stateLock) { state = transform(state) }
     }
 
-    fun clickAction(action: ControllerAction) = updateState { current ->
-        val counters = current.actionCounters.toMutableList()
-        counters[action.ordinal]++
-        current.copy(actionCounters = counters)
-    }
+    fun clickAction(action: ControllerAction) = updateState { it.withClick(action) }
+
+    fun setActionHeld(action: ControllerAction, held: Boolean) = updateState { it.withHeld(action, held) }
 
     /**
      * [ip] = null means searching for the server by broadcast;
@@ -135,6 +133,10 @@ class TrackingClient(private val listener: Listener) {
 
         @Volatile
         private var sendFailed = false
+
+        // The server speaks the binary protocol (it answered the hello with its version)
+        @Volatile
+        private var binary = false
         private var mainThread: Thread? = null
 
         private val meter = LinkQualityMeter()
@@ -158,7 +160,11 @@ class TrackingClient(private val listener: Listener) {
             running = false
             mainThread?.interrupt()
             thread(name = "TrackingClient-stop", isDaemon = true) {
-                runCatching { if (socket.isConnected) send(ControllerProtocol.GOODBYE) }
+                runCatching {
+                    if (socket.isConnected) {
+                        if (binary) send(BinaryProtocol.GOODBYE) else send(ControllerProtocol.GOODBYE)
+                    }
+                }
                 socket.close()
             }
         }
@@ -251,6 +257,7 @@ class TrackingClient(private val listener: Listener) {
             socket.broadcast = false
             socket.connect(answer.socketAddress)
             serverAddress = answer.address.hostAddress
+            binary = String(answer.data, 0, answer.length) == ControllerProtocol.BINARY_HELLO_ANSWER
             true
         } catch (_: SocketTimeoutException) {
             logD("No answer to hello")
@@ -320,10 +327,15 @@ class TrackingClient(private val listener: Listener) {
             val paused = isPaused || isPausedByUser
             try {
                 if (paused) {
-                    send(ControllerProtocol.PAUSED)
+                    if (binary) send(BinaryProtocol.PAUSED) else send(ControllerProtocol.PAUSED)
                 } else {
                     val current = synchronized(stateLock) { state }
-                    send(ControllerProtocol.encode(current, ++sequence))
+                    sequence++
+                    if (binary) {
+                        send(BinaryProtocol.encodeState(current, sequence))
+                    } else {
+                        send(ControllerProtocol.encode(current, sequence))
+                    }
                     // Resuming: the server may have dropped the session, hello restores it
                     if (resuming && sequence % HELLO_EVERY_N_MESSAGES == 0L) send(ControllerProtocol.HELLO)
                 }
@@ -344,10 +356,9 @@ class TrackingClient(private val listener: Listener) {
             } catch (_: SocketTimeoutException) {
                 return
             }
-            val message = String(packet.data, 0, packet.length)
             val now = SystemClock.elapsedRealtime()
             lastMessageTime = now
-            ControllerProtocol.decodeServerMessage(message)?.let {
+            ControllerProtocol.decodeServerMessage(packet.data, packet.length)?.let {
                 meter.onMessage(now, it.sequence)
                 lastServerState = it
                 listener.onServerState(it)
@@ -392,8 +403,9 @@ class TrackingClient(private val listener: Listener) {
             }
         }
 
-        private fun send(text: String) {
-            val bytes = text.toByteArray()
+        private fun send(text: String) = send(text.toByteArray())
+
+        private fun send(bytes: ByteArray) {
             socket.send(DatagramPacket(bytes, bytes.size))
         }
     }

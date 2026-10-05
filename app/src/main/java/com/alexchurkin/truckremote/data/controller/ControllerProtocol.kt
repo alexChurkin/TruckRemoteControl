@@ -2,16 +2,35 @@ package com.alexchurkin.truckremote.data.controller
 
 import java.util.Locale
 
-// Additional actions; their order must match the order on the server
-enum class ControllerAction {
-    Engine,
-    Trailer,
-    Activate,
-    Wipers,
-    DiffLock,
-    LiftAxle,
-    Beacon,
-    LightHorn,
+/**
+ * Actions of the panel. They are sent by their fixed [code] (not by the place of a button), so buttons
+ * can be placed anywhere; the server presses the game key of a code it knows and skips the others.
+ * A click action is sent as a click counter, a [isHold] action as held (1) while its button is pressed.
+ */
+enum class ControllerAction(val code: Int, val isHold: Boolean = false) {
+    Engine(1),
+    Trailer(2),
+    Activate(3),
+    LightHorn(4),
+    Wipers(5),
+    Beacon(6),
+    DiffLock(7),
+    LiftAxle(8),
+    RetarderUp(9),
+    RetarderDown(10),
+    EngineBrake(11, isHold = true),
+    CruiseUp(12),
+    CruiseDown(13),
+    CruiseResume(14),
+    QuickPark(15),
+    CameraInterior(16),
+    CameraChase(17),
+    CameraCycle(18),
+    Map(19),
+    Display(20),
+    Hud(21),
+    RadioNext(22),
+    QuickSave(23),
 }
 
 enum class HornState(val code: Int) {
@@ -38,9 +57,17 @@ data class ControllerState(
     // From 0 to 1, used by analog pedals
     val gasLevel: Float = 0f,
     val brakeLevel: Float = 0f,
-    // Click counters in ControllerAction order
-    val actionCounters: List<Int> = List(ControllerAction.entries.size) { 0 },
-)
+    // Clicks of every click action (a counter can't lose a click in a lost packet)
+    val actionCounters: Map<ControllerAction, Int> = emptyMap(),
+    // Hold actions whose buttons are pressed now
+    val heldActions: Set<ControllerAction> = emptySet(),
+) {
+    fun withClick(action: ControllerAction) =
+        copy(actionCounters = actionCounters + (action to (actionCounters[action] ?: 0) + 1))
+
+    fun withHeld(action: ControllerAction, held: Boolean) =
+        copy(heldActions = if (held) heldActions + action else heldActions - action)
+}
 
 data class ServerState(
     val engineOn: Boolean,
@@ -60,8 +87,11 @@ data class ServerState(
 )
 
 object ControllerProtocol {
-    const val HELLO = "TruckRemoteHello"
+    // Servers before version 2 ignore the version after the hello (they check the beginning) and answer "Hi!":
+    // the text protocol is used with them, the binary one (BinaryProtocol) with the others
+    const val HELLO = "TruckRemoteHello" + BinaryProtocol.VERSION
     const val HELLO_ANSWER = "Hi!"
+    const val BINARY_HELLO_ANSWER = HELLO_ANSWER + BinaryProtocol.VERSION
     const val PAUSED = "paused"
     const val GOODBYE = "goodbye"
 
@@ -86,7 +116,8 @@ object ControllerProtocol {
      */
     private const val SEQUENCE_TAG = '#'
 
-    fun encode(state: ControllerState, sequence: Long): String = buildString(capacity = 136) {
+    // Text state for servers before version 2 (they don't know the actions of the panel)
+    fun encode(state: ControllerState, sequence: Long): String = buildString(capacity = 96) {
         append(state.steering).append(',')
         append(state.brakePressed).append(',')
         append(state.gasPressed).append(',')
@@ -98,9 +129,16 @@ object ControllerProtocol {
         append(state.horn.code).append(',')
         append(state.cruiseClick).append(',')
         append(String.format(Locale.ROOT, "%.3f,%.3f", state.gasLevel, state.brakeLevel))
-        state.actionCounters.forEach { append(',').append(it) }
         append(',').append(SEQUENCE_TAG).append(sequence)
     }
+
+    // Text or binary message of the server; returns null if the message is malformed
+    fun decodeServerMessage(data: ByteArray, length: Int = data.size): ServerState? =
+        if (BinaryProtocol.isBinary(data, length)) {
+            BinaryProtocol.decodeServerState(data, length)
+        } else {
+            decodeServerMessage(String(data, 0, length))
+        }
 
     // Returns null if the message is malformed
     fun decodeServerMessage(message: String): ServerState? {

@@ -57,26 +57,4 @@
         <item name="android:textColor">@color/white</item>
         <item name="android:background">?selectableItemBackground</item>
     </style>
-
-    <style name="ActionItem">
-        <item name="android:layout_width">78dp</item>
-        <item name="android:layout_height">66dp</item>
-        <item name="android:layout_margin">3dp</item>
-        <item name="android:gravity">center</item>
-        <item name="android:maxLines">2</item>
-        <item name="android:paddingStart">4dp</item>
-        <item name="android:paddingEnd">4dp</item>
-        <item name="android:paddingTop">6dp</item>
-        <item name="android:paddingBottom">4dp</item>
-        <item name="android:drawablePadding">-2dp</item>
-        <item name="android:textSize">12sp</item>
-        <!-- Long labels (e.g. in Russian) take two lines under the icon -->
-        <item name="autoSizeTextType">uniform</item>
-        <item name="autoSizeMinTextSize">9sp</item>
-        <item name="autoSizeMaxTextSize">12sp</item>
-        <item name="android:textColor">@color/white</item>
-        <item name="android:background">@drawable/action_item_background</item>
-        <item name="android:clickable">true</item>
-        <item name="android:focusable">true</item>
-    </style>
 </resources>

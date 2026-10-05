@@ -39,6 +39,8 @@ interface ControllerRepository {
     fun updateState(transform: (ControllerState) -> ControllerState)
 
     fun clickAction(action: ControllerAction)
+
+    fun setActionHeld(action: ControllerAction, held: Boolean)
 }
 
 class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
@@ -84,6 +86,8 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
     override fun updateState(transform: (ControllerState) -> ControllerState) = client.updateState(transform)
 
     override fun clickAction(action: ControllerAction) = client.clickAction(action)
+
+    override fun setActionHeld(action: ControllerAction, held: Boolean) = client.setActionHeld(action, held)
 
     override fun onConnectionStateChanged(state: ConnectionState) {
         _connectionState.value = state

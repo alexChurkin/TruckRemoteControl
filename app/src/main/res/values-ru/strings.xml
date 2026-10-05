@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Изменения в версии</string>
-    <string name="version_changes_text">Аналоговые педали (зажмите и ведите, чтобы задать силу), фиксация газа (проведите в сторону, удерживая газ) и быстрые действия: двигатель, прицеп, дворники, маячки и другое. Для них обновите Truck Remote Server на ПК.</string>
+    <string name="version_changes_text">Аналоговые педали (коснитесь и ведите вверх, чтобы нажать сильнее), фиксация газа (включается в настройках) и три страницы быстрых действий: грузовик (двигатель, прицеп, дворники…), вождение (ретардер, моторный тормоз, скорость круиза, быстрая парковка) и обзор (камеры, карта, приборная панель, радио). Для них обновите Truck Remote Server на ПК.</string>
 
     <string name="searching_on_local">Поиск серверов в локальной сети…</string>
     <string name="signal_strength">Сила Wi-Fi сигнала:</string>
@@ -83,6 +83,22 @@
     <string name="action_beacon">Маячки</string>
     <string name="action_diff_lock">Блок. дифф.</string>
     <string name="action_lift_axle">Подъём оси</string>
+    <string name="action_retarder_up">Ретардер +</string>
+    <string name="action_retarder_down">Ретардер −</string>
+    <string name="action_engine_brake">Моторный тормоз</string>
+    <string name="action_cruise_up">Круиз +</string>
+    <string name="action_cruise_down">Круиз −</string>
+    <string name="action_cruise_resume">Вернуть круиз</string>
+    <string name="action_quick_park">Быстрая парковка</string>
+    <string name="action_camera_interior">Камера в кабине</string>
+    <string name="action_camera_chase">Камера сзади</string>
+    <string name="action_camera_cycle">Другая камера</string>
+    <string name="action_map">Карта</string>
+    <string name="action_display">Приборная панель</string>
+    <string name="action_hud">Интерфейс</string>
+    <string name="action_radio_next">Следующая станция</string>
+    <string name="action_quick_save">Быстрое сохранение</string>
+    <string name="actions_page">Страница %1$d из %2$d</string>
 
     <string name="pedals">Педали</string>
     <string name="pedal_mode_title">Режим педалей</string>
