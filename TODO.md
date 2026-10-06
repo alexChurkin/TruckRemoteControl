@@ -11,5 +11,3 @@
   with the screen up and can be turned off, the quick actions panel replaces the middle controls while it is open,
   the steering check in the settings locks the screen rotation, the server adds the cruise control keys to the game
   bindings. The release notes (`version_changes_text`) need the same update.
-- **Update the privacy policy on the site.** It must match what the app does now (ads, analytics, purchases,
-  the QR code scanner of Google Play services, the local network).
