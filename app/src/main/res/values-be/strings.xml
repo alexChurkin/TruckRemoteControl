@@ -242,4 +242,16 @@
         <item>км/г</item>
         <item>міль/г</item>
     </string-array>
+    <string name="dashboard_mode">Прыборная панэль</string>
+    <string name="dashboard_mode_searching">Пошук Truck Remote Server…</string>
+    <string name="dashboard_mode_searching_hint">Гэта прылада паказвае прыборы грузавіка побач з тэлефонам, якім вы кіруеце. Яна павінна быць у той жа сетцы Wi-Fi, што і камп’ютар; патрэбны сервер 1.3 або навейшы.</string>
+    <string name="dashboard_mode_connected">Падключана да %1$s</string>
+    <string name="dashboard_mode_no_game">Запусціце гульню: прыборы з’явяцца разам з яе плагінам тэлеметрыі.</string>
+    <string name="dashboard_mode_fuel">Паліва</string>
+    <string name="dashboard_mode_route">Маршрут</string>
+    <string name="dashboard_mode_job">Заказ</string>
+    <string name="dashboard_mode_retarder">Рэтардэр</string>
+    <string name="dashboard_mode_warnings">Папярэджанні</string>
+    <string name="dashboard_mode_on_start">Адкрываць пры запуску</string>
+    <string name="dashboard_mode_controller">Кіраванне</string>
 </resources>

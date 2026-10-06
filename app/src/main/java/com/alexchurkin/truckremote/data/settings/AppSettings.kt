@@ -65,6 +65,11 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_DASHBOARD_CLICKS, true)
         set(value) = prefs.edit { putBoolean(KEY_DASHBOARD_CLICKS, value) }
 
+    // The app starts with the dashboard (a tablet or a second phone beside the controller)
+    var dashboardOnStart: Boolean
+        get() = prefs.getBoolean(KEY_DASHBOARD_ON_START, false)
+        set(value) = prefs.edit { putBoolean(KEY_DASHBOARD_ON_START, value) }
+
     var pneumaticHorn: Boolean
         get() = prefs.getBoolean(KEY_PNEUMATIC_HORN, false)
         set(value) = prefs.edit { putBoolean(KEY_PNEUMATIC_HORN, value) }
@@ -168,6 +173,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_USE_SPECIFIED_SERVER = "defaultServer"
         private const val KEY_SPECIFIED_IP = "serverIP"
         private const val KEY_FORCE_FEEDBACK = "useFFB"
+        private const val KEY_DASHBOARD_ON_START = "dashboardOnStart"
         private const val KEY_VIBRATION_STRENGTH = "vibrationStrength"
         private const val KEY_ROAD_VIBRATION = "roadVibration"
         private const val KEY_DASHBOARD_CLICKS = "dashboardClicks"

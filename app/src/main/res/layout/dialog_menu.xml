@@ -59,6 +59,12 @@
                     android:text="@string/disconnect"
                     app:drawableStartCompat="@drawable/ic_disconnect" />
 
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/dashboardItem"
+                    style="@style/MenuItem"
+                    android:text="@string/dashboard_mode"
+                    app:drawableStartCompat="@drawable/ic_dashboard_mode" />
+
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <!-- The app -->

@@ -242,4 +242,16 @@
         <item>км/ч</item>
         <item>миль/ч</item>
     </string-array>
+    <string name="dashboard_mode">Приборная панель</string>
+    <string name="dashboard_mode_searching">Поиск Truck Remote Server…</string>
+    <string name="dashboard_mode_searching_hint">Это устройство показывает приборы грузовика рядом с телефоном, которым вы управляете. Оно должно быть в той же сети Wi-Fi, что и компьютер; нужен сервер 1.3 или новее.</string>
+    <string name="dashboard_mode_connected">Подключено к %1$s</string>
+    <string name="dashboard_mode_no_game">Запустите игру: приборы появятся вместе с её плагином телеметрии.</string>
+    <string name="dashboard_mode_fuel">Топливо</string>
+    <string name="dashboard_mode_route">Маршрут</string>
+    <string name="dashboard_mode_job">Заказ</string>
+    <string name="dashboard_mode_retarder">Ретардер</string>
+    <string name="dashboard_mode_warnings">Предупреждения</string>
+    <string name="dashboard_mode_on_start">Открывать при запуске</string>
+    <string name="dashboard_mode_controller">Управление</string>
 </resources>

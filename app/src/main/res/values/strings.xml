@@ -250,4 +250,16 @@
         <item>km/h</item>
         <item>mph</item>
     </string-array>
+    <string name="dashboard_mode">Dashboard</string>
+    <string name="dashboard_mode_searching">Searching for Truck Remote Server…</string>
+    <string name="dashboard_mode_searching_hint">This device shows the instruments of the truck beside the phone that drives it. It must be on the same Wi-Fi as the PC; the server 1.3 or newer is needed.</string>
+    <string name="dashboard_mode_connected">Connected to %1$s</string>
+    <string name="dashboard_mode_no_game">Start the game: the instruments come with its telemetry plugin.</string>
+    <string name="dashboard_mode_fuel">Fuel</string>
+    <string name="dashboard_mode_route">Route</string>
+    <string name="dashboard_mode_job">Job</string>
+    <string name="dashboard_mode_retarder">Retarder</string>
+    <string name="dashboard_mode_warnings">Warnings</string>
+    <string name="dashboard_mode_on_start">Open at start</string>
+    <string name="dashboard_mode_controller">Controller</string>
 </resources>

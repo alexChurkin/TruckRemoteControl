@@ -242,4 +242,16 @@
         <item>км/год</item>
         <item>миль/год</item>
     </string-array>
+    <string name="dashboard_mode">Приладова панель</string>
+    <string name="dashboard_mode_searching">Пошук Truck Remote Server…</string>
+    <string name="dashboard_mode_searching_hint">Цей пристрій показує прилади вантажівки поруч із телефоном, яким ви керуєте. Він має бути в тій самій мережі Wi-Fi, що й комп’ютер; потрібен сервер 1.3 або новіший.</string>
+    <string name="dashboard_mode_connected">Під’єднано до %1$s</string>
+    <string name="dashboard_mode_no_game">Запустіть гру: прилади з’являться разом із її плагіном телеметрії.</string>
+    <string name="dashboard_mode_fuel">Пальне</string>
+    <string name="dashboard_mode_route">Маршрут</string>
+    <string name="dashboard_mode_job">Замовлення</string>
+    <string name="dashboard_mode_retarder">Ретардер</string>
+    <string name="dashboard_mode_warnings">Попередження</string>
+    <string name="dashboard_mode_on_start">Відкривати під час запуску</string>
+    <string name="dashboard_mode_controller">Керування</string>
 </resources>

@@ -5,9 +5,7 @@ import com.alexchurkin.truckremote.util.logD
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.DatagramSocket
-import java.net.Inet4Address
 import java.net.InetAddress
-import java.net.NetworkInterface
 import java.net.SocketTimeoutException
 import kotlin.concurrent.thread
 
@@ -318,17 +316,7 @@ class TrackingClient(private val listener: Listener) {
             val direct = listOfNotNull(ip, serverAddress, knownIp).distinct().mapNotNull {
                 runCatching { InetAddress.getByName(it) }.getOrNull()
             }
-            val subnetBroadcasts = try {
-                NetworkInterface.getNetworkInterfaces()?.toList().orEmpty()
-                    .filter { it.isUp && !it.isLoopback }
-                    .flatMap { it.interfaceAddresses }
-                    .filter { it.address is Inet4Address }
-                    .mapNotNull { it.broadcast }
-            } catch (e: IOException) {
-                logD("Can't get network interfaces: $e")
-                emptyList()
-            }
-            return (direct + InetAddress.getByName(BROADCAST_ADDRESS) + subnetBroadcasts).distinct()
+            return (direct + broadcastAddresses()).distinct()
         }
 
         // Returns when the connection is lost
@@ -466,7 +454,6 @@ class TrackingClient(private val listener: Listener) {
         fun reconnectDelayMs(failedAttempts: Int): Long =
             (RECONNECT_START_MS shl failedAttempts.coerceAtMost(MAX_RECONNECT_SHIFT)).coerceAtMost(RECONNECT_MAX_MS)
 
-        private const val BROADCAST_ADDRESS = "255.255.255.255"
         private const val HANDSHAKE_TIMEOUT_MS = 600
         private const val HELLO_ATTEMPTS = 3
         private const val RECEIVE_TIMEOUT_MS = 100

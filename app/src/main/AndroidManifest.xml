@@ -56,6 +56,12 @@
             android:label="@string/settings"
             android:theme="@style/AppTheme.Compose" />
 
+        <!-- A tablet or a second phone as the dashboard: any orientation -->
+        <activity
+            android:name=".ui.dashboard.DashboardActivity"
+            android:label="@string/dashboard_mode"
+            android:theme="@style/AppTheme.Compose" />
+
         <activity
             android:name=".ui.guide.GuideActivity"
             android:screenOrientation="fullSensor"

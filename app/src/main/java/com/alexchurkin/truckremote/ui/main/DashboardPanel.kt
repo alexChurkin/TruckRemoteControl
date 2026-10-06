@@ -91,6 +91,7 @@ private const val MAX_ALERTS = 3
 private const val REPEAT_DELAY_MS = 450L
 private const val REPEAT_INTERVAL_MS = 220L
 private const val SLOT_ANIMATION_MS = 250
+private const val AMERICAN_SIGN_WIDTH = 0.85f
 
 // The place of the speed limit sign on one side of the speed and of the unit with the gear on the other
 private val SideWidth = 64.dp
@@ -250,7 +251,7 @@ fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modi
 
 // "128 km · 1 h 45 min" to the end of the route
 @Composable
-private fun routeText(dashboard: Dashboard, imperialUnits: Boolean): String {
+internal fun routeText(dashboard: Dashboard, imperialUnits: Boolean): String {
     val distance = dashboard.routeDistance / if (imperialUnits) METERS_IN_MILE else METERS_IN_KILOMETER
     val distanceText = if (distance >= PRECISE_DISTANCE_BELOW) {
         distance.roundToInt().toString()
@@ -263,7 +264,7 @@ private fun routeText(dashboard: Dashboard, imperialUnits: Boolean): String {
 }
 
 @Composable
-private fun durationText(minutes: Int) = if (minutes >= MINUTES_IN_HOUR) {
+internal fun durationText(minutes: Int) = if (minutes >= MINUTES_IN_HOUR) {
     stringResource(R.string.dashboard_time_hours, minutes / MINUTES_IN_HOUR, minutes % MINUTES_IN_HOUR)
 } else {
     stringResource(R.string.dashboard_time_minutes, minutes)
@@ -326,7 +327,7 @@ private fun AlertLabel(text: String, color: Color) {
 }
 
 @Composable
-private fun alertText(alert: DashboardAlert, imperialUnits: Boolean) = when (alert.kind) {
+internal fun alertText(alert: DashboardAlert, imperialUnits: Boolean) = when (alert.kind) {
     AlertKind.AirPressure -> stringResource(R.string.alert_air_pressure)
 
     AlertKind.OilPressure -> stringResource(R.string.alert_oil_pressure)
@@ -355,7 +356,7 @@ private fun alertText(alert: DashboardAlert, imperialUnits: Boolean) = when (ale
 }
 
 @Composable
-private fun gearText(gear: Int) = when {
+internal fun gearText(gear: Int) = when {
     gear < 0 -> stringResource(R.string.dashboard_gear_reverse, -gear)
     gear == 0 -> stringResource(R.string.dashboard_gear_neutral)
     else -> gear.toString()
@@ -363,15 +364,17 @@ private fun gearText(gear: Int) = when {
 
 // A round European sign in ETS2, a rectangular American one in ATS
 @Composable
-private fun SpeedLimitSign(limit: Int, american: Boolean, modifier: Modifier = Modifier) {
+internal fun SpeedLimitSign(limit: Int, american: Boolean, modifier: Modifier = Modifier, size: Dp = 40.dp) {
     val shape: Shape = if (american) RoundedCornerShape(4.dp) else CircleShape
     val description = stringResource(R.string.dashboard_speed_limit, limit)
+    // The proportions of the 40dp sign
+    val scale = size / 40.dp
     Box(
         modifier = modifier
-            .size(width = if (american) 34.dp else 40.dp, height = 40.dp)
+            .size(width = if (american) size * AMERICAN_SIGN_WIDTH else size, height = size)
             .background(Color.White, shape)
             .border(
-                if (american) 2.dp else 4.dp,
+                if (american) 2.dp * scale else 4.dp * scale,
                 if (american) Color.Black else colorResource(R.color.indicatorRed),
                 shape,
             )
@@ -380,7 +383,7 @@ private fun SpeedLimitSign(limit: Int, american: Boolean, modifier: Modifier = M
     ) {
         BasicText(
             text = limit.toString(),
-            style = TextStyle(color = Color.Black, fontSize = 15.sp, fontWeight = FontWeight.Bold),
+            style = TextStyle(color = Color.Black, fontSize = 15.sp * scale, fontWeight = FontWeight.Bold),
         )
     }
 }

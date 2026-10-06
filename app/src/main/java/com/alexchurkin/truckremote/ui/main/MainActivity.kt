@@ -32,6 +32,7 @@ import com.alexchurkin.truckremote.data.controller.ConnectionState
 import com.alexchurkin.truckremote.data.controller.ControllerAction
 import com.alexchurkin.truckremote.data.controller.ServerState
 import com.alexchurkin.truckremote.databinding.ActivityMainBinding
+import com.alexchurkin.truckremote.ui.dashboard.DashboardActivity
 import com.alexchurkin.truckremote.ui.guide.GuideActivity
 import com.alexchurkin.truckremote.ui.settings.SettingsActivity
 import com.alexchurkin.truckremote.ui.widget.PedalHinge
@@ -81,6 +82,14 @@ class MainActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // A device that is only a dashboard (a tablet) starts with it
+        if (savedInstanceState == null && app.container.settings.dashboardOnStart &&
+            !intent.getBooleanExtra(DashboardActivity.EXTRA_CONTROLLER, false)
+        ) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -546,6 +555,7 @@ class MainActivity :
             MenuDialogFragment.Item.Guide -> startActivity(Intent(this, GuideActivity::class.java))
             MenuDialogFragment.Item.Calibration -> showCalibrationDialog()
             MenuDialogFragment.Item.Settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            MenuDialogFragment.Item.Dashboard -> startActivity(Intent(this, DashboardActivity::class.java))
         }
     }
 
