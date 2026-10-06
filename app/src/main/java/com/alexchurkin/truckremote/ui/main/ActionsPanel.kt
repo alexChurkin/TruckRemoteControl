@@ -2,8 +2,14 @@ package com.alexchurkin.truckremote.ui.main
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntOffsetAsState
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,8 +18,6 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +36,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -42,11 +47,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
@@ -69,6 +79,7 @@ import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.controller.ControllerAction
 import com.alexchurkin.truckremote.data.settings.ActionLayout
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -83,7 +94,21 @@ private val CellWidth = ItemWidth + ItemMargin * 2
 private val CellHeight = ItemHeight + ItemMargin * 2
 private val PageWidth = CellWidth * COLUMNS
 private val GridHeight = CellHeight * ROWS
-private val ItemShape = RoundedCornerShape(10.dp)
+private val ItemCorner = 10.dp
+private val ItemShape = RoundedCornerShape(ItemCorner)
+
+// The answer of a button to a press (see PressFeedback)
+private const val PRESSED_SCALE = 0.9f
+private const val SPRING_DAMPING = 0.4f
+private const val HOLD_MS = 80
+private const val FLASH_MS = 450
+private const val FLASH_WHITE = 0.3f
+private const val RING_ALPHA = 0.7f
+private val RingGrow = 8.dp
+private val RingWidth = 2.dp
+private const val SHAKE_MS = 300
+private const val SHAKE_DP = 6f
+private val SHAKE_STEPS_DP = listOf(SHAKE_DP, -SHAKE_DP, SHAKE_DP / 2)
 
 // A dragged button held at a side of the panel for this long turns the page
 private val PageEdge = 28.dp
@@ -483,6 +508,11 @@ private fun PickerGrid(
     }
 }
 
+/*
+ * A button of the panel. Most actions show nothing in the game state (a camera, the map, a gear), so every press
+ * that reached the server answers on the button itself: it springs, flashes and sends a ring outwards. A press
+ * that couldn't be sent (no connection, paused) shakes the button instead. A hold action stays pushed in while held.
+ */
 @Composable
 private fun ActionItem(
     button: ActionButton,
@@ -493,16 +523,11 @@ private fun ActionItem(
     modifier: Modifier = Modifier,
 ) {
     val view = LocalView.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val clickPressed by interactionSource.collectIsPressedAsState()
+    val feedback = rememberPressFeedback()
     var held by remember { mutableStateOf(false) }
-    val background = colorResource(
-        when {
-            held || clickPressed -> R.color.actionItemPressed
-            active -> R.color.actionItemActive
-            else -> R.color.actionItem
-        },
-    )
+    val base = colorResource(if (active) R.color.actionItemActive else R.color.actionItem)
+    val pressed = colorResource(R.color.actionItemPressed)
+    val background by animateColorAsState(if (held) pressed else base, label = "background")
     val action = button.action
     val input = if (action.isHold) {
         // Held while pressed (so a long press doesn't lift it); a swipe to another page releases the action
@@ -511,24 +536,33 @@ private fun ActionItem(
                 onPress = {
                     if (onHold(action, true)) {
                         held = true
+                        feedback.hold()
                         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                         tryAwaitRelease()
                         onHold(action, false)
                         held = false
+                        feedback.release()
+                    } else {
+                        feedback.refuse()
                     }
                 },
             )
         }
     } else {
         // A long press is taken by the panel: it lifts the button to move it
-        Modifier.clickable(interactionSource = interactionSource, indication = null, role = Role.Button) {
-            if (onClick(action)) view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        Modifier.clickable(interactionSource = null, indication = null, role = Role.Button) {
+            if (onClick(action)) {
+                feedback.confirm()
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            } else {
+                feedback.refuse()
+            }
         }
     }
-    Box(modifier) {
+    Box(modifier.pressFeedback(feedback)) {
         ActionTile(
             button = button,
-            background = animateColorAsState(background, label = "background").value,
+            background = lerp(background, Color.White, feedback.flash.value * FLASH_WHITE),
             modifier = Modifier.clip(ItemShape).then(input),
         )
         if (badge != null) {
@@ -540,6 +574,85 @@ private fun ActionItem(
         }
     }
 }
+
+// The animations of a button's answer to a press
+@Stable
+private class PressFeedback(private val scope: CoroutineScope) {
+    val scale = Animatable(1f)
+
+    // 1 right after the press, fades to 0
+    val flash = Animatable(0f)
+
+    // Horizontal shift of a refused press, dp
+    val shake = Animatable(0f)
+
+    fun confirm() {
+        scope.launch {
+            scale.snapTo(PRESSED_SCALE)
+            scale.animateTo(1f, spring(dampingRatio = SPRING_DAMPING, stiffness = Spring.StiffnessMedium))
+        }
+        flashOnce()
+    }
+
+    fun hold() {
+        scope.launch { scale.animateTo(PRESSED_SCALE, tween(HOLD_MS)) }
+        flashOnce()
+    }
+
+    fun release() {
+        scope.launch { scale.animateTo(1f, spring(dampingRatio = SPRING_DAMPING, stiffness = Spring.StiffnessMedium)) }
+    }
+
+    fun refuse() {
+        scope.launch {
+            shake.snapTo(0f)
+            shake.animateTo(
+                0f,
+                keyframes {
+                    durationMillis = SHAKE_MS
+                    // Right, left, a smaller right and back
+                    val step = SHAKE_MS / (SHAKE_STEPS_DP.size + 1)
+                    SHAKE_STEPS_DP.forEachIndexed { index, dp -> dp at step * (index + 1) }
+                },
+            )
+        }
+    }
+
+    private fun flashOnce() {
+        scope.launch {
+            flash.snapTo(1f)
+            flash.animateTo(0f, tween(FLASH_MS, easing = LinearOutSlowInEasing))
+        }
+    }
+}
+
+@Composable
+private fun rememberPressFeedback(): PressFeedback {
+    val scope = rememberCoroutineScope()
+    return remember(scope) { PressFeedback(scope) }
+}
+
+// The spring and the shake move the button, the ring goes outwards from its edge while the flash fades
+private fun Modifier.pressFeedback(feedback: PressFeedback) = this
+    .graphicsLayer {
+        scaleX = feedback.scale.value
+        scaleY = feedback.scale.value
+        translationX = feedback.shake.value.dp.toPx()
+    }
+    .drawWithContent {
+        drawContent()
+        val flash = feedback.flash.value
+        if (flash <= 0f) return@drawWithContent
+        val grow = RingGrow.toPx() * (1 - flash)
+        val corner = ItemCorner.toPx() + grow
+        drawRoundRect(
+            color = Color.White.copy(alpha = flash * RING_ALPHA),
+            topLeft = Offset(-grow, -grow),
+            size = Size(size.width + grow * 2, size.height + grow * 2),
+            cornerRadius = CornerRadius(corner, corner),
+            style = Stroke(width = RingWidth.toPx()),
+        )
+    }
 
 @Composable
 private fun EditItem(action: ControllerAction?, onEdit: () -> Unit, modifier: Modifier = Modifier) {
