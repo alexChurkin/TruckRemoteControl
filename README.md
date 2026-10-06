@@ -69,9 +69,8 @@ The app follows the [Android app architecture guide](https://developer.android.c
   only renders the state and passes user actions (unidirectional data flow). The controller screen (`ui/main`)
   uses views (landscape, touches of several pedals at once), a dialog fragment for the menu and a Compose pager
   for the quick actions panel (`ActionsPanel`, buttons by pages in `ActionButton.kt`), the dashboard mode
-  (`ui/dashboard`) is Compose,
-  the settings screen (`ui/settings`) is Jetpack Compose with Material 3, the guide (`ui/guide`) shows
-  its pages as fragments.
+  (`ui/dashboard`), the settings screen (`ui/settings`) and the guide (`ui/guide`) are Jetpack Compose
+  with Material 3.
 - `data/controller/BinaryProtocol` — the compact binary protocol of the server 1.3+ (the text one is kept for older
   servers); actions are sent by fixed codes, so buttons can be moved freely.
 - `di/AppContainer` — manual dependency injection: the app-wide objects are created once,
