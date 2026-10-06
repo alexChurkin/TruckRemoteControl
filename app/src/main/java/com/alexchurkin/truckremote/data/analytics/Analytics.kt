@@ -17,11 +17,12 @@ interface Analytics {
 
 /**
  * AppMetrica: sessions, crashes and a few events.
- * Without the API key (debug builds, builds without secrets) nothing is collected.
+ * Without the API key (debug builds, builds without secrets) nothing is collected, and nothing is where
+ * it isn't [allowed] (see DataRegion): AppMetrica isn't even started there.
  */
-class AppMetricaAnalytics(context: Context) : Analytics {
+class AppMetricaAnalytics(context: Context, allowed: Boolean = true) : Analytics {
 
-    private val enabled: Boolean = BuildConfig.APPMETRICA_API_KEY.isNotEmpty()
+    private val enabled: Boolean = allowed && BuildConfig.APPMETRICA_API_KEY.isNotEmpty()
 
     init {
         if (enabled) {
@@ -31,7 +32,7 @@ class AppMetricaAnalytics(context: Context) : Analytics {
                 .build()
             AppMetrica.activate(context.applicationContext, config)
         } else {
-            logD("AppMetrica is disabled: no API key")
+            logD("AppMetrica is disabled: no API key, or not in this country")
         }
     }
 

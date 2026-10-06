@@ -66,6 +66,8 @@ data class SettingsUiState(
     val pedalMode: PedalMode,
     val throttleLock: Boolean,
     val adsRemoved: Boolean,
+    // Ads are shown in the country of the device (see DataRegion): the purchase that removes them makes sense
+    val adsAvailable: Boolean = true,
 )
 
 // A snackbar message
@@ -84,6 +86,7 @@ class SettingsViewModel(
     private val billing: BillingManager,
     private val tiltSensor: TiltSensor,
     private val haptics: Haptics,
+    private val adsAvailable: Boolean = true,
 ) : ViewModel() {
 
     // The game being played is shown first
@@ -284,6 +287,7 @@ class SettingsViewModel(
         pedalMode = settings.pedalMode,
         throttleLock = settings.throttleLock,
         adsRemoved = adsRemoved,
+        adsAvailable = adsAvailable,
     )
 
     companion object {
@@ -308,6 +312,7 @@ class SettingsViewModel(
                     app.container.billing,
                     app.container.tiltSensor,
                     app.container.haptics,
+                    app.container.region.adsAllowed,
                 )
             }
         }

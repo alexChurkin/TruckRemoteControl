@@ -440,18 +440,21 @@ private fun SettingsList(
             )
         }
         centeredItem { ClickableItem(title = stringResource(R.string.start_guide), onClick = actions.onOpenGuide) }
-        centeredItem {
-            if (state.adsRemoved) {
-                InfoItem(
-                    title = stringResource(R.string.ads_removed_title),
-                    summary = stringResource(R.string.ads_removed_summary),
-                )
-            } else {
-                ClickableItem(
-                    title = stringResource(R.string.restore_purchase_title),
-                    summary = stringResource(R.string.restore_purchase_summary),
-                    onClick = actions.onRestorePurchase,
-                )
+        // Where no ads are shown there is nothing to remove or restore
+        if (state.adsAvailable) {
+            centeredItem {
+                if (state.adsRemoved) {
+                    InfoItem(
+                        title = stringResource(R.string.ads_removed_title),
+                        summary = stringResource(R.string.ads_removed_summary),
+                    )
+                } else {
+                    ClickableItem(
+                        title = stringResource(R.string.restore_purchase_title),
+                        summary = stringResource(R.string.restore_purchase_summary),
+                        onClick = actions.onRestorePurchase,
+                    )
+                }
             }
         }
 

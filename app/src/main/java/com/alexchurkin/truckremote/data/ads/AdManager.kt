@@ -15,8 +15,9 @@ import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener
 import com.yandex.mobile.ads.interstitial.InterstitialAdLoadListener
 import com.yandex.mobile.ads.interstitial.InterstitialAdLoader
 
-// Yandex Ads; shows at most one interstitial ad per app session
-class AdManager(private val settings: AppSettings) {
+// Yandex Ads; shows at most one interstitial ad per app session. Not [allowed] (see DataRegion): the ad service
+// isn't even started, nothing is sent to it
+class AdManager(private val settings: AppSettings, private val allowed: Boolean = true) {
 
     private var initialized = false
     private var initializing = false
@@ -26,7 +27,8 @@ class AdManager(private val settings: AppSettings) {
     private var showingNow = false
 
     fun initialize(context: Context) {
-        if (settings.adsRemoved || initialized || initializing) return
+        if (!allowed || settings.adsRemoved) return
+        if (initialized || initializing) return
         logD("> AdManager is initializing")
         initializing = true
         val appContext = context.applicationContext
