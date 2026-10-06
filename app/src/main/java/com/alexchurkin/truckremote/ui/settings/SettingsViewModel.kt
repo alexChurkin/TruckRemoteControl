@@ -16,6 +16,7 @@ import com.alexchurkin.truckremote.data.controller.ServerLink
 import com.alexchurkin.truckremote.data.device.HapticCapability
 import com.alexchurkin.truckremote.data.device.Haptics
 import com.alexchurkin.truckremote.data.sensor.TiltSensor
+import com.alexchurkin.truckremote.data.settings.AppMode
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.Game
 import com.alexchurkin.truckremote.data.settings.GameSettings
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class SettingsUiState(
+    val appMode: AppMode,
     val serverPort: Int,
     val useSpecifiedServer: Boolean,
     val serverIp: String,
@@ -228,6 +230,10 @@ class SettingsViewModel(
         ownMessages.trySend(SettingsMessage(R.string.game_settings_copied, listOf(other.title)))
     }
 
+    fun setAppMode(mode: AppMode) {
+        settings.appMode = mode
+    }
+
     fun setSpeedUnits(units: SpeedUnits) {
         game.speedUnits = units
     }
@@ -255,6 +261,7 @@ class SettingsViewModel(
     }
 
     private fun snapshot(adsRemoved: Boolean) = SettingsUiState(
+        appMode = settings.appMode ?: AppMode.Controller,
         serverPort = settings.serverPort,
         useSpecifiedServer = settings.useSpecifiedServer,
         serverIp = settings.specifiedServerIp,

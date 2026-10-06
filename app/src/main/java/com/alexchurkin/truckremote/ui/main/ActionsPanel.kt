@@ -119,6 +119,7 @@ private val SHAKE_STEPS_DP = listOf(SHAKE_DP, -SHAKE_DP, SHAKE_DP / 2)
 // A dragged button held at a side of the panel for this long turns the page
 private val PageEdge = 28.dp
 private const val PAGE_TURN_DELAY_MS = 600L
+private const val RESET_CONFIRM_MS = 4000L
 private const val DRAGGED_SCALE = 1.08f
 
 // A button lifted by a long press: it follows the finger, also over the pages, and the others make room for it
@@ -209,6 +210,7 @@ fun ActionsPanel(
     onHold: (ControllerAction, Boolean) -> Boolean,
     onLayoutChange: (ActionLayout) -> Unit,
     modifier: Modifier = Modifier,
+    shown: Boolean = true,
 ) {
     val pagerState = rememberPagerState { ActionLayout.PAGES }
     val scope = rememberCoroutineScope()
@@ -218,6 +220,22 @@ fun ActionsPanel(
     val stopPicking = {
         picking = null
         if (target != null) scope.launch { pagerState.scrollToPage(target.page) }
+    }
+    // A closed panel is opened for driving again, not for editing
+    LaunchedEffect(shown) {
+        if (!shown) {
+            editing = false
+            picking = null
+        }
+    }
+    // The reset is asked about first; the question goes away by itself
+    var confirmingReset by remember { mutableStateOf(false) }
+    LaunchedEffect(confirmingReset, editing) {
+        if (!editing) confirmingReset = false
+        if (confirmingReset) {
+            delay(RESET_CONFIRM_MS)
+            confirmingReset = false
+        }
     }
 
     Column(
@@ -277,15 +295,21 @@ fun ActionsPanel(
                 modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
             )
             if (editing && target != null) {
+                // Not where "Reset" is: a second tap after the cancel must not hit it
                 PanelTextButton(
                     text = stringResource(R.string.actions_pick_cancel),
                     onClick = { stopPicking() },
-                    modifier = Modifier.align(Alignment.CenterStart),
+                    modifier = Modifier.align(Alignment.CenterEnd),
                 )
             } else if (editing) {
                 PanelTextButton(
-                    text = stringResource(R.string.actions_edit_reset),
-                    onClick = { onLayoutChange(ActionLayout.Default) },
+                    text = stringResource(
+                        if (confirmingReset) R.string.actions_edit_reset_confirm else R.string.actions_edit_reset,
+                    ),
+                    onClick = {
+                        if (confirmingReset) onLayoutChange(ActionLayout.Default)
+                        confirmingReset = !confirmingReset
+                    },
                     modifier = Modifier.align(Alignment.CenterStart),
                 )
                 PanelTextButton(

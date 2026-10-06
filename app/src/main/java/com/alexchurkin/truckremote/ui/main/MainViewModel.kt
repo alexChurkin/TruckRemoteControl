@@ -270,6 +270,14 @@ class MainViewModel(
         }
     }
 
+    // The PC has got another address and the server was found by the search: the new address is the specified
+    // one from now on, so the next connection doesn't wait for the old one
+    private fun rememberSpecifiedServer() {
+        val found = controller.serverAddress
+        if (searchingByBroadcast || found.isNullOrBlank() || found == settings.specifiedServerIp) return
+        settings.specifiedServerIp = found
+    }
+
     fun disconnect() {
         _state.update { it.copy(pausedByUser = false) }
         controller.disconnect()
@@ -303,6 +311,7 @@ class MainViewModel(
                 analogUnavailableWarned = false
                 send(MainEffect.Message(R.string.connected_to_server_at, suffix = controller.serverAddress))
                 settings.lastServerIp = controller.serverAddress
+                rememberSpecifiedServer()
                 reportConnected()
             }
 
@@ -377,6 +386,11 @@ class MainViewModel(
     // A hold action is held while its button is pressed; returns true if it was sent
     fun onActionHold(action: ControllerAction, held: Boolean): Boolean {
         if (held && !isControllable) return false
+        // An older server knows only the click of the action
+        if ((state.value.truck?.serverRevision ?: 0) < action.holdRevision) {
+            if (held) controller.clickAction(action)
+            return true
+        }
         controller.setActionHeld(action, held)
         return true
     }

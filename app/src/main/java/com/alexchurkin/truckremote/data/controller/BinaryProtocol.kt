@@ -33,7 +33,7 @@ object BinaryProtocol {
     const val VERSION = 2
 
     // The server revision this app makes use of entirely (an older server is worth updating)
-    const val REVISION = 6
+    const val REVISION = 7
 
     private const val STATE_TYPE: Byte = 0x02
     private const val PAUSED_TYPE: Byte = 0x03
@@ -105,7 +105,7 @@ object BinaryProtocol {
     fun encodeState(state: ControllerState, sequence: Long): ByteArray {
         // Only clicked and held actions are sent: a missing counter is 0, a missing hold is released
         val actions = state.actionCounters.map { (action, count) -> action.code to (count and BYTE_MASK) } +
-            state.heldActions.map { it.code to 1 }
+            state.heldActions.map { it.holdCode to 1 }
         val flags = flag(state.brakePressed, BRAKE_BIT) or flag(state.gasPressed, GAS_BIT) or
             flag(state.leftSignalClick, LEFT_SIGNAL_BIT) or flag(state.rightSignalClick, RIGHT_SIGNAL_BIT) or
             flag(state.emergencyClick, EMERGENCY_BIT) or flag(state.parkingBrakeClick, PARKING_BRAKE_BIT) or

@@ -125,7 +125,7 @@
     <string name="action_radio_previous">Previous station</string>
     <string name="action_radio">Radio</string>
     <string name="action_advisor_zoom">Advisor zoom</string>
-    <string name="action_advisor_mode">Advisor mode</string>
+    <string name="action_advisor_mode">Widget settings</string>
     <string name="action_road_assistance">Road assistance</string>
     <string name="action_screenshot">Screenshot</string>
     <string name="action_menu">Menu</string>
@@ -265,6 +265,14 @@
     <string name="dashboard_mode_job">Job</string>
     <string name="dashboard_mode_retarder">Retarder</string>
     <string name="dashboard_mode_warnings">Warnings</string>
-    <string name="dashboard_mode_on_start">Open at start</string>
-    <string name="dashboard_mode_controller">Controller</string>
+    <string name="app_mode_title">Mode</string>
+    <string name="app_mode_choice_title">This device is</string>
+    <string name="app_mode_choice_summary">The dashboard only shows the instruments of the truck: for a tablet or a second phone beside the one that drives. The chosen mode opens at once.</string>
+    <string name="app_mode_controller">Wheel and pedals</string>
+    <string name="app_mode_controller_summary">The phone is the steering wheel, the pedals and the buttons of the truck.</string>
+    <string name="app_mode_dashboard">Dashboard</string>
+    <string name="app_mode_dashboard_summary">This device only shows the instruments of the truck beside the phone that drives it.</string>
+    <string name="app_mode_question">How will you use this device?</string>
+    <string name="app_mode_question_hint">You can change it later in the settings.</string>
+    <string name="actions_edit_reset_confirm">Reset all?</string>
 </resources>

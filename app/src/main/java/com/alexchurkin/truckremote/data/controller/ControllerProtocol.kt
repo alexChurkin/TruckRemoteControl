@@ -6,12 +6,21 @@ import java.util.Locale
  * Actions of the panel. They are sent by their fixed [code] (not by the place of a button), so buttons
  * can be placed anywhere; the server presses the game key of a code it knows and skips the others.
  * A click action is sent as a click counter, a [isHold] action as held (1) while its button is pressed.
+ * An action that was a click once is held under another code ([holdCode]) since [holdRevision] of the server:
+ * an older server still gets its click.
  */
-enum class ControllerAction(val code: Int, val isHold: Boolean = false) {
+enum class ControllerAction(
+    val code: Int,
+    val isHold: Boolean = false,
+    val holdCode: Int = code,
+    val holdRevision: Int = 0,
+) {
     Engine(1),
     Trailer(2),
     Activate(3),
-    LightHorn(4),
+
+    // The high beam is on while the button is held
+    LightHorn(4, isHold = true, holdCode = 42, holdRevision = 7),
     Wipers(5),
     Beacon(6),
     DiffLock(7),

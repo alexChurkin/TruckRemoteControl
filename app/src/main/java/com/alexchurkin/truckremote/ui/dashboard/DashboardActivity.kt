@@ -8,13 +8,14 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.alexchurkin.truckremote.ui.main.MainActivity
+import com.alexchurkin.truckremote.ui.settings.SettingsActivity
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 import com.alexchurkin.truckremote.util.enterFullscreen
 
 /**
  * The dashboard mode: the instruments of the truck in full screen, for a tablet or a second phone beside the
- * controller. The screen stays on; the server is a viewer of it only while it is shown.
+ * controller. The screen stays on; the server is a viewer of it only while it is shown. The mode is left
+ * in the settings.
  */
 class DashboardActivity : AppCompatActivity() {
 
@@ -28,8 +29,7 @@ class DashboardActivity : AppCompatActivity() {
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 DashboardScreen(
                     state = state,
-                    onOpenOnStartChange = viewModel::setOpenOnStart,
-                    onOpenController = ::openController,
+                    onOpenSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
                 )
             }
         }
@@ -44,15 +44,5 @@ class DashboardActivity : AppCompatActivity() {
     override fun onStop() {
         viewModel.setForeground(false)
         super.onStop()
-    }
-
-    private fun openController() {
-        startActivity(Intent(this, MainActivity::class.java).putExtra(EXTRA_CONTROLLER, true))
-        finish()
-    }
-
-    companion object {
-        // The controller is opened from the dashboard: it doesn't go to the dashboard by itself
-        const val EXTRA_CONTROLLER = "controller"
     }
 }

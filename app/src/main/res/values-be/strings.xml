@@ -120,7 +120,7 @@
     <string name="action_radio_previous">Папярэдняя станцыя</string>
     <string name="action_radio">Радыё</string>
     <string name="action_advisor_zoom">Маштаб навігатара</string>
-    <string name="action_advisor_mode">Рэжым навігатара</string>
+    <string name="action_advisor_mode">Налады віджэтаў</string>
     <string name="action_road_assistance">Дапамога на дарозе</string>
     <string name="action_screenshot">Здымак экрана</string>
     <string name="action_menu">Меню</string>
@@ -257,6 +257,14 @@
     <string name="dashboard_mode_job">Заказ</string>
     <string name="dashboard_mode_retarder">Рэтардэр</string>
     <string name="dashboard_mode_warnings">Папярэджанні</string>
-    <string name="dashboard_mode_on_start">Адкрываць пры запуску</string>
-    <string name="dashboard_mode_controller">Кіраванне</string>
+    <string name="app_mode_title">Рэжым</string>
+    <string name="app_mode_choice_title">Гэтая прылада</string>
+    <string name="app_mode_choice_summary">Прыборная панэль толькі паказвае прыборы грузавіка: для планшэта або другога тэлефона побач з тым, якім вы кіруеце. Выбраны рэжым адкрываецца адразу.</string>
+    <string name="app_mode_controller">Руль і педалі</string>
+    <string name="app_mode_controller_summary">Тэлефон — гэта руль, педалі і кнопкі грузавіка.</string>
+    <string name="app_mode_dashboard">Прыборная панэль</string>
+    <string name="app_mode_dashboard_summary">Гэтая прылада толькі паказвае прыборы грузавіка побач з тэлефонам, якім вы кіруеце.</string>
+    <string name="app_mode_question">Як вы будзеце выкарыстоўваць гэтую прыладу?</string>
+    <string name="app_mode_question_hint">Гэта можна змяніць пазней у наладах.</string>
+    <string name="actions_edit_reset_confirm">Скінуць усё?</string>
 </resources>

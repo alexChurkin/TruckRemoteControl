@@ -20,14 +20,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -74,6 +75,9 @@ private const val MPH_IN_MS = 2.236936f
 // The gauge: an arc of 240° open at the bottom, its start at 150° (drawArc angles: 0 is to the right, clockwise)
 private const val GAUGE_START = 150f
 private const val GAUGE_SWEEP = 240f
+
+// The part of the height of its circle the arc takes: from the top to its ends, 30 degrees under the middle
+private const val ARC_HEIGHT = 0.75f
 private const val RED_ZONE = 0.9f
 private const val ECONOMY_RPM_FROM = 1000
 private const val ECONOMY_RPM_TO = 1500
@@ -88,17 +92,18 @@ private val Background = Color(0xFF101010)
 private val Card = Color(0xFF1C1C1C)
 private val CardShape = RoundedCornerShape(16.dp)
 
+// The place of the lamps at a side of the gauge
+private val LampColumn = 56.dp
+
+// The place of the settings button under the cards
+private val SettingsRow = 40.dp
+
 /**
  * The dashboard mode: big instruments of the truck for a tablet or a second phone. Wide screens have the gauge
  * on the left and the cards on the right, tall ones have the cards under it.
  */
 @Composable
-fun DashboardScreen(
-    state: DashboardUiState,
-    onOpenOnStartChange: (Boolean) -> Unit,
-    onOpenController: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun DashboardScreen(state: DashboardUiState, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize().background(Background)) {
         val truck = state.truck
         val dashboard = truck?.dashboard
@@ -107,12 +112,10 @@ fun DashboardScreen(
         } else {
             Instruments(truck, dashboard, state.job, state.imperialUnits)
         }
-        BottomBar(
-            openOnStart = state.openOnStart,
-            onOpenOnStartChange = onOpenOnStartChange,
-            onOpenController = onOpenController,
-            modifier = Modifier.align(Alignment.BottomEnd),
-        )
+        // The mode of the app is changed in the settings
+        TextButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
+            Text(stringResource(R.string.settings))
+        }
     }
 }
 
@@ -149,36 +152,51 @@ private fun Waiting(state: DashboardUiState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun Instruments(truck: ServerState, dashboard: Dashboard, job: Job?, imperialUnits: Boolean) {
-    BoxWithConstraints(Modifier.fillMaxSize().padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 56.dp)) {
+    BoxWithConstraints(Modifier.fillMaxSize().padding(16.dp)) {
         val wide = maxWidth > maxHeight * WIDE_RATIO
         if (wide) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column(Modifier.weight(1.3f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Indicators(truck)
-                    Gauge(dashboard, imperialUnits, Modifier.weight(1f).fillMaxWidth())
-                }
-                Cards(truck, dashboard, job, imperialUnits, Modifier.weight(1f).fillMaxHeight())
+                Cluster(truck, dashboard, imperialUnits, Modifier.weight(1.3f).fillMaxHeight())
+                Cards(
+                    truck,
+                    dashboard,
+                    job,
+                    imperialUnits,
+                    Modifier.weight(1f).fillMaxHeight().padding(bottom = SettingsRow),
+                )
             }
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Indicators(truck)
-                Gauge(dashboard, imperialUnits, Modifier.fillMaxWidth().aspectRatio(1.2f))
-                Cards(truck, dashboard, job, imperialUnits, Modifier.weight(1f).fillMaxWidth())
+                Cluster(truck, dashboard, imperialUnits, Modifier.fillMaxWidth().aspectRatio(1.2f))
+                Cards(
+                    truck,
+                    dashboard,
+                    job,
+                    imperialUnits,
+                    Modifier.weight(1f).fillMaxWidth().padding(bottom = SettingsRow),
+                )
             }
         }
     }
 }
 
-// The lamps of the truck: blinkers at the sides, the lights, the parking brake and the systems in the middle
+// The instrument cluster as in a truck: the gauge in the middle of its place, the blinkers at the upper corners
+// and the lamps in two columns beside the gauge (what is switched on the left, the systems on the right)
 @Composable
-private fun Indicators(truck: ServerState, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth().height(48.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Lamp(if (truck.leftBlinker) R.drawable.left_enabled else R.drawable.left_disabled, tint = null)
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun Cluster(truck: ServerState, dashboard: Dashboard, imperialUnits: Boolean, modifier: Modifier = Modifier) {
+    Box(modifier) {
+        Gauge(dashboard, imperialUnits, Modifier.fillMaxSize().padding(horizontal = LampColumn))
+        Lamp(
+            icon = if (truck.leftBlinker) R.drawable.left_enabled else R.drawable.left_disabled,
+            tint = null,
+            modifier = Modifier.align(Alignment.TopStart),
+        )
+        Lamp(
+            icon = if (truck.rightBlinker) R.drawable.right_enabled else R.drawable.right_disabled,
+            tint = null,
+            modifier = Modifier.align(Alignment.TopEnd),
+        )
+        LampColumn(Modifier.align(Alignment.CenterStart)) {
             Lamp(
                 when (truck.lightsMode) {
                     1 -> R.drawable.lights_gab
@@ -191,6 +209,8 @@ private fun Indicators(truck: ServerState, modifier: Modifier = Modifier) {
             Lamp(if (truck.parkingBrake) R.drawable.parking_break_on else R.drawable.parking_break_off, tint = null)
             Lamp(R.drawable.ic_action_engine, tint = colorResource(R.color.indicatorGreen), on = truck.engineOn)
             Lamp(R.drawable.ic_action_trailer, tint = colorResource(R.color.indicatorGreen), on = truck.trailerAttached)
+        }
+        LampColumn(Modifier.align(Alignment.CenterEnd)) {
             Lamp(R.drawable.ic_action_beacon, tint = colorResource(R.color.indicatorYellow), on = truck.beaconOn)
             Lamp(
                 R.drawable.ic_action_diff_lock,
@@ -204,8 +224,16 @@ private fun Indicators(truck: ServerState, modifier: Modifier = Modifier) {
                 on = truck.engineBrake,
             )
         }
-        Lamp(if (truck.rightBlinker) R.drawable.right_enabled else R.drawable.right_disabled, tint = null)
     }
+}
+
+@Composable
+private fun LampColumn(modifier: Modifier = Modifier, lamps: @Composable () -> Unit) {
+    Column(
+        modifier = modifier.width(LampColumn),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) { lamps() }
 }
 
 // A picture of the lamp's state as it is (tint null), or an icon in its color when on and dim when off
@@ -238,13 +266,20 @@ private fun Gauge(dashboard: Dashboard, imperialUnits: Boolean, modifier: Modifi
         1f to colorResource(R.color.indicatorRed),
     )
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val side = minOf(maxWidth, maxHeight)
-        Canvas(Modifier.size(side)) {
+        // The arc is open at the bottom, so it takes only a part of the height of its circle: the circle is as big
+        // as the arc fits, and it is moved down so that the arc (not the circle) is in the middle of the place
+        val side = minOf(maxWidth, maxHeight / ARC_HEIGHT)
+        val centered = Modifier.requiredSize(side).offset(y = side * (1 - ARC_HEIGHT) / 2)
+        Canvas(centered) {
             val stroke = size.minDimension * 0.06f
             drawZones(zones, fraction, stroke)
             drawTicks(rpmMax, stroke, trackColor)
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = centered,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
             if (dashboard.speedLimit > 0f) {
                 SpeedLimitSign(
                     limit = (dashboard.speedLimit * factor).roundToInt(),
@@ -344,8 +379,16 @@ private fun Cards(
     imperialUnits: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    // In the middle of their place while they fit, scrolled when there are more of them
+    Box(modifier, contentAlignment = Alignment.Center) {
+        CardList(truck, dashboard, job, imperialUnits)
+    }
+}
+
+@Composable
+private fun CardList(truck: ServerState, dashboard: Dashboard, job: Job?, imperialUnits: Boolean) {
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
+        modifier = Modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         FuelCard(dashboard, imperialUnits)
@@ -445,21 +488,6 @@ private fun Bar(fraction: Float, color: Color, modifier: Modifier = Modifier, he
             size = Size(size.width * fraction.coerceIn(0f, 1f), size.height),
             cornerRadius = radius,
         )
-    }
-}
-
-// Back to the controller and "open the dashboard at start" for a device that is only a dashboard
-@Composable
-private fun BottomBar(
-    openOnStart: Boolean,
-    onOpenOnStartChange: (Boolean) -> Unit,
-    onOpenController: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(modifier = modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(checked = openOnStart, onCheckedChange = onOpenOnStartChange)
-        Text(text = stringResource(R.string.dashboard_mode_on_start), color = colorResource(R.color.dashboardSecondary))
-        TextButton(onClick = onOpenController) { Text(stringResource(R.string.dashboard_mode_controller)) }
     }
 }
 

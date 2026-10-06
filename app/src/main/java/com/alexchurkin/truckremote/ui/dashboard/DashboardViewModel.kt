@@ -12,7 +12,6 @@ import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.Game
 import com.alexchurkin.truckremote.data.viewer.ViewerClient
 import com.alexchurkin.truckremote.data.viewer.ViewerState
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -26,7 +25,6 @@ data class DashboardUiState(
     val truck: ServerState? = null,
     val job: Job? = null,
     val imperialUnits: Boolean = false,
-    val openOnStart: Boolean = false,
 )
 
 /**
@@ -35,32 +33,23 @@ data class DashboardUiState(
  */
 class DashboardViewModel(private val settings: AppSettings, private val viewer: ViewerClient) : ViewModel() {
 
-    private val openOnStart = MutableStateFlow(settings.dashboardOnStart)
-
     val state: StateFlow<DashboardUiState> = combine(
         viewer.state,
-        openOnStart,
         settings.changes().onStart { emit(Unit) },
-    ) { viewerState, onStart, _ -> snapshot(viewerState, onStart) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, DashboardUiState(openOnStart = settings.dashboardOnStart))
+    ) { viewerState, _ -> snapshot(viewerState) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, DashboardUiState())
 
     fun setForeground(shown: Boolean) = if (shown) viewer.start() else viewer.stop()
 
-    fun setOpenOnStart(value: Boolean) {
-        settings.dashboardOnStart = value
-        openOnStart.value = value
-    }
-
     override fun onCleared() = viewer.stop()
 
-    private fun snapshot(viewerState: ViewerState, onStart: Boolean): DashboardUiState {
+    private fun snapshot(viewerState: ViewerState): DashboardUiState {
         val game = if (viewerState.truck?.dashboard?.isAts == true) Game.Ats else Game.Ets2
         return DashboardUiState(
             serverAddress = viewerState.serverAddress,
             truck = viewerState.truck,
             job = viewerState.job,
             imperialUnits = settings.game(game).speedUnits.isImperial(game),
-            openOnStart = onStart,
         )
     }
 

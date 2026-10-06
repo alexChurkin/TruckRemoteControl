@@ -120,7 +120,7 @@
     <string name="action_radio_previous">Попередня станція</string>
     <string name="action_radio">Радіо</string>
     <string name="action_advisor_zoom">Масштаб навігатора</string>
-    <string name="action_advisor_mode">Режим навігатора</string>
+    <string name="action_advisor_mode">Налаштування віджетів</string>
     <string name="action_road_assistance">Допомога на дорозі</string>
     <string name="action_screenshot">Знімок екрана</string>
     <string name="action_menu">Меню</string>
@@ -257,6 +257,14 @@
     <string name="dashboard_mode_job">Замовлення</string>
     <string name="dashboard_mode_retarder">Ретардер</string>
     <string name="dashboard_mode_warnings">Попередження</string>
-    <string name="dashboard_mode_on_start">Відкривати під час запуску</string>
-    <string name="dashboard_mode_controller">Керування</string>
+    <string name="app_mode_title">Режим</string>
+    <string name="app_mode_choice_title">Цей пристрій</string>
+    <string name="app_mode_choice_summary">Приладова панель лише показує прилади вантажівки: для планшета або другого телефона поруч із тим, яким ви керуєте. Вибраний режим відкривається одразу.</string>
+    <string name="app_mode_controller">Кермо і педалі</string>
+    <string name="app_mode_controller_summary">Телефон — це кермо, педалі та кнопки вантажівки.</string>
+    <string name="app_mode_dashboard">Приладова панель</string>
+    <string name="app_mode_dashboard_summary">Цей пристрій лише показує прилади вантажівки поруч із телефоном, яким ви керуєте.</string>
+    <string name="app_mode_question">Як ви використовуватимете цей пристрій?</string>
+    <string name="app_mode_question_hint">Це можна змінити пізніше в налаштуваннях.</string>
+    <string name="actions_edit_reset_confirm">Скинути все?</string>
 </resources>

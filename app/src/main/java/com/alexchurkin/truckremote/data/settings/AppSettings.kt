@@ -23,6 +23,15 @@ enum class PedalMode(val prefValue: String) {
     }
 }
 
+// What the device is for
+enum class AppMode(val prefValue: String) {
+    // The wheel and the pedals: the phone drives the truck
+    Controller("controller"),
+
+    // Only the instruments of the truck (a tablet or a second phone beside the controller)
+    Dashboard("dashboard"),
+}
+
 /**
  * Typed access to the app preferences.
  * Keys and value types are the same as in previous versions, so user settings are kept after update.
@@ -65,10 +74,15 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_DASHBOARD_CLICKS, true)
         set(value) = prefs.edit { putBoolean(KEY_DASHBOARD_CLICKS, value) }
 
-    // The app starts with the dashboard (a tablet or a second phone beside the controller)
-    var dashboardOnStart: Boolean
-        get() = prefs.getBoolean(KEY_DASHBOARD_ON_START, false)
-        set(value) = prefs.edit { putBoolean(KEY_DASHBOARD_ON_START, value) }
+    // null until the user is asked at the first start. Who used the app before that question appeared isn't asked:
+    // the mode is the one the app started with
+    var appMode: AppMode?
+        get() = AppMode.entries.firstOrNull { it.prefValue == prefs.getString(KEY_APP_MODE, null) } ?: when {
+            prefs.getBoolean(KEY_DASHBOARD_ON_START, false) -> AppMode.Dashboard
+            guideShown -> AppMode.Controller
+            else -> null
+        }
+        set(value) = prefs.edit { putString(KEY_APP_MODE, value?.prefValue) }
 
     var pneumaticHorn: Boolean
         get() = prefs.getBoolean(KEY_PNEUMATIC_HORN, false)
@@ -173,6 +187,9 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_USE_SPECIFIED_SERVER = "defaultServer"
         private const val KEY_SPECIFIED_IP = "serverIP"
         private const val KEY_FORCE_FEEDBACK = "useFFB"
+        private const val KEY_APP_MODE = "appMode"
+
+        // Of the versions where the dashboard had "open at start"
         private const val KEY_DASHBOARD_ON_START = "dashboardOnStart"
         private const val KEY_VIBRATION_STRENGTH = "vibrationStrength"
         private const val KEY_ROAD_VIBRATION = "roadVibration"

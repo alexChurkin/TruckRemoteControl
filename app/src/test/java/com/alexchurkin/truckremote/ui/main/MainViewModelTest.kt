@@ -183,6 +183,32 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `the light horn is held by a new server and clicked by an older one`() {
+        connect()
+        assertTrue(viewModel.onActionHold(ControllerAction.LightHorn, true))
+        assertEquals(setOf(ControllerAction.LightHorn), controller.state.heldActions)
+        assertTrue(viewModel.onActionHold(ControllerAction.LightHorn, false))
+
+        connect(TRUCK.copy(serverRevision = ControllerAction.LightHorn.holdRevision - 1))
+        assertTrue(viewModel.onActionHold(ControllerAction.LightHorn, true))
+        assertTrue(viewModel.onActionHold(ControllerAction.LightHorn, false))
+        assertTrue(controller.state.heldActions.isEmpty())
+        assertEquals(1, controller.state.actionCounters[ControllerAction.LightHorn])
+    }
+
+    @Test
+    fun `the specified server found at another address is remembered there`() {
+        settings.useSpecifiedServer = true
+        settings.specifiedServerIp = "192.168.1.8"
+        viewModel.connect(useSpecifiedServer = true)
+
+        controller.serverAddress = "192.168.1.6"
+        connect()
+
+        assertEquals("192.168.1.6", settings.specifiedServerIp)
+    }
+
+    @Test
     fun `buttons work only when connected and not paused`() {
         viewModel.onLeftSignal()
         assertFalse(viewModel.onAction(ControllerAction.Engine))

@@ -92,11 +92,13 @@ import com.alexchurkin.truckremote.BuildConfig
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.device.HapticCapability
 import com.alexchurkin.truckremote.data.settings.AppLanguage
+import com.alexchurkin.truckremote.data.settings.AppMode
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.Game
 import com.alexchurkin.truckremote.data.settings.PedalMode
 import com.alexchurkin.truckremote.data.settings.SpeedUnits
 import com.alexchurkin.truckremote.domain.SteeringProcessor
+import com.alexchurkin.truckremote.ui.mode.title
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.Library
@@ -152,6 +154,7 @@ data class SettingsActions(
     val onSeparateGameSettingsChange: (Boolean) -> Unit = {},
     val onEditedGameChange: (Game) -> Unit = {},
     val onCopyFromOtherGame: () -> Unit = {},
+    val onAppModeChange: (AppMode) -> Unit = {},
     val onSpeedUnitsChange: (SpeedUnits) -> Unit = {},
     val onCalibrate: () -> Unit = {},
     val onResetCalibration: () -> Unit = {},
@@ -170,6 +173,8 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenGuide: () -> Unit,
     onOpenLink: (Int) -> Unit,
+    // The mode is saved; the app goes to its screen
+    onAppModeChange: (AppMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -183,7 +188,7 @@ fun SettingsScreen(
         viewModel.messages.collect { message -> snackbarHostState.showSnackbar(message.format(resources)) }
     }
 
-    val actions = remember(viewModel, onBack, onOpenGuide, onOpenLink, context) {
+    val actions = remember(viewModel, onBack, onOpenGuide, onOpenLink, onAppModeChange, context) {
         SettingsActions(
             onBack = onBack,
             onServerPortChange = viewModel::setServerPort,
@@ -205,6 +210,10 @@ fun SettingsScreen(
             onEditedGameChange = viewModel::selectEditedGame,
             onCopyFromOtherGame = viewModel::copyFromOtherGame,
             onSpeedUnitsChange = viewModel::setSpeedUnits,
+            onAppModeChange = { mode ->
+                viewModel.setAppMode(mode)
+                onAppModeChange(mode)
+            },
             onCalibrate = viewModel::calibrate,
             onResetCalibration = viewModel::resetCalibration,
             onPedalModeChange = viewModel::setPedalMode,
@@ -380,6 +389,7 @@ private fun SettingsList(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxSize(), state = listState, contentPadding = contentPadding) {
+        modeSection(state, actions)
         gameSection(state, actions)
         steeringSection(state, steering, steeringTest, actions)
         pedalsSection(state, actions)
@@ -504,7 +514,27 @@ private fun LazyListScope.pedalsSection(state: SettingsUiState, actions: Setting
     }
 }
 
-// The steering is set up on the phone (the server applies it as is), with a live preview
+// What the device is for: the other mode opens at once
+private fun LazyListScope.modeSection(state: SettingsUiState, actions: SettingsActions) {
+    centeredItem { SectionHeader(R.string.app_mode_title) }
+    centeredItem {
+        Column {
+            ChoiceItem(
+                title = stringResource(R.string.app_mode_choice_title),
+                labels = AppMode.entries.map { stringResource(it.title) },
+                selected = state.appMode.ordinal,
+                onSelect = { if (it != state.appMode.ordinal) actions.onAppModeChange(AppMode.entries[it]) },
+            )
+            Text(
+                text = stringResource(R.string.app_mode_choice_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+            )
+        }
+    }
+}
+
 // Separate settings for each game: the game chosen here is the one the steering, the panel and the units are for
 private fun LazyListScope.gameSection(state: SettingsUiState, actions: SettingsActions) {
     centeredItem { SectionHeader(R.string.section_game) }
@@ -1185,6 +1215,7 @@ private fun SettingsPreview() {
     TruckRemoteTheme {
         SettingsContent(
             state = SettingsUiState(
+                appMode = AppMode.Controller,
                 serverPort = 18250,
                 useSpecifiedServer = true,
                 serverIp = "192.168.1.10",
