@@ -31,6 +31,9 @@ class AdManager(private val settings: AppSettings) {
         initializing = true
         val appContext = context.applicationContext
         YandexAds.enableLogging(BuildConfig.USE_LOG)
+        // Ads aren't personalised and don't use the location (as written in the privacy policy)
+        YandexAds.setUserConsent(false)
+        YandexAds.setLocationTracking(false)
         YandexAds.initialize(appContext) {
             logD("> AdManager was initialized")
             initializing = false

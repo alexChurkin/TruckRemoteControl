@@ -131,6 +131,8 @@
     <string name="server_ip_invalid">Enter an IP address like 192.168.1.10</string>
     <string name="third_party_title">Third-party software and licenses</string>
     <string name="third_party_summary">Icons and libraries used in the app</string>
+    <string name="privacy_policy_title">Privacy policy</string>
+    <string name="privacy_policy_link">https://churkinapps.github.io/en/truckremote/privacy-policy.html</string>
     <string name="restore_purchase_title">Restore ad removal</string>
     <string name="restore_purchase_summary">If you bought ad removal earlier on this Google account</string>
     <string name="ads_removed_title">Ads are disabled</string>

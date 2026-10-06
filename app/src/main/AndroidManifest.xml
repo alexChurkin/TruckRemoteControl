@@ -12,6 +12,11 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.android.vending.BILLING" />
+    <!-- The advertising identifier isn't used: Yandex Ads and Google Play services libraries request it,
+         and without the permission Android gives them only zeros instead of the identifier -->
+    <uses-permission
+        android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove" />
 
     <application
         android:name=".TruckRemoteApp"

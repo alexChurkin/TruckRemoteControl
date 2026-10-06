@@ -125,6 +125,8 @@
     <string name="server_ip_invalid">Введите IP-адрес, например 192.168.1.10</string>
     <string name="third_party_title">Стороннее ПО и лицензии</string>
     <string name="third_party_summary">Значки и библиотеки, используемые в приложении</string>
+    <string name="privacy_policy_title">Политика конфиденциальности</string>
+    <string name="privacy_policy_link">https://churkinapps.github.io/ru/truckremote/privacy-policy.html</string>
     <string name="restore_purchase_title">Восстановить отключение рекламы</string>
     <string name="restore_purchase_summary">Если вы раньше покупали отключение рекламы на этом аккаунте Google</string>
     <string name="ads_removed_title">Реклама отключена</string>

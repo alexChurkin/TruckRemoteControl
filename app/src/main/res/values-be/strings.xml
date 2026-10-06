@@ -125,6 +125,8 @@
     <string name="server_ip_invalid">Увядзіце IP-адрас, напрыклад 192.168.1.10</string>
     <string name="third_party_title">Старонняе ПЗ і ліцэнзіі</string>
     <string name="third_party_summary">Значкі і бібліятэкі, якія выкарыстоўваюцца ў праграме</string>
+    <string name="privacy_policy_title">Палітыка прыватнасці</string>
+    <string name="privacy_policy_link">https://churkinapps.github.io/ru/truckremote/privacy-policy.html</string>
     <string name="restore_purchase_title">Аднавіць адключэнне рэкламы</string>
     <string name="restore_purchase_summary">Калі вы раней куплялі адключэнне рэкламы на гэтым акаўнце Google</string>
     <string name="ads_removed_title">Рэклама адключана</string>

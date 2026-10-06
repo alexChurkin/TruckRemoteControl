@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,15 +29,15 @@ class SettingsActivity : AppCompatActivity() {
                     viewModel = viewModel(factory = SettingsViewModel.Factory),
                     onBack = ::finish,
                     onOpenGuide = { startActivity(Intent(this, GuideActivity::class.java)) },
-                    onOpenGithub = ::openGithub,
+                    onOpenLink = ::openLink,
                 )
             }
         }
     }
 
-    private fun openGithub() {
+    private fun openLink(@StringRes link: Int) {
         try {
-            startActivity(Intent(Intent.ACTION_VIEW, getString(R.string.github_link).toUri()))
+            startActivity(Intent(Intent.ACTION_VIEW, getString(link).toUri()))
         } catch (_: ActivityNotFoundException) {
             // No browser on the device
         }

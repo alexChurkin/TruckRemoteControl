@@ -155,7 +155,8 @@ data class SettingsActions(
     val onScanQr: () -> Unit = {},
     val onOpenGuide: () -> Unit = {},
     val onRestorePurchase: () -> Unit = {},
-    val onOpenGithub: () -> Unit = {},
+    // Opens the link from the string resource in the browser
+    val onOpenLink: (Int) -> Unit = {},
 )
 
 @Composable
@@ -163,7 +164,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
     onOpenGuide: () -> Unit,
-    onOpenGithub: () -> Unit,
+    onOpenLink: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -177,7 +178,7 @@ fun SettingsScreen(
         viewModel.messages.collect { message -> snackbarHostState.showSnackbar(message.format(resources)) }
     }
 
-    val actions = remember(viewModel, onBack, onOpenGuide, onOpenGithub, context) {
+    val actions = remember(viewModel, onBack, onOpenGuide, onOpenLink, context) {
         SettingsActions(
             onBack = onBack,
             onServerPortChange = viewModel::setServerPort,
@@ -209,7 +210,7 @@ fun SettingsScreen(
             },
             onOpenGuide = onOpenGuide,
             onRestorePurchase = viewModel::restorePurchase,
-            onOpenGithub = onOpenGithub,
+            onOpenLink = onOpenLink,
         )
     }
 
@@ -443,7 +444,18 @@ private fun SettingsList(
         }
 
         centeredItem { SectionHeader(R.string.about_app) }
-        centeredItem { ClickableItem(title = stringResource(R.string.github_page), onClick = actions.onOpenGithub) }
+        centeredItem {
+            ClickableItem(
+                title = stringResource(R.string.github_page),
+                onClick = { actions.onOpenLink(R.string.github_link) },
+            )
+        }
+        centeredItem {
+            ClickableItem(
+                title = stringResource(R.string.privacy_policy_title),
+                onClick = { actions.onOpenLink(R.string.privacy_policy_link) },
+            )
+        }
         centeredItem {
             ClickableItem(
                 title = stringResource(R.string.third_party_title),

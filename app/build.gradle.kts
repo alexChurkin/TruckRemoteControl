@@ -120,6 +120,13 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 }
 
+// Modules of AppMetrica that read the advertising identifiers (Google, Huawei) and the location:
+// the app doesn't collect them (see the privacy policy), so they aren't included at all
+configurations.configureEach {
+    exclude(group = "io.appmetrica.analytics", module = "analytics-identifiers")
+    exclude(group = "io.appmetrica.analytics", module = "analytics-location")
+}
+
 // Assets that aren't dependencies (icons) are described in config/libraries
 aboutLibraries {
     collect {
