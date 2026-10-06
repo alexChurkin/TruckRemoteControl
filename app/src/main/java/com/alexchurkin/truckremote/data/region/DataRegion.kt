@@ -40,7 +40,11 @@ class DataRegion(country: String?) {
         // Ukraine (Yandex is blocked), Turkey (KVKK) and Brazil (LGPD)
         private val OTHER = setOf("UA", "TR", "BR")
 
-        private val NO_ANALYTICS_COUNTRIES = EU + EUROPE_OTHER + OTHER
+        // Other countries with strict personal data laws: Japan, South Korea, India, Serbia, Georgia, Armenia,
+        // Moldova, Canada
+        private val STRICT = setOf("JP", "KR", "IN", "RS", "GE", "AM", "MD", "CA")
+
+        private val NO_ANALYTICS_COUNTRIES = EU + EUROPE_OTHER + OTHER + STRICT
 
         /**
          * The country of the mobile network the device is in, then of its SIM card, then of the system language

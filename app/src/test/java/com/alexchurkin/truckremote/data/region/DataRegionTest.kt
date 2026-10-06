@@ -16,8 +16,9 @@ class DataRegionTest {
 
     @Test
     fun `statistics aren't sent from the countries that restrict them, nor from an unknown one`() {
-        listOf("RU", "BY", "KZ", "US", "CA", "au").forEach { assertTrue(it, DataRegion(it).analyticsAllowed) }
+        listOf("RU", "BY", "KZ", "US", "au").forEach { assertTrue(it, DataRegion(it).analyticsAllowed) }
         listOf("DE", "pl", "FR", "ES", "IT", "CZ", "RO", "HU", "NL", "NO", "IS", "LI", "GB", "CH", "UA", "TR", "BR")
+            .plus(listOf("JP", "KR", "IN", "RS", "GE", "AM", "MD", "ca"))
             .forEach { assertFalse(it, DataRegion(it).analyticsAllowed) }
         listOf("", null, "RUS").forEach { assertFalse(it.toString(), DataRegion(it).analyticsAllowed) }
     }
