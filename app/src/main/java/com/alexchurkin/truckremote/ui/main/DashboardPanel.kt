@@ -32,15 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalConfiguration
@@ -65,7 +62,10 @@ import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.controller.Dashboard
 import com.alexchurkin.truckremote.data.controller.Job
 import kotlin.math.abs
+import kotlin.math.asin
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -78,6 +78,10 @@ private const val RED_ZONE = 0.9f
 private const val ECONOMY_RPM_FROM = 1000
 private const val ECONOMY_RPM_TO = 1500
 private const val RPM_TRACK_ALPHA = 0.3f
+private val RpmThickness = 6.dp
+
+// The top of a circle in the angles of drawArc (0 is to the right, clockwise)
+private const val ARC_TOP_ANGLE = 270f
 private const val METERS_IN_KILOMETER = 1000f
 private const val METERS_IN_MILE = 1609.344f
 private const val PRECISE_DISTANCE_BELOW = 10f
@@ -162,9 +166,9 @@ fun CruiseSlot(
 }
 
 /**
- * Instruments at the top of the controller screen, in one row to take little height: the speed limit sign,
- * the speed (always in the middle and of the same width, whatever its number of digits) with its unit and the gear,
- * and the engine rpm under them. Only what matters is shown: the speed limit when there is one, the route while
+ * Instruments at the top of the controller screen, to take little height: the engine rpm as a flat arc on top,
+ * and in one row under it the speed limit sign, the speed (always in the middle and of the same width, whatever its
+ * number of digits) with its unit and the gear. Only what matters is shown: the speed limit when there is one, the route while
  * driving by the navigation, the [job] (cargo, destination and the time left), warnings when there are problems;
  * the lines that come and go change the height smoothly.
  */
@@ -178,7 +182,10 @@ fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modi
             .padding(top = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // The arc spans the speed and both sides: its lowered ends are over the speed limit sign and the gear
+        val speedWidth = with(LocalDensity.current) { SPEED_WIDTH_SP.sp.toDp() }
+        RpmArc(dashboard.engineRpm, dashboard.engineRpmMax, width = SideWidth * 2 + speedWidth)
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
             // The sides have the same width, so the speed stays in the middle with or without the sign
             Box(modifier = Modifier.width(SideWidth), contentAlignment = Alignment.CenterEnd) {
                 if (dashboard.speedLimit > 0f) {
@@ -204,7 +211,7 @@ fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modi
                     platformStyle = PlatformTextStyle(includeFontPadding = false),
                 ),
                 maxLines = 1,
-                modifier = Modifier.width(with(LocalDensity.current) { SPEED_WIDTH_SP.sp.toDp() }),
+                modifier = Modifier.width(speedWidth),
             )
             Column(modifier = Modifier.width(SideWidth).padding(start = 8.dp)) {
                 BasicText(
@@ -219,7 +226,6 @@ fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modi
                 )
             }
         }
-        RpmBar(dashboard.engineRpm, dashboard.engineRpmMax, Modifier.padding(top = 4.dp))
         // The route and the job share a line: everything under the instruments is pushed down by their height
         if (dashboard.routeDistance > 0f || job != null) {
             Row(
@@ -380,11 +386,12 @@ private fun SpeedLimitSign(limit: Int, american: Boolean, modifier: Modifier = M
 }
 
 /*
- * Bar of the engine rpm with the zones of a truck tachometer: low rpm, the economical (green) range,
- * high rpm and the red zone at the end. Every zone is dim on the track and bright where the bar has reached it.
+ * The engine rpm as a flat arc, bulging upwards (its ends are [sag] lower than the middle), with the zones of a truck
+ * tachometer: low rpm, the economical (green) range, high rpm and the red zone at the end. Every zone is dim on
+ * the track and bright where the rpm has reached it.
  */
 @Composable
-private fun RpmBar(rpm: Int, rpmMax: Int, modifier: Modifier = Modifier, width: Dp = 190.dp) {
+private fun RpmArc(rpm: Int, rpmMax: Int, width: Dp, modifier: Modifier = Modifier, sag: Dp = 10.dp) {
     val fraction = if (rpmMax > 0) (rpm.toFloat() / rpmMax).coerceIn(0f, 1f) else 0f
     val economyStart = if (rpmMax > 0) (ECONOMY_RPM_FROM.toFloat() / rpmMax).coerceAtMost(RED_ZONE) else 0f
     val economyEnd = if (rpmMax > 0) (ECONOMY_RPM_TO.toFloat() / rpmMax).coerceAtMost(RED_ZONE) else 0f
@@ -395,29 +402,46 @@ private fun RpmBar(rpm: Int, rpmMax: Int, modifier: Modifier = Modifier, width: 
         RED_ZONE to colorResource(R.color.dashboardCaution),
         1f to colorResource(R.color.indicatorRed),
     )
-    Canvas(modifier = modifier.size(width, 6.dp)) {
-        val bar = Path().apply {
-            addRoundRect(RoundRect(Rect(Offset.Zero, size), CornerRadius(size.height / 2)))
+    val thickness = RpmThickness
+    Canvas(modifier = modifier.size(width, sag + thickness)) {
+        val stroke = thickness.toPx()
+        // The circle through the ends and the top of the arc (the middle of the stroke)
+        val chord = size.width - stroke
+        val height = sag.toPx()
+        val radius = (chord * chord / 4 + height * height) / (2 * height)
+        val center = Offset(size.width / 2, stroke / 2 + radius)
+        val halfSweep = Math.toDegrees(asin(chord / 2 / radius).toDouble()).toFloat()
+        val startAngle = ARC_TOP_ANGLE - halfSweep
+        val sweep = halfSweep * 2
+        val box = Size(radius * 2, radius * 2)
+        val topLeft = Offset(center.x - radius, center.y - radius)
+        fun part(from: Float, to: Float, color: Color) = drawArc(
+            color = color,
+            startAngle = startAngle + sweep * from,
+            sweepAngle = sweep * (to - from),
+            useCenter = false,
+            topLeft = topLeft,
+            size = box,
+            style = Stroke(width = stroke, cap = StrokeCap.Butt),
+        )
+
+        // Round ends: the color of the zone at the end, bright if the rpm has reached it
+        fun end(at: Float, color: Color) {
+            val angle = Math.toRadians((startAngle + sweep * at).toDouble())
+            val point = Offset(center.x + radius * cos(angle).toFloat(), center.y + radius * sin(angle).toFloat())
+            drawCircle(color, radius = stroke / 2, center = point)
         }
-        clipPath(bar) {
-            var start = 0f
-            zones.forEach { (end, color) ->
-                if (end > start) {
-                    drawRect(
-                        color = color.copy(alpha = RPM_TRACK_ALPHA),
-                        topLeft = Offset(size.width * start, 0f),
-                        size = Size(size.width * (end - start), size.height),
-                    )
-                    val reached = minOf(end, fraction)
-                    if (reached > start) {
-                        drawRect(
-                            color = color,
-                            topLeft = Offset(size.width * start, 0f),
-                            size = Size(size.width * (reached - start), size.height),
-                        )
-                    }
-                    start = end
-                }
+        val first = zones.first { it.first > 0f }.second
+        val last = zones.last().second
+        end(0f, if (fraction > 0f) first else first.copy(alpha = RPM_TRACK_ALPHA))
+        end(1f, if (fraction >= 1f) last else last.copy(alpha = RPM_TRACK_ALPHA))
+        var start = 0f
+        zones.forEach { (zoneEnd, color) ->
+            if (zoneEnd > start) {
+                part(start, zoneEnd, color.copy(alpha = RPM_TRACK_ALPHA))
+                val reached = minOf(zoneEnd, fraction)
+                if (reached > start) part(start, reached, color)
+                start = zoneEnd
             }
         }
     }

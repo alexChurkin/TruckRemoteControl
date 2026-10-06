@@ -76,62 +76,68 @@ data class ActionLayout(val pages: List<List<ControllerAction?>>) {
         private const val SLOT_SEPARATOR = ","
         private const val EMPTY = 0
 
-        // Truck, driving, view; then the actions added later: cameras, looking around and gears, the rest
+        /*
+         * The panel is 4 columns by 2 rows. The first page has what is needed on every trip and quickly: the engine
+         * brake and the retarder (- and +) for descents, coupling the trailer, the engine, "activate" (fuel stations,
+         * services, toll gates), wipers and the light horn. Then the pages by topic, the more needed ones first:
+         * the truck and the route; cameras; looking around and the screens; radio and the game. The cruise speed
+         * steps are on the last page: they are under the middle controls while the game sends the truck state.
+         */
         val Default = ActionLayout(
             listOf(
                 listOf(
-                    ControllerAction.Engine,
+                    ControllerAction.EngineBrake,
+                    ControllerAction.RetarderDown,
+                    ControllerAction.RetarderUp,
                     ControllerAction.Trailer,
+                    ControllerAction.Engine,
                     ControllerAction.Activate,
-                    ControllerAction.LightHorn,
                     ControllerAction.Wipers,
-                    ControllerAction.Beacon,
-                    ControllerAction.DiffLock,
-                    ControllerAction.LiftAxle,
+                    ControllerAction.LightHorn,
                 ),
                 listOf(
-                    ControllerAction.RetarderUp,
-                    ControllerAction.RetarderDown,
-                    ControllerAction.EngineBrake,
+                    ControllerAction.Map,
                     ControllerAction.QuickPark,
-                    ControllerAction.CruiseUp,
-                    ControllerAction.CruiseDown,
+                    ControllerAction.Beacon,
                     ControllerAction.CruiseResume,
-                    null,
+                    ControllerAction.DiffLock,
+                    ControllerAction.LiftAxle,
+                    ControllerAction.GearDown,
+                    ControllerAction.GearUp,
                 ),
                 listOf(
                     ControllerAction.CameraInterior,
                     ControllerAction.CameraChase,
                     ControllerAction.CameraCycle,
-                    ControllerAction.Map,
-                    ControllerAction.Display,
-                    ControllerAction.Hud,
-                    ControllerAction.RadioNext,
-                    ControllerAction.QuickSave,
-                ),
-                listOf(
-                    ControllerAction.Mirrors,
                     ControllerAction.CameraTop,
                     ControllerAction.CameraRoof,
                     ControllerAction.CameraLeanOut,
                     ControllerAction.CameraBumper,
                     ControllerAction.CameraWheel,
-                    ControllerAction.CameraDriveBy,
-                    ControllerAction.Screenshot,
                 ),
                 listOf(
                     ControllerAction.LookLeft,
                     ControllerAction.LookRight,
-                    ControllerAction.GearUp,
-                    ControllerAction.GearDown,
-                    ControllerAction.RadioPrevious,
-                    ControllerAction.Radio,
-                    ControllerAction.AdvisorZoom,
+                    ControllerAction.Mirrors,
+                    ControllerAction.CameraDriveBy,
+                    ControllerAction.Display,
+                    ControllerAction.Hud,
                     ControllerAction.AdvisorMode,
+                    ControllerAction.AdvisorZoom,
                 ),
                 listOf(
+                    ControllerAction.RadioPrevious,
+                    ControllerAction.Radio,
+                    ControllerAction.RadioNext,
+                    ControllerAction.Screenshot,
+                    ControllerAction.QuickSave,
                     ControllerAction.RoadAssistance,
                     ControllerAction.Menu,
+                    null,
+                ),
+                listOf(
+                    ControllerAction.CruiseDown,
+                    ControllerAction.CruiseUp,
                     null,
                     null,
                     null,
@@ -145,7 +151,9 @@ data class ActionLayout(val pages: List<List<ControllerAction?>>) {
         /**
          * The default layout if the value is broken; unknown (e.g. removed) and repeated actions become empty places.
          * A layout saved when the panel had fewer pages keeps them, and the pages added since then come after them
-         * as they are in the default layout (without the actions the saved pages already have).
+         * as they are in the default layout (without the actions the saved pages already have); the actions that are
+         * still on none of the pages (added with those pages) take the empty places of the added pages. A layout of
+         * all pages is kept as it is: an action missing there was taken off the panel by the user.
          */
         fun decode(value: String?): ActionLayout {
             val saved = value?.split(PAGE_SEPARATOR)?.map { it.split(SLOT_SEPARATOR) }
@@ -158,7 +166,13 @@ data class ActionLayout(val pages: List<List<ControllerAction?>>) {
                 }
             }
             val added = Default.pages.drop(pages.size).map { page -> page.map { it?.takeIf(placed::add) } }
-            return ActionLayout(pages + added)
+            val slots = (pages + added).flatten().toMutableList()
+            val missing = Default.pages.flatten().filterNotNull().filterNot(placed::contains).iterator()
+            for (index in pages.size * SLOTS until slots.size) {
+                if (!missing.hasNext()) break
+                if (slots[index] == null) slots[index] = missing.next()
+            }
+            return ActionLayout(slots.chunked(SLOTS))
         }
     }
 }

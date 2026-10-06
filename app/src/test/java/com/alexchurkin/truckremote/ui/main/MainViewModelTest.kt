@@ -303,10 +303,10 @@ class MainViewModelTest {
 
     @Test
     fun `panel layout is edited and reset`() {
-        viewModel.onActionLayoutChange(ActionLayout.Default.with(page = 1, slot = 7, action = ControllerAction.Engine))
+        viewModel.onActionLayoutChange(ActionLayout.Default.with(page = 4, slot = 7, action = ControllerAction.Engine))
 
-        assertEquals(ControllerAction.Engine, viewModel.state.value.actionLayout.pages[1][7])
-        assertNull(viewModel.state.value.actionLayout.pages[0][0])
+        assertEquals(ControllerAction.Engine, viewModel.state.value.actionLayout.pages[4][7])
+        assertNull(viewModel.state.value.actionLayout.pages[0][4])
         assertEquals(viewModel.state.value.actionLayout, settings.game(Game.Ets2).actionLayout)
 
         viewModel.onActionLayoutChange(ActionLayout.Default)
@@ -349,7 +349,7 @@ class MainViewModelTest {
 
         controller.truckState.value = TRUCK.copy(dashboard = DASHBOARD)
         assertEquals(Game.Ets2, settings.lastGame)
-        assertEquals(ControllerAction.Engine, viewModel.state.value.actionLayout.pages[0][0])
+        assertEquals(ControllerAction.EngineBrake, viewModel.state.value.actionLayout.pages[0][0])
     }
 
     @Test
