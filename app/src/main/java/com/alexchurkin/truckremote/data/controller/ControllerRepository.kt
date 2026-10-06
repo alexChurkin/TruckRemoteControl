@@ -19,8 +19,11 @@ interface ControllerRepository {
     // Truck state without force feedback; null when it is unknown (no connection)
     val truckState: StateFlow<ServerState?>
 
-    // Force feedback effects of the game, their durations in ms
-    val forceFeedback: Flow<Long>
+    // What the phone should play: events of the game and the vJoy force feedback (see FeedbackTracker)
+    val feedback: Flow<Feedback>
+
+    // The continuous vibration of the road
+    val road: StateFlow<RoadFeel>
 
     val linkQuality: StateFlow<LinkQuality?>
 
@@ -59,11 +62,16 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
     private val _truckState = MutableStateFlow<ServerState?>(null)
     override val truckState: StateFlow<ServerState?> = _truckState.asStateFlow()
 
-    private val _forceFeedback = MutableSharedFlow<Long>(
-        extraBufferCapacity = FFB_BUFFER,
+    private val feedbackTracker = FeedbackTracker()
+
+    private val _feedback = MutableSharedFlow<Feedback>(
+        extraBufferCapacity = FEEDBACK_BUFFER,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
-    override val forceFeedback: Flow<Long> = _forceFeedback.asSharedFlow()
+    override val feedback: Flow<Feedback> = _feedback.asSharedFlow()
+
+    private val _road = MutableStateFlow(RoadFeel.None)
+    override val road: StateFlow<RoadFeel> = _road.asStateFlow()
 
     private val _linkQuality = MutableStateFlow<LinkQuality?>(null)
     override val linkQuality: StateFlow<LinkQuality?> = _linkQuality.asStateFlow()
@@ -99,13 +107,16 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
             job = null
             _truckState.value = null
             _linkQuality.value = null
+            feedbackTracker.reset()
+            _road.value = RoadFeel.None
         }
     }
 
     // The server sends its state 50 times per second, the state flow keeps only changes
     override fun onServerState(state: ServerState) {
-        if (state.ffbDurationMs > 0) _forceFeedback.tryEmit(state.ffbDurationMs)
-        _truckState.value = state.copy(ffbDurationMs = 0, sequence = null, job = job)
+        feedbackTracker.onState(state).forEach(_feedback::tryEmit)
+        _road.value = feedbackTracker.road
+        _truckState.value = state.copy(ffbDurationMs = 0, sequence = null, job = job, haptics = null)
     }
 
     override fun onJob(job: Job?) {
@@ -117,7 +128,7 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
     }
 
     private companion object {
-        const val FFB_BUFFER = 4
+        const val FEEDBACK_BUFFER = 8
     }
 }
 

@@ -8,9 +8,14 @@ import com.alexchurkin.truckremote.data.controller.ControllerAction
 import com.alexchurkin.truckremote.data.controller.ControllerRepository
 import com.alexchurkin.truckremote.data.controller.ControllerState
 import com.alexchurkin.truckremote.data.controller.Dashboard
+import com.alexchurkin.truckremote.data.controller.Feedback
+import com.alexchurkin.truckremote.data.controller.HapticEvent
 import com.alexchurkin.truckremote.data.controller.HornState
 import com.alexchurkin.truckremote.data.controller.LinkQuality
+import com.alexchurkin.truckremote.data.controller.RoadFeel
+import com.alexchurkin.truckremote.data.controller.RoadSurface
 import com.alexchurkin.truckremote.data.controller.ServerState
+import com.alexchurkin.truckremote.data.device.HapticCapability
 import com.alexchurkin.truckremote.data.device.Haptics
 import com.alexchurkin.truckremote.data.device.WifiStatus
 import com.alexchurkin.truckremote.data.sensor.TiltReading
@@ -51,7 +56,7 @@ class MainViewModelTest {
     private val controller = FakeController()
     private val settings = AppSettings(FakeSharedPreferences())
     private val tilt = FakeTiltSensor()
-    private val vibrations = mutableListOf<Long>()
+    private val vibrations = mutableListOf<String>()
     private val events = mutableListOf<String>()
     private lateinit var viewModel: MainViewModel
 
@@ -69,8 +74,22 @@ class MainViewModelTest {
         settings = settings,
         tiltSensor = tilt,
         haptics = object : Haptics {
-            override fun vibrate(durationMs: Long) {
-                vibrations += durationMs
+            override val capability = HapticCapability.Amplitude
+
+            override fun play(event: HapticEvent, strength: Float, intensity: Float) {
+                vibrations += "$event $strength $intensity"
+            }
+
+            override fun pulse(durationMs: Long, intensity: Float) {
+                vibrations += "pulse $durationMs $intensity"
+            }
+
+            override fun setRoad(feel: RoadFeel, intensity: Float) {
+                vibrations += "road ${feel.level} ${feel.surface} $intensity"
+            }
+
+            override fun stop() {
+                vibrations += "stop"
             }
         },
         wifi = object : WifiStatus {
@@ -491,13 +510,52 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `force feedback vibrates only when it is turned on`() {
-        controller.forceFeedbackFlow.tryEmit(100)
-        assertEquals(emptyList<Long>(), vibrations)
+    fun `vibration is felt only while it is on and the truck is controlled`() {
+        settings.forceFeedback = false
+        viewModel.setForeground(true)
+        connect()
+        controller.feedbackFlow.tryEmit(Feedback.Pulse(100))
+        assertEquals(emptyList<String>(), vibrations.filterNot { it.startsWith("road") })
 
         settings.forceFeedback = true
-        controller.forceFeedbackFlow.tryEmit(120)
-        assertEquals(listOf(120L), vibrations)
+        settings.vibrationStrength = 50
+        controller.feedbackFlow.tryEmit(Feedback.Pulse(120))
+        controller.feedbackFlow.tryEmit(Feedback.Event(HapticEvent.Collision, 0.8f))
+        assertEquals(listOf("pulse 120 0.5", "Collision 0.8 0.5"), vibrations.filterNot { it.startsWith("road") })
+
+        viewModel.togglePause()
+        vibrations.clear()
+        controller.feedbackFlow.tryEmit(Feedback.Event(HapticEvent.Collision, 1f))
+        assertEquals(emptyList<String>(), vibrations.filterNot { it.startsWith("road") })
+    }
+
+    @Test
+    fun `dashboard clicks can be turned off`() {
+        settings.forceFeedback = true
+        settings.dashboardClicks = false
+        viewModel.setForeground(true)
+        connect()
+        controller.feedbackFlow.tryEmit(Feedback.Event(HapticEvent.Blinker, 1f))
+        controller.feedbackFlow.tryEmit(Feedback.Event(HapticEvent.TrailerCoupled, 1f))
+
+        assertEquals(listOf("TrailerCoupled 1.0 0.7"), vibrations.filterNot { it.startsWith("road") })
+    }
+
+    @Test
+    fun `road vibrates while the screen is shown and the truck is controlled`() {
+        settings.forceFeedback = true
+        connect()
+        controller.road.value = RoadFeel(0.5f, RoadSurface.Offroad)
+        assertEquals("road 0.0 Road 0.0", vibrations.last())
+
+        viewModel.setForeground(true)
+        assertEquals("road 0.5 Offroad 0.7", vibrations.last())
+
+        settings.roadVibration = false
+        assertEquals("road 0.0 Road 0.0", vibrations.last())
+        settings.roadVibration = true
+        viewModel.setForeground(false)
+        assertEquals("road 0.0 Road 0.0", vibrations.last())
     }
 
     @Test
@@ -525,11 +583,12 @@ class MainViewModelTest {
         var lastConnect: Pair<String?, String?>? = null
         var pausedByUserNow = false
         var disconnected = false
-        val forceFeedbackFlow = MutableSharedFlow<Long>(extraBufferCapacity = 4)
+        val feedbackFlow = MutableSharedFlow<Feedback>(extraBufferCapacity = 4)
 
         override val connectionState = MutableStateFlow(ConnectionState.Disconnected)
         override val truckState = MutableStateFlow<ServerState?>(null)
-        override val forceFeedback: Flow<Long> = forceFeedbackFlow
+        override val feedback: Flow<Feedback> = feedbackFlow
+        override val road = MutableStateFlow(RoadFeel.None)
         override val linkQuality = MutableStateFlow<LinkQuality?>(null)
         override var serverAddress: String? = null
 

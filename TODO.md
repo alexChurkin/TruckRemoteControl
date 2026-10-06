@@ -1,10 +1,9 @@
 # TODO
 
-- **Force feedback.** Now the phone only vibrates for the duration the server sends, and the server takes it from
-  the constant force effects of the game (`VJoyJoystick.OnForceFeedback`), ignoring the strength and the other
-  effects vJoy reports (spring, damper, bumps, collisions). Support the force feedback properly: pass the strength
-  and the kind of the effect to the phone and turn them into vibration of matching amplitude and pattern
-  (`VibrationEffect`), with a strength setting in the app.
+- **Tune the vibration in the game.** The thresholds of the server (`HapticDetector`: suspension speeds of a rough
+  road and of a bump, the damage and the acceleration of a collision) and the patterns of the app (`HapticPatterns`)
+  are chosen by reason, not measured: drive with the telemetry logged and adjust them. Android 16 envelope effects
+  (`Vibrator.areEnvelopeEffectsSupported`) could make the road vibration smoother on phones that have them.
 - **Update the guides.** The start guide of the app (`ui/guide`, `guide_*.xml`) and the README files of the app and
   the server describe the previous versions. Since then: analog pedals are the default and digital ones are an option,
   the gas is locked by a sideways swipe (from 5%), the press force is shown over the pedals, auto pause also works

@@ -16,12 +16,13 @@ import kotlin.math.roundToInt
  * joystick axes of the server). Actions: a click counter (mod 256) or 1 while a hold action is held.
  * Paused controller: type 0x03, goodbye: type 0x04.
  *
- * Server state, 22 bytes (37, 38 and 40 in the extended state): type 0x02 | sequence u32 | flags u16 |
+ * Server state, 22 bytes (37, 38, 40 and more in the extended state): type 0x02 | sequence u32 | flags u16 |
  * force feedback duration u16 (ms) | speed i16 (cm/s) | speed limit u16 (cm/s) | cruise speed u16 (cm/s) |
  * gear i8 | rpm u16 | max rpm u16 | fuel u8 (percent) | game u8 (1 - ETS2, 2 - ATS) |
  * flags2 u16 | retarder level u8 | retarder steps u8 | wear u8 (percent) | rest stop i16 (game minutes) |
  * route distance u32 (m) | route time u32 (s) | server revision u8 (a 22-byte state is revision 1, 37 bytes - 2) |
- * fuel range u16 (km, revision 4+).
+ * fuel range u16 (km, revision 4+) | haptics (revision 6+): road vibration u8 (0..255) | surface u8 (0 road, 1 offroad,
+ * 2 rumble strip) | event count u8 | (event id u8, counter u8, strength u8) * count, see [HapticEvent].
  * Flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer, 5 wipers, 6 beacon,
  * 7 analog pedals available, 8-9 lights mode, 10 telemetry available (the dashboard values are real).
  * Flags2: 0-6 warnings (see [TruckWarning], in its order), 7 differential lock, 8 lift axle, 9 engine brake.
@@ -32,7 +33,7 @@ object BinaryProtocol {
     const val VERSION = 2
 
     // The server revision this app makes use of entirely (an older server is worth updating)
-    const val REVISION = 5
+    const val REVISION = 6
 
     private const val STATE_TYPE: Byte = 0x02
     private const val PAUSED_TYPE: Byte = 0x03
@@ -55,6 +56,10 @@ object BinaryProtocol {
     private const val REVISION_OFFSET = 37
     private const val FUEL_RANGE_OFFSET = 38
     private const val FUEL_RANGE_END = 40
+    private const val HAPTICS_OFFSET = 40
+    private const val HAPTICS_HEADER_SIZE = 3
+    private const val HAPTIC_EVENT_SIZE = 3
+    private const val REVISION_HAPTICS = 6
     private const val REVISION_BASIC = 1
     private const val REVISION_EXTENDED = 2
     private const val DIFFERENTIAL_LOCK_BIT = 7
@@ -150,6 +155,29 @@ object BinaryProtocol {
             retarderLevel = if (extended) all.get(RETARDER_LEVEL_OFFSET).toInt() and BYTE_MASK else 0,
             retarderSteps = if (extended) all.get(RETARDER_STEPS_OFFSET).toInt() and BYTE_MASK else 0,
             serverRevision = revision(all, length),
+            haptics = if (revision(all, length) >= REVISION_HAPTICS) decodeHaptics(all, length) else null,
+        )
+    }
+
+    // Unknown events (of a newer server) are skipped
+    private fun decodeHaptics(all: ByteBuffer, length: Int): HapticsState? {
+        if (length < HAPTICS_OFFSET + HAPTICS_HEADER_SIZE) return null
+        fun byte(offset: Int) = all.get(offset).toInt() and BYTE_MASK
+        val count = byte(HAPTICS_OFFSET + 2)
+        if (length < HAPTICS_OFFSET + HAPTICS_HEADER_SIZE + count * HAPTIC_EVENT_SIZE) return null
+        val counters = mutableMapOf<HapticEvent, Int>()
+        val strengths = mutableMapOf<HapticEvent, Float>()
+        repeat(count) { index ->
+            val offset = HAPTICS_OFFSET + HAPTICS_HEADER_SIZE + index * HAPTIC_EVENT_SIZE
+            val event = HapticEvent.byId(byte(offset)) ?: return@repeat
+            counters[event] = byte(offset + 1)
+            strengths[event] = byte(offset + 2) / BYTE_MASK.toFloat()
+        }
+        return HapticsState(
+            road = byte(HAPTICS_OFFSET) / BYTE_MASK.toFloat(),
+            surface = RoadSurface.entries.getOrElse(byte(HAPTICS_OFFSET + 1)) { RoadSurface.Road },
+            counters = counters,
+            strengths = strengths,
         )
     }
 

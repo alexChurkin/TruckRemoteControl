@@ -210,6 +210,34 @@ class BinaryProtocolTest {
     }
 
     @Test
+    fun `haptics come with revision 6, unknown events are skipped`() {
+        val state = ByteBuffer.allocate(49).order(ByteOrder.LITTLE_ENDIAN)
+            .put(0x02)
+            .putInt(1)
+            .putShort((1 shl 10).toShort())
+            .put(ByteArray(30))
+            .put(6)
+            .putShort(0)
+            .put(255.toByte())
+            .put(2)
+            .put(2)
+            .put(1).put(7).put(128.toByte())
+            .put(99).put(1).put(1)
+            .array()
+
+        val haptics = BinaryProtocol.decodeServerState(state, 49)!!.haptics!!
+
+        assertEquals(1f, haptics.road)
+        assertEquals(RoadSurface.RumbleStrip, haptics.surface)
+        assertEquals(mapOf(HapticEvent.Collision to 7), haptics.counters)
+        assertEquals(128 / 255f, haptics.strengths.getValue(HapticEvent.Collision))
+        // A cut message and an older server have no haptics
+        assertNull(BinaryProtocol.decodeServerState(state, 46)!!.haptics)
+        state[37] = 5
+        assertNull(BinaryProtocol.decodeServerState(state, 49)!!.haptics)
+    }
+
+    @Test
     fun `server revision comes from the state size or its byte`() {
         val state = ByteArray(38).also {
             it[0] = 0x02

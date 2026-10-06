@@ -90,6 +90,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alexchurkin.truckremote.BuildConfig
 import com.alexchurkin.truckremote.R
+import com.alexchurkin.truckremote.data.device.HapticCapability
 import com.alexchurkin.truckremote.data.settings.AppLanguage
 import com.alexchurkin.truckremote.data.settings.AppSettings
 import com.alexchurkin.truckremote.data.settings.Game
@@ -137,6 +138,10 @@ data class SettingsActions(
     val onUseSpecifiedServerChange: (Boolean) -> Unit = {},
     val onServerIpChange: (String) -> Unit = {},
     val onForceFeedbackChange: (Boolean) -> Unit = {},
+    val onVibrationStrengthChange: (Int) -> Unit = {},
+    val onRoadVibrationChange: (Boolean) -> Unit = {},
+    val onDashboardClicksChange: (Boolean) -> Unit = {},
+    val onTestVibration: () -> Unit = {},
     val onPneumaticHornChange: (Boolean) -> Unit = {},
     val onShowDashboardChange: (Boolean) -> Unit = {},
     val onAutoPauseChange: (Boolean) -> Unit = {},
@@ -185,6 +190,10 @@ fun SettingsScreen(
             onUseSpecifiedServerChange = viewModel::setUseSpecifiedServer,
             onServerIpChange = viewModel::setServerIp,
             onForceFeedbackChange = viewModel::setForceFeedback,
+            onVibrationStrengthChange = viewModel::setVibrationStrength,
+            onRoadVibrationChange = viewModel::setRoadVibration,
+            onDashboardClicksChange = viewModel::setDashboardClicks,
+            onTestVibration = viewModel::testVibration,
             onPneumaticHornChange = viewModel::setPneumaticHorn,
             onShowDashboardChange = viewModel::setShowDashboard,
             onAutoPauseChange = viewModel::setAutoPause,
@@ -400,14 +409,7 @@ private fun SettingsList(
                 onCheckedChange = actions.onAutoPauseChange,
             )
         }
-        centeredItem {
-            SwitchItem(
-                title = stringResource(R.string.ffb_text),
-                summary = stringResource(R.string.ffb_summary),
-                checked = state.forceFeedback,
-                onCheckedChange = actions.onForceFeedbackChange,
-            )
-        }
+        vibrationItems(state, actions)
         centeredItem {
             SwitchItem(
                 title = stringResource(R.string.use_pneumatic_signal_text),
@@ -589,6 +591,59 @@ private fun LazyListScope.steeringSection(
     }
     smoothnessItem(state, actions)
     calibrationItems(state, actions)
+}
+
+// The vibration of the phone: what the driver feels in the game
+private fun LazyListScope.vibrationItems(state: SettingsUiState, actions: SettingsActions) {
+    centeredItem {
+        SwitchItem(
+            title = stringResource(R.string.ffb_text),
+            summary = stringResource(R.string.ffb_summary),
+            checked = state.forceFeedback,
+            onCheckedChange = actions.onForceFeedbackChange,
+        )
+    }
+    if (!state.forceFeedback || state.vibrationCapability == HapticCapability.None) return
+    centeredItem {
+        val range = AppSettings.VIBRATION_STRENGTH_RANGE
+        SliderItem(
+            title = stringResource(R.string.vibration_strength_title),
+            summary = { stringResource(R.string.vibration_strength_summary, it.roundToInt()) },
+            value = state.vibrationStrength.toFloat(),
+            valueRange = range.first.toFloat()..range.last.toFloat(),
+            steps = (range.last - range.first) / VIBRATION_STRENGTH_STEP - 1,
+            onValueChange = { actions.onVibrationStrengthChange(it.roundToInt()) },
+        )
+    }
+    centeredItem {
+        SwitchItem(
+            title = stringResource(R.string.road_vibration_title),
+            summary = stringResource(R.string.road_vibration_summary),
+            checked = state.roadVibration,
+            onCheckedChange = actions.onRoadVibrationChange,
+        )
+    }
+    centeredItem {
+        SwitchItem(
+            title = stringResource(R.string.dashboard_clicks_title),
+            summary = stringResource(R.string.dashboard_clicks_summary),
+            checked = state.dashboardClicks,
+            onCheckedChange = actions.onDashboardClicksChange,
+        )
+    }
+    centeredItem {
+        ClickableItem(
+            title = stringResource(R.string.vibration_test_title),
+            summary = stringResource(
+                when (state.vibrationCapability) {
+                    HapticCapability.Primitives -> R.string.vibration_capability_primitives
+                    HapticCapability.Amplitude -> R.string.vibration_capability_amplitude
+                    else -> R.string.vibration_capability_on_off
+                },
+            ),
+            onClick = actions.onTestVibration,
+        )
+    }
 }
 
 // Filtering of the tilt: a quicker reaction or no jitter at all
@@ -1118,6 +1173,7 @@ private const val SMOOTH_MIN = 7
 private const val MAX_WHEEL_ROTATION = 120f
 private const val MAX_ANGLE_STEP = 5
 private const val EXPONENT_STEP = 0.1f
+private const val VIBRATION_STRENGTH_STEP = 10
 private val MAX_CONTENT_WIDTH = 640.dp
 
 // Ids from app/config/libraries
@@ -1133,6 +1189,10 @@ private fun SettingsPreview() {
                 useSpecifiedServer = true,
                 serverIp = "192.168.1.10",
                 forceFeedback = true,
+                vibrationStrength = 70,
+                roadVibration = true,
+                dashboardClicks = true,
+                vibrationCapability = HapticCapability.Primitives,
                 pneumaticHorn = false,
                 showDashboard = true,
                 autoPause = true,

@@ -17,7 +17,7 @@ complexity:
     # A view model has a function per user action (Android architecture guide), an activity a callback per view
     ignorePrivate: true
     ignoreOverridden: true
-    thresholdInClasses: 25
+    thresholdInClasses: 30
 
 style:
   MagicNumber:

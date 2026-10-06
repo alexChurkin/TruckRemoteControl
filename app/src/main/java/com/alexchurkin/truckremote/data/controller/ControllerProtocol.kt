@@ -117,6 +117,8 @@ data class ServerState(
     val job: Job? = null,
     // What the server sends (see BinaryProtocol.REVISION): 0 - the text protocol
     val serverRevision: Int = 0,
+    // What the driver feels (revision 6+)
+    val haptics: HapticsState? = null,
 )
 
 data class Job(

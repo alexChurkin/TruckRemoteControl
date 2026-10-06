@@ -35,7 +35,16 @@
     <string name="def_server_ip_summary">Не вказана. Адресу показано у вікні Truck Remote Server</string>
 
     <string name="ffb_text">Вібрація</string>
-    <string name="ffb_summary">Телефон вібрує під час зіткнень у грі (зворотний зв’язок)</string>
+    <string name="ffb_summary">Телефон вібрує разом із вантажівкою: зіткнення, вибоїни й дорога, причіп, двигун і прилади. З плагіном телеметрії на сервері, без нього — за зворотним зв’язком гри</string>
+    <string name="vibration_strength_title">Сила вібрації</string>
+    <string name="road_vibration_title">Дорожнє покриття</string>
+    <string name="road_vibration_summary">Нерівна дорога, бездоріжжя і шумові смуги</string>
+    <string name="dashboard_clicks_title">Клацання приладів</string>
+    <string name="dashboard_clicks_summary">Реле поворотників, перемикання передач і ступені ретардера</string>
+    <string name="vibration_test_title">Перевірити вібрацію</string>
+    <string name="vibration_capability_primitives">У телефоні точний вібромотор: ефекти чіткі й різні</string>
+    <string name="vibration_capability_amplitude">Телефон вібрує з різною силою</string>
+    <string name="vibration_capability_on_off">Телефон уміє лише вмикати й вимикати вібрацію: ефекти простіші</string>
     <string name="use_pneumatic_signal_text">Пневмосигнал</string>
     <string name="use_pneumatic_signal_summary">Кнопка сигналу вмикає пневматичний сигнал замість звичайного</string>
     <string name="steering_dead_zone_title">Мертва зона керма</string>
@@ -59,7 +68,7 @@
     <string name="how_to_run_text">Спершу завантажте Truck Remote Server і запустіть його на комп’ютері, де встановлено гру. Зробити це можна за посиланням: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">Сервер показує свою адресу та QR-код (відскануйте його в налаштуваннях застосунку, якщо телефон не знаходить сервер). Потім запустіть гру й увімкніть керування за допомогою клавіатури та vJoy. Чутливість керма налаштовується в налаштуваннях застосунку.</string>
     <string name="how_to_run_text_3">Важливо використовувати лише спрощену автоматичну КПП! Також рекомендується збільшити \"Чутливість керма\" і \"Нелінійність керування\", як на цьому знімку екрана:</string>
-    <string name="how_to_run_text_4" formatted="false">Якщо використовуєте вібрацію, рекомендується вимкнути в грі всі види зворотного зв’язку, крім зіткнень (50%), ударів підвіски (~15%) і поверхні під колесами (~10%).</string>
+    <string name="how_to_run_text_4" formatted="false">Вібрація найдокладніша з плагіном телеметрії, який сервер встановлює в гру. Без нього телефон вібрує за зворотним зв’язком гри: тоді рекомендується вимкнути в грі всі види зворотного зв’язку, крім зіткнень (50%), ударів підвіски (~15%) і поверхні під колесами (~10%).</string>
     <string name="how_to_run_text_5">Переконайтеся, що всі клавіші в налаштуваннях керування стандартні, почніть гру й перейдіть до наступного кроку інструкції.</string>
 
     <string name="how_to_use">• Як користуватися?</string>

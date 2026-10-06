@@ -47,8 +47,23 @@ class AppSettings(private val prefs: SharedPreferences) {
         set(value) = prefs.edit { putString(KEY_LAST_SERVER_IP, value) }
 
     var forceFeedback: Boolean
-        get() = prefs.getBoolean(KEY_FORCE_FEEDBACK, false)
+        get() = prefs.getBoolean(KEY_FORCE_FEEDBACK, true)
         set(value) = prefs.edit { putBoolean(KEY_FORCE_FEEDBACK, value) }
+
+    // Strength of the vibration, percent (see VIBRATION_STRENGTH_RANGE)
+    var vibrationStrength: Int
+        get() = prefs.getInt(KEY_VIBRATION_STRENGTH, DEFAULT_VIBRATION_STRENGTH).coerceIn(VIBRATION_STRENGTH_RANGE)
+        set(value) = prefs.edit { putInt(KEY_VIBRATION_STRENGTH, value.coerceIn(VIBRATION_STRENGTH_RANGE)) }
+
+    // The continuous vibration of the road surface
+    var roadVibration: Boolean
+        get() = prefs.getBoolean(KEY_ROAD_VIBRATION, true)
+        set(value) = prefs.edit { putBoolean(KEY_ROAD_VIBRATION, value) }
+
+    // Small clicks of the blinkers, the gearbox and the retarder
+    var dashboardClicks: Boolean
+        get() = prefs.getBoolean(KEY_DASHBOARD_CLICKS, true)
+        set(value) = prefs.edit { putBoolean(KEY_DASHBOARD_CLICKS, value) }
 
     var pneumaticHorn: Boolean
         get() = prefs.getBoolean(KEY_PNEUMATIC_HORN, false)
@@ -135,6 +150,8 @@ class AppSettings(private val prefs: SharedPreferences) {
 
     companion object {
         const val DEFAULT_PORT = 18250
+        val VIBRATION_STRENGTH_RANGE = 10..100
+        const val DEFAULT_VIBRATION_STRENGTH = 70
         val PORT_RANGE = 10000..65535
         val STEERING_DEAD_ZONE_RANGE = 0..15
         val STEERING_MAX_ANGLE_RANGE = 20..90
@@ -151,6 +168,9 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_USE_SPECIFIED_SERVER = "defaultServer"
         private const val KEY_SPECIFIED_IP = "serverIP"
         private const val KEY_FORCE_FEEDBACK = "useFFB"
+        private const val KEY_VIBRATION_STRENGTH = "vibrationStrength"
+        private const val KEY_ROAD_VIBRATION = "roadVibration"
+        private const val KEY_DASHBOARD_CLICKS = "dashboardClicks"
         private const val KEY_LAST_SERVER_IP = "lastServerIp"
         private const val KEY_PNEUMATIC_HORN = "pneumaticSignal"
         private const val KEY_SHOW_DASHBOARD = "showDashboard"

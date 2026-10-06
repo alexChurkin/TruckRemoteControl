@@ -14,8 +14,10 @@ import com.alexchurkin.truckremote.data.controller.ConnectionState
 import com.alexchurkin.truckremote.data.controller.ControllerAction
 import com.alexchurkin.truckremote.data.controller.ControllerRepository
 import com.alexchurkin.truckremote.data.controller.ControllerState
+import com.alexchurkin.truckremote.data.controller.Feedback
 import com.alexchurkin.truckremote.data.controller.HornState
 import com.alexchurkin.truckremote.data.controller.LinkQuality
+import com.alexchurkin.truckremote.data.controller.RoadFeel
 import com.alexchurkin.truckremote.data.controller.ServerState
 import com.alexchurkin.truckremote.data.controller.isConnected
 import com.alexchurkin.truckremote.data.device.Haptics
@@ -143,7 +145,7 @@ class MainViewModel(
 
     // Settings are cached in it: tilt readings come very often
     private val steering = SteeringProcessor()
-    private var forceFeedback = false
+    private val vibration = MutableStateFlow(VibrationSettings())
     private var analogPedalsMode = false
     private var pneumaticHorn = false
 
@@ -164,7 +166,19 @@ class MainViewModel(
         controller.truckState.onEach(::onTruckState).launchIn(viewModelScope)
         controller.linkQuality.onEach { quality -> _state.update { it.copy(linkQuality = quality) } }
             .launchIn(viewModelScope)
-        controller.forceFeedback.onEach { if (forceFeedback) haptics.vibrate(it) }.launchIn(viewModelScope)
+        controller.feedback.onEach(::onFeedback).launchIn(viewModelScope)
+        // The road vibrates while the screen is shown and the truck is controlled
+        combine(
+            controller.road,
+            foreground,
+            state.map { it.isConnected && !it.isPaused }.distinctUntilChanged(),
+            vibration,
+        ) { road, shown, controlled, current ->
+            if (shown && controlled && current.roadOn) road to current.intensity else null
+        }
+            .distinctUntilChanged()
+            .onEach { if (it == null) haptics.setRoad(RoadFeel.None, 0f) else haptics.setRoad(it.first, it.second) }
+            .launchIn(viewModelScope)
 
         // The tilt sensor works only while the screen is shown and the server is connected
         combine(foreground, state.map { it.isConnected }.distinctUntilChanged()) { shown, connected ->
@@ -178,7 +192,21 @@ class MainViewModel(
     }
 
     override fun onCleared() {
+        haptics.stop()
         controller.disconnect()
+    }
+
+    // Events are felt only while the truck is controlled, the small clicks can be turned off
+    private fun onFeedback(feedback: Feedback) {
+        val current = vibration.value
+        if (!current.enabled || !foreground.value || !isControllable) return
+        when (feedback) {
+            is Feedback.Pulse -> haptics.pulse(feedback.durationMs, current.intensity)
+
+            is Feedback.Event -> if (current.clicks || !feedback.event.isClick) {
+                haptics.play(feedback.event, feedback.strength, current.intensity)
+            }
+        }
     }
 
     /* Screen lifecycle */
@@ -529,7 +557,12 @@ class MainViewModel(
         steering.curve = SteeringCurve(game.steeringDeadZone, game.steeringMaxAngle, game.steeringExponent)
         steering.calibrationOffset = settings.calibrationOffset
         steering.smoothness = game.steeringSmoothness
-        forceFeedback = settings.forceFeedback
+        vibration.value = VibrationSettings(
+            enabled = settings.forceFeedback,
+            intensity = settings.vibrationStrength / PERCENT,
+            road = settings.roadVibration,
+            clicks = settings.dashboardClicks,
+        )
         pneumaticHorn = settings.pneumaticHorn
         autoPauseEnabled = settings.autoPause
         _state.update {
@@ -550,8 +583,19 @@ class MainViewModel(
         _effects.trySend(effect)
     }
 
+    private data class VibrationSettings(
+        val enabled: Boolean = false,
+        val intensity: Float = 0f,
+        val road: Boolean = false,
+        val clicks: Boolean = false,
+    ) {
+        val roadOn: Boolean
+            get() = enabled && road
+    }
+
     companion object {
         private const val SENSOR_TIMEOUT_MS = 1000L
+        private const val PERCENT = 100f
 
         // The truck state with the cruise speed comes several times per second
         private const val CRUISE_CHECK_MS = 1500L

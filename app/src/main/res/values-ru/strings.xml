@@ -35,7 +35,16 @@
     <string name="def_server_ip_summary">Не указан. Адрес показан в окне Truck Remote Server</string>
 
     <string name="ffb_text">Вибрация</string>
-    <string name="ffb_summary">Телефон вибрирует при столкновениях в игре (обратная связь)</string>
+    <string name="ffb_summary">Телефон вибрирует вместе с грузовиком: столкновения, кочки и дорога, прицеп, двигатель и приборы. С плагином телеметрии на сервере, без него — по обратной связи игры</string>
+    <string name="vibration_strength_title">Сила вибрации</string>
+    <string name="road_vibration_title">Дорожное покрытие</string>
+    <string name="road_vibration_summary">Неровная дорога, бездорожье и шумовые полосы</string>
+    <string name="dashboard_clicks_title">Щелчки приборов</string>
+    <string name="dashboard_clicks_summary">Реле поворотников, переключение передач и ступени ретардера</string>
+    <string name="vibration_test_title">Проверить вибрацию</string>
+    <string name="vibration_capability_primitives">В телефоне точный вибромотор: эффекты чёткие и разные</string>
+    <string name="vibration_capability_amplitude">Телефон вибрирует с разной силой</string>
+    <string name="vibration_capability_on_off">Телефон умеет только включать и выключать вибрацию: эффекты попроще</string>
     <string name="use_pneumatic_signal_text">Пневмосигнал</string>
     <string name="use_pneumatic_signal_summary">Кнопка сигнала включает пневматический сигнал вместо обычного</string>
     <string name="steering_dead_zone_title">Мёртвая зона руля</string>
@@ -59,7 +68,7 @@
     <string name="how_to_run_text">Первым шагом необходимо загрузить Truck Remote Server и запустить его на компьютере, где установлена игра. Вы можете сделать это по следующей ссылке: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">Сервер показывает свой адрес и QR-код (отсканируйте его в настройках приложения, если телефон не находит сервер). Затем запустите игру и включите управление с помощью клавиатуры и vJoy. Чувствительность руля настраивается в настройках приложения.</string>
     <string name="how_to_run_text_3">Важно использовать только упрощенную автоматическую КПП! Рекомендуется также увеличить \"Чувствительность руля\" и \"Нелинейность управления\", как на этом скриншоте:</string>
-    <string name="how_to_run_text_4" formatted="false">При использовании обратной связи рекомендуется отключить в игре все виды обратной связи, кроме столкновения (50%), ударов подвески (~15%) и поверхности под колёсами (~10%).</string>
+    <string name="how_to_run_text_4" formatted="false">Вибрация подробнее всего с плагином телеметрии, который сервер устанавливает в игру. Без него телефон вибрирует по обратной связи игры: тогда рекомендуется отключить в игре все виды обратной связи, кроме столкновения (50%), ударов подвески (~15%) и поверхности под колёсами (~10%).</string>
     <string name="how_to_run_text_5">Убедитесь, что все клавиши в настройках управления установлены стандартно, начните игру и проследуйте к следующему шагу инструкции.</string>
 
     <string name="how_to_use">• Как использовать?</string>

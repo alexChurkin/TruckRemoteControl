@@ -39,7 +39,17 @@
     <string name="def_server_ip_summary">Not set. The address is shown in the Truck Remote Server window</string>
 
     <string name="ffb_text">Vibration</string>
-    <string name="ffb_summary">The phone vibrates on collisions in the game (force feedback)</string>
+    <string name="ffb_summary">The phone vibrates with the truck: collisions, bumps and the road, the trailer, the engine and the dashboard. With the telemetry plugin of the server, otherwise on the force feedback of the game</string>
+    <string name="vibration_strength_title">Vibration strength</string>
+    <string name="vibration_strength_summary" translatable="false">%1$d%%</string>
+    <string name="road_vibration_title">Road surface</string>
+    <string name="road_vibration_summary">Rough roads, offroad and rumble strips</string>
+    <string name="dashboard_clicks_title">Dashboard clicks</string>
+    <string name="dashboard_clicks_summary">The blinker relay, gear shifts and retarder steps</string>
+    <string name="vibration_test_title">Try the vibration</string>
+    <string name="vibration_capability_primitives">Your phone has a precise haptic motor: the effects are crisp and of different kinds</string>
+    <string name="vibration_capability_amplitude">Your phone vibrates with a varying strength</string>
+    <string name="vibration_capability_on_off">Your phone only turns the vibration on and off: the effects are simpler</string>
     <string name="use_pneumatic_signal_text">Air horn</string>
     <string name="use_pneumatic_signal_summary">The horn button sounds the air horn instead of the regular one</string>
     <string name="steering_dead_zone_title">Steering dead zone</string>
@@ -63,7 +73,7 @@
     <string name="how_to_run_text">First, download Truck Remote Server and run it on the computer with the game. You can do it by this link: https://github.com/alexChurkin/TruckRemoteServer .</string>
     <string name="how_to_run_text_2">The server shows its address and QR code (scan it in the app settings if the phone doesn\'t find the server). Then start the game and select Keyboard + vJoy in Controls. The steering sensitivity is set in the app settings.</string>
     <string name="how_to_run_text_3">It\'s important to use only \"Simple Automatic\" transmission and set \"Steering sensitivity\" and \"Steering non-linearity\" as follows:</string>
-    <string name="how_to_run_text_4" formatted="false">When using force feedback, it is also recommended to disable all types of feedback in the game, except for the Collisions (50%), Bumps (~15%) and Terrain (~10%).</string>
+    <string name="how_to_run_text_4" formatted="false">The vibration is the most detailed with the telemetry plugin, which the server installs into the game. Without it the phone vibrates on the force feedback of the game: then it is recommended to disable all types of feedback in the game, except for the Collisions (50%), Bumps (~15%) and Terrain (~10%).</string>
     <string name="how_to_run_text_5">Make sure all keys in the control settings are set as standard. Enter the game and proceed to the next step.</string>
 
     <string name="how_to_use">• How to use?</string>
