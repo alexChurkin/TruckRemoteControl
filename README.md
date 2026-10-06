@@ -16,8 +16,9 @@ and sets up everything the phone needs. Then:
    several pages); long press a button to put another action in its place
 5) The phone vibrates with the truck (bumps, rough roads, collisions, the engine, the blinkers, gear shifts) with
    the telemetry plugin the server installs; the strength and the kinds of vibration are set in Settings → Screen and buttons
-6) A tablet or a second phone can show the instruments of the truck: open **Dashboard mode** in the menu on it
-   (it only shows, so it works beside the phone that drives, and it can be opened at the start)
+6) A tablet or a second phone can show the instruments of the truck: choose **Dashboard** when the app asks how
+   the device will be used at its first start (or later in Settings → Mode). It only shows, so it works beside
+   the phone that drives
 
 The guide in the app menu describes the rest.
 
