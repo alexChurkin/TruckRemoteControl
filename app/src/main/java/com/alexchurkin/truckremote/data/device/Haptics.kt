@@ -1,5 +1,6 @@
 package com.alexchurkin.truckremote.data.device
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioAttributes
 import android.os.Build
@@ -143,7 +144,9 @@ class AndroidHaptics(context: Context) : Haptics {
         playWaveform(HapticPatterns.road(road), repeat = true)
     }
 
-    // Returns the duration
+    // Returns the duration. HapticPrimitive.id are the values of the Composition.PRIMITIVE_* constants (lint can't
+    // tell it); the constants themselves can't be used: some of them are only in newer Android versions
+    @SuppressLint("WrongConstant")
     private fun playPrimitives(steps: List<HapticStep>): Long {
         val vibrator = vibrator ?: return 0
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return playWaveform(steps, repeat = false)
@@ -234,7 +237,8 @@ class AndroidHaptics(context: Context) : Haptics {
         return candidate
     }
 
-    // Once at the start: the copies of the small arrays for the varargs don't matter
+    // Once at the start: the copies of the small arrays for the varargs don't matter (ids: see playPrimitives)
+    @SuppressLint("WrongConstant")
     @Suppress("SpreadOperator")
     private fun supportedPrimitives(): Map<HapticPrimitive, Long> {
         val vibrator = vibrator
@@ -253,6 +257,7 @@ class AndroidHaptics(context: Context) : Haptics {
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
+    @SuppressLint("WrongConstant")
     @Suppress("SpreadOperator")
     private fun primitiveDurations(vibrator: Vibrator, primitives: List<HapticPrimitive>): IntArray =
         vibrator.getPrimitiveDurations(*primitives.map { it.id }.toIntArray())
