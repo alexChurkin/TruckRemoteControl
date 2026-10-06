@@ -78,7 +78,7 @@
     <string name="how_to_use">• How to use?</string>
     <string name="how_to_use_text_1">Make sure that your phone or tablet is connected to the same network as the computer and start the app: it finds the server by itself, or you can set its IP address in the settings. Tilt the phone to steer: the sensitivity, the dead zone and the curve are set in Settings → Steering with a live preview.</string>
     <string name="how_to_use_text_2">Pedals and cruise control</string>
-    <string name="how_to_use_text_3" formatted="false">Touch a pedal and drag up to press it harder, down to release it: the press force is shown over the pedals (keys can be used instead, see the settings). While holding the gas from 5%, swipe sideways to keep its level; touch a pedal to release it. Turn cruise control on by double-tapping the gas pedal, turn it off by another double tap or touching the brake.</string>
+    <string name="how_to_use_text_3" formatted="false">Touch a pedal and drag up to press it harder, down to release it: the press force is shown over the pedals (keys can be used instead, see the settings). While holding the gas from 5%, swipe left to keep its level; touch a pedal to release it. Turn cruise control on by double-tapping the gas pedal, turn it off by another double tap or touching the brake.</string>
     <string name="how_to_use_actions">Quick actions</string>
     <string name="how_to_use_actions_text">The button at the bottom center opens the quick actions panel in place of the middle controls: the engine, the lights, the retarder, cameras, the map and much more, the most needed ones on the first page (swipe for the next ones). Long press a button to put another action in its place. Every press is answered: a button that springs reached the game, a button that shakes didn\'t.</string>
     <string name="how_to_use_pause">Auto pause</string>
@@ -137,7 +137,7 @@
     <string name="pedal_digital_title">Digital pedals</string>
     <string name="pedal_digital_summary">A pedal is fully pressed while you touch it (arrow keys in the game)</string>
     <string name="throttle_lock_title">Throttle lock</string>
-    <string name="throttle_lock_summary">While holding the gas, swipe sideways to keep its level. Touch the gas or the brake to release it</string>
+    <string name="throttle_lock_summary">While holding the gas, swipe left to keep its level. Touch the gas or the brake to release it</string>
     <string name="analog_pedals_unavailable">Analog pedals need Y and Z axes enabled in vJoy on the PC. Keys are used for now</string>
     <string name="pedal_level" translatable="false">%1$d%%</string>
     <string name="gas_lock_icon" translatable="false">🔒</string>

@@ -51,17 +51,29 @@ class PedalHandlerTest {
     }
 
     @Test
-    fun `sideways swipe locks the level until the next touch`() {
+    fun `a swipe to the right doesn't lock`() {
         pedal.configure(analog = true, lockAllowed = true)
         pedal.onDown(500f, 500f, viewHeight = 1500)
         pedal.onMove(500f, 440f)
-        pedal.onMove(560f, 440f)
+        pedal.onMove(900f, 440f)
+
+        assertFalse(pedal.isLocked)
+        pedal.onUp()
+        assertEquals(0f, pedal.level, DELTA)
+    }
+
+    @Test
+    fun `a swipe to the left locks the level until the next touch`() {
+        pedal.configure(analog = true, lockAllowed = true)
+        pedal.onDown(500f, 500f, viewHeight = 1500)
+        pedal.onMove(500f, 440f)
+        pedal.onMove(440f, 440f)
         assertFalse("Small move mustn't lock", pedal.isLocked)
 
-        pedal.onMove(620f, 440f)
+        pedal.onMove(380f, 440f)
         assertTrue(pedal.isLocked)
         assertEquals(0.1f, pedal.level, DELTA)
-        pedal.onMove(620f, 0f)
+        pedal.onMove(380f, 0f)
         assertEquals("Level is fixed while locked", 0.1f, pedal.level, DELTA)
         pedal.onUp()
         assertEquals("Level is kept after release", 0.1f, pedal.level, DELTA)
@@ -78,11 +90,11 @@ class PedalHandlerTest {
         pedal.onDown(500f, 500f, viewHeight = 1500)
         // 4%
         pedal.onMove(500f, 476f)
-        pedal.onMove(700f, 476f)
+        pedal.onMove(300f, 476f)
         assertFalse(pedal.isLocked)
 
         // 5%
-        pedal.onMove(700f, 470f)
+        pedal.onMove(300f, 470f)
         assertTrue(pedal.isLocked)
         assertEquals(0.05f, pedal.level, DELTA)
     }
@@ -91,7 +103,7 @@ class PedalHandlerTest {
     fun `digital lock keeps full press`() {
         pedal.configure(analog = false, lockAllowed = true)
         pedal.onDown(0f, 0f, viewHeight = 1500)
-        pedal.onMove(150f, 0f)
+        pedal.onMove(-150f, 0f)
         pedal.onUp()
         assertTrue(pedal.isActive)
         assertEquals(1f, pedal.level)
@@ -101,12 +113,12 @@ class PedalHandlerTest {
     fun `unlock keeps the touch, release resets everything`() {
         pedal.configure(analog = true, lockAllowed = true)
         pedal.onDown(0f, 500f, viewHeight = 1500)
-        pedal.onMove(200f, 500f)
+        pedal.onMove(-200f, 500f)
         pedal.unlock()
         assertTrue(pedal.isActive)
         assertFalse(pedal.isLocked)
 
-        pedal.onMove(400f, 500f)
+        pedal.onMove(-400f, 500f)
         pedal.release()
         assertFalse(pedal.isActive)
         assertFalse(pedal.isLocked)
@@ -117,7 +129,7 @@ class PedalHandlerTest {
     fun `lock can be disabled`() {
         pedal.configure(analog = true, lockAllowed = false)
         pedal.onDown(0f, 500f, viewHeight = 1500)
-        pedal.onMove(500f, 500f)
+        pedal.onMove(-500f, 500f)
         assertFalse(pedal.isLocked)
     }
 

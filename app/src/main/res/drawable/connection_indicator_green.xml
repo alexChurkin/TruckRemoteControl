@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape android:shape="oval" android:innerRadius="8dp"
+<shape android:shape="oval" android:innerRadius="6dp"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@color/indicatorGreen"/>
-    <size android:width="16dp" android:height="16dp"/>
+    <size android:width="12dp" android:height="12dp"/>
 </shape>

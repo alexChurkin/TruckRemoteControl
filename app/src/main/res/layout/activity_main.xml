@@ -26,12 +26,16 @@
             android:clickable="true"
             android:focusable="true">
 
+            <!-- Its top is at the height of the top of the instruments (their arc is 14dp under the edge) -->
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/connectionIndicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@null"
-                android:padding="12dp"
+                android:paddingStart="14dp"
+                android:paddingTop="14dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="14dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/connection_indicator_red" />

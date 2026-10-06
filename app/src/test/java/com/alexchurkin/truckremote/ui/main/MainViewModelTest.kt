@@ -314,7 +314,7 @@ class MainViewModelTest {
         connect(TRUCK.copy(analogPedalsAvailable = true))
         viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
-        viewModel.onPedalMove(Pedal.Gas, LOCK_DISTANCE + 1, 200f)
+        viewModel.onPedalMove(Pedal.Gas, -LOCK_DISTANCE - 1, 200f)
         viewModel.onPedalUp(Pedal.Gas)
 
         assertFalse(viewModel.state.value.pedals.gasLocked)
@@ -328,7 +328,7 @@ class MainViewModelTest {
         connect(TRUCK.copy(analogPedalsAvailable = true))
         viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
-        viewModel.onPedalMove(Pedal.Gas, LOCK_DISTANCE + 1, 200f)
+        viewModel.onPedalMove(Pedal.Gas, -LOCK_DISTANCE - 1, 200f)
         viewModel.onPedalUp(Pedal.Gas)
         assertTrue(viewModel.state.value.pedals.gasLocked)
         assertEquals(0.5f, controller.state.gasLevel, 0.001f)

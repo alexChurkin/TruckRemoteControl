@@ -1,12 +1,10 @@
 package com.alexchurkin.truckremote.domain
 
-import kotlin.math.abs
-
 /**
  * Touch logic of a pedal.
  * Digital mode: pedal is fully pressed while it is touched.
  * Analog mode: touch starts with zero level, dragging up presses the pedal harder, dragging down releases it.
- * Lock (gas only): horizontal swipe while holding keeps the current level after release;
+ * Lock (gas only): a swipe to the left while holding keeps the current level after release;
  * the next touch of the pedal unlocks it and continues from the locked level.
  */
 class PedalHandler(private val listener: Listener, var lockDistancePx: Float) {
@@ -74,7 +72,9 @@ class PedalHandler(private val listener: Listener, var lockDistancePx: Float) {
             }
         }
 
-        if (lockAllowed && currentLevel >= MIN_LOCK_LEVEL && abs(x - downX) > lockDistancePx) {
+        // Only to the left (to the middle of the screen): a thumb that presses the pedal slides to the right
+        // by itself, and the gas was locked by accident
+        if (lockAllowed && currentLevel >= MIN_LOCK_LEVEL && downX - x > lockDistancePx) {
             isLocked = true
             listener.onPedalLockChanged(this, true)
         }
