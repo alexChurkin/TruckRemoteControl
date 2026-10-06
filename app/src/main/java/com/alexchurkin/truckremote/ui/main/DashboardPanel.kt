@@ -168,9 +168,9 @@ fun CruiseSlot(
 /**
  * Instruments at the top of the controller screen, to take little height: the engine rpm as a flat arc on top,
  * and in one row under it the speed limit sign, the speed (always in the middle and of the same width, whatever its
- * number of digits) with its unit and the gear. Only what matters is shown: the speed limit when there is one, the route while
- * driving by the navigation, the [job] (cargo, destination and the time left), warnings when there are problems;
- * the lines that come and go change the height smoothly.
+ * number of digits) with its unit and the gear. Only what matters is shown: the speed limit when there is one,
+ * the route while driving by the navigation, the [job] (cargo, destination and the time left), warnings when there
+ * are problems; the lines that come and go change the height smoothly.
  */
 @Composable
 fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modifier: Modifier = Modifier) {
@@ -406,11 +406,11 @@ private fun RpmArc(rpm: Int, rpmMax: Int, width: Dp, modifier: Modifier = Modifi
     Canvas(modifier = modifier.size(width, sag + thickness)) {
         val stroke = thickness.toPx()
         // The circle through the ends and the top of the arc (the middle of the stroke)
-        val chord = size.width - stroke
+        val halfChord = (size.width - stroke) / 2
         val height = sag.toPx()
-        val radius = (chord * chord / 4 + height * height) / (2 * height)
+        val radius = (halfChord * halfChord + height * height) / (2 * height)
         val center = Offset(size.width / 2, stroke / 2 + radius)
-        val halfSweep = Math.toDegrees(asin(chord / 2 / radius).toDouble()).toFloat()
+        val halfSweep = Math.toDegrees(asin(halfChord / radius).toDouble()).toFloat()
         val startAngle = ARC_TOP_ANGLE - halfSweep
         val sweep = halfSweep * 2
         val box = Size(radius * 2, radius * 2)
