@@ -36,8 +36,8 @@ android {
         applicationId = "com.alexchurkin.truckremote"
         minSdk = 24
         targetSdk = 37
-        versionCode = 34
-        versionName = "1.22"
+        versionCode = 35
+        versionName = "1.3"
 
         vectorDrawables.useSupportLibrary = true
     }
