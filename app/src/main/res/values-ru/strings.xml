@@ -92,6 +92,24 @@
     <string name="action_hud">Интерфейс</string>
     <string name="action_radio_next">Следующая станция</string>
     <string name="action_quick_save">Быстрое сохранение</string>
+    <string name="action_mirrors">Зеркала</string>
+    <string name="action_camera_top">Камера сверху</string>
+    <string name="action_camera_roof">Камера с крыши</string>
+    <string name="action_camera_lean_out">Камера из окна</string>
+    <string name="action_camera_bumper">Камера у бампера</string>
+    <string name="action_camera_wheel">Камера у колеса</string>
+    <string name="action_camera_drive_by">Камера пролёта</string>
+    <string name="action_look_left">Взгляд влево</string>
+    <string name="action_look_right">Взгляд вправо</string>
+    <string name="action_gear_up">Передача +</string>
+    <string name="action_gear_down">Передача −</string>
+    <string name="action_radio_previous">Предыдущая станция</string>
+    <string name="action_radio">Радио</string>
+    <string name="action_advisor_zoom">Масштаб навигатора</string>
+    <string name="action_advisor_mode">Режим навигатора</string>
+    <string name="action_road_assistance">Помощь на дороге</string>
+    <string name="action_screenshot">Снимок экрана</string>
+    <string name="action_menu">Меню</string>
     <string name="actions_page">Страница %1$d из %2$d</string>
 
     <string name="pedals">Педали</string>
@@ -165,7 +183,7 @@
     <string name="steering_smoothness_responsive">%1$d: отзывчиво, самый быстрый отклик</string>
     <string name="steering_smoothness_balanced">%1$d: сбалансированно</string>
     <string name="steering_smoothness_smooth">%1$d: мягко, без малейшей дрожи</string>
-    <string name="actions_edit_hint">Нажмите на место, чтобы поставить туда другое действие</string>
+    <string name="actions_edit_hint">Удерживайте кнопку и тащите, чтобы переместить; нажмите на место, чтобы поставить туда другое действие</string>
     <string name="actions_pick_hint">Выберите действие. Если оно уже есть на панели, кнопки поменяются местами</string>
     <string name="actions_pick_cancel">Отмена</string>
     <string name="actions_edit_reset">Сбросить</string>

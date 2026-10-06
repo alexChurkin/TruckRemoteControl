@@ -32,7 +32,7 @@ object BinaryProtocol {
     const val VERSION = 2
 
     // The server revision this app makes use of entirely (an older server is worth updating)
-    const val REVISION = 4
+    const val REVISION = 5
 
     private const val STATE_TYPE: Byte = 0x02
     private const val PAUSED_TYPE: Byte = 0x03

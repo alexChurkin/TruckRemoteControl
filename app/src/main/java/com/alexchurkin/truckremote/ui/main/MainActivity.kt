@@ -216,8 +216,7 @@ class MainActivity :
                 badges = actionBadges,
                 onClick = viewModel::onAction,
                 onHold = viewModel::onActionHold,
-                onAssign = viewModel::onActionAssign,
-                onReset = viewModel::onActionLayoutReset,
+                onLayoutChange = viewModel::onActionLayoutChange,
             )
         }
     }

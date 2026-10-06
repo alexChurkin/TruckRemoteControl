@@ -92,6 +92,24 @@
     <string name="action_hud">Інтерфейс</string>
     <string name="action_radio_next">Наступна станція</string>
     <string name="action_quick_save">Швидке збереження</string>
+    <string name="action_mirrors">Дзеркала</string>
+    <string name="action_camera_top">Камера згори</string>
+    <string name="action_camera_roof">Камера з даху</string>
+    <string name="action_camera_lean_out">Камера з вікна</string>
+    <string name="action_camera_bumper">Камера біля бампера</string>
+    <string name="action_camera_wheel">Камера біля колеса</string>
+    <string name="action_camera_drive_by">Камера прольоту</string>
+    <string name="action_look_left">Погляд ліворуч</string>
+    <string name="action_look_right">Погляд праворуч</string>
+    <string name="action_gear_up">Передача +</string>
+    <string name="action_gear_down">Передача −</string>
+    <string name="action_radio_previous">Попередня станція</string>
+    <string name="action_radio">Радіо</string>
+    <string name="action_advisor_zoom">Масштаб навігатора</string>
+    <string name="action_advisor_mode">Режим навігатора</string>
+    <string name="action_road_assistance">Допомога на дорозі</string>
+    <string name="action_screenshot">Знімок екрана</string>
+    <string name="action_menu">Меню</string>
     <string name="actions_page">Сторінка %1$d з %2$d</string>
 
     <string name="pedals">Педалі</string>
@@ -165,7 +183,7 @@
     <string name="steering_smoothness_responsive">%1$d: чутливо, найшвидший відгук</string>
     <string name="steering_smoothness_balanced">%1$d: збалансовано</string>
     <string name="steering_smoothness_smooth">%1$d: м\'яко, без найменшого тремтіння</string>
-    <string name="actions_edit_hint">Натисніть на місце, щоб поставити туди іншу дію</string>
+    <string name="actions_edit_hint">Утримуйте кнопку й тягніть, щоб перемістити; натисніть на місце, щоб поставити туди іншу дію</string>
     <string name="actions_pick_hint">Виберіть дію. Якщо вона вже є на панелі, кнопки поміняються місцями</string>
     <string name="actions_pick_cancel">Скасувати</string>
     <string name="actions_edit_reset">Скинути</string>

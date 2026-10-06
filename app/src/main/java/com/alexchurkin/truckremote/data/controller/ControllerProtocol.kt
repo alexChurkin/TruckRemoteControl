@@ -31,6 +31,26 @@ enum class ControllerAction(val code: Int, val isHold: Boolean = false) {
     Hud(21),
     RadioNext(22),
     QuickSave(23),
+
+    // Since server revision 5
+    Mirrors(24),
+    CameraTop(25),
+    CameraRoof(26),
+    CameraLeanOut(27),
+    CameraBumper(28),
+    CameraWheel(29),
+    CameraDriveBy(30),
+    LookLeft(31, isHold = true),
+    LookRight(32, isHold = true),
+    GearUp(33),
+    GearDown(34),
+    RadioPrevious(35),
+    Radio(36),
+    AdvisorZoom(37),
+    AdvisorMode(38),
+    RoadAssistance(39),
+    Screenshot(40),
+    Menu(41),
 }
 
 enum class HornState(val code: Int) {

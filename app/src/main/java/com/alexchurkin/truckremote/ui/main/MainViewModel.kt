@@ -353,13 +353,10 @@ class MainViewModel(
         return true
     }
 
-    // Puts the action into a place of the quick actions panel (see ActionLayout.with)
-    fun onActionAssign(page: Int, slot: Int, action: ControllerAction?) {
-        gameSettings().actionLayout = state.value.actionLayout.with(page, slot, action)
-    }
-
-    fun onActionLayoutReset() {
-        gameSettings().actionLayout = ActionLayout.Default
+    // The quick actions panel was edited: an action was put into a place or dragged to another one,
+    // or the layout was reset
+    fun onActionLayoutChange(layout: ActionLayout) {
+        gameSettings().actionLayout = layout
     }
 
     private fun gameSettings() = settings.game(settings.lastGame)

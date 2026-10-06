@@ -96,6 +96,24 @@
     <string name="action_hud">HUD</string>
     <string name="action_radio_next">Next station</string>
     <string name="action_quick_save">Quick save</string>
+    <string name="action_mirrors">Mirrors</string>
+    <string name="action_camera_top">Top camera</string>
+    <string name="action_camera_roof">Roof camera</string>
+    <string name="action_camera_lean_out">Window camera</string>
+    <string name="action_camera_bumper">Bumper camera</string>
+    <string name="action_camera_wheel">Wheel camera</string>
+    <string name="action_camera_drive_by">Drive-by camera</string>
+    <string name="action_look_left">Look left</string>
+    <string name="action_look_right">Look right</string>
+    <string name="action_gear_up">Gear up</string>
+    <string name="action_gear_down">Gear down</string>
+    <string name="action_radio_previous">Previous station</string>
+    <string name="action_radio">Radio</string>
+    <string name="action_advisor_zoom">Advisor zoom</string>
+    <string name="action_advisor_mode">Advisor mode</string>
+    <string name="action_road_assistance">Road assistance</string>
+    <string name="action_screenshot">Screenshot</string>
+    <string name="action_menu">Menu</string>
     <string name="actions_page">Page %1$d of %2$d</string>
 
     <string name="pedals">Pedals</string>
@@ -171,7 +189,7 @@
     <string name="steering_smoothness_responsive">%1$d: responsive, the quickest reaction</string>
     <string name="steering_smoothness_balanced">%1$d: balanced</string>
     <string name="steering_smoothness_smooth">%1$d: smooth, no jitter at all</string>
-    <string name="actions_edit_hint">Tap a place to put another action there</string>
+    <string name="actions_edit_hint">Hold a button and drag it to move it, tap a place to put another action there</string>
     <string name="actions_pick_hint">Choose the action. If it is already on the panel, the buttons swap places</string>
     <string name="actions_pick_cancel">Cancel</string>
     <string name="actions_edit_reset">Reset</string>

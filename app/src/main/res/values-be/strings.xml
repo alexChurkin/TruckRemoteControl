@@ -92,6 +92,24 @@
     <string name="action_hud">Інтэрфейс</string>
     <string name="action_radio_next">Наступная станцыя</string>
     <string name="action_quick_save">Хуткае захаванне</string>
+    <string name="action_mirrors">Люстэркі</string>
+    <string name="action_camera_top">Камера зверху</string>
+    <string name="action_camera_roof">Камера з даху</string>
+    <string name="action_camera_lean_out">Камера з акна</string>
+    <string name="action_camera_bumper">Камера ля бампера</string>
+    <string name="action_camera_wheel">Камера ля кола</string>
+    <string name="action_camera_drive_by">Камера пралёту</string>
+    <string name="action_look_left">Погляд улева</string>
+    <string name="action_look_right">Погляд управа</string>
+    <string name="action_gear_up">Перадача +</string>
+    <string name="action_gear_down">Перадача −</string>
+    <string name="action_radio_previous">Папярэдняя станцыя</string>
+    <string name="action_radio">Радыё</string>
+    <string name="action_advisor_zoom">Маштаб навігатара</string>
+    <string name="action_advisor_mode">Рэжым навігатара</string>
+    <string name="action_road_assistance">Дапамога на дарозе</string>
+    <string name="action_screenshot">Здымак экрана</string>
+    <string name="action_menu">Меню</string>
     <string name="actions_page">Старонка %1$d з %2$d</string>
 
     <string name="pedals">Педалі</string>
@@ -165,7 +183,7 @@
     <string name="steering_smoothness_responsive">%1$d: спагадна, самы хуткі водгук</string>
     <string name="steering_smoothness_balanced">%1$d: збалансавана</string>
     <string name="steering_smoothness_smooth">%1$d: мякка, без найменшага дрыжання</string>
-    <string name="actions_edit_hint">Націсніце на месца, каб паставіць туды іншае дзеянне</string>
+    <string name="actions_edit_hint">Утрымлівайце кнопку і цягніце, каб перамясціць; націсніце на месца, каб паставіць туды іншае дзеянне</string>
     <string name="actions_pick_hint">Выберыце дзеянне. Калі яно ўжо ёсць на панэлі, кнопкі памяняюцца месцамі</string>
     <string name="actions_pick_cancel">Скасаваць</string>
     <string name="actions_edit_reset">Скінуць</string>

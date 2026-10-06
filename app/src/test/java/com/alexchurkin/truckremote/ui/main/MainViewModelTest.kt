@@ -303,13 +303,13 @@ class MainViewModelTest {
 
     @Test
     fun `panel layout is edited and reset`() {
-        viewModel.onActionAssign(page = 1, slot = 7, action = ControllerAction.Engine)
+        viewModel.onActionLayoutChange(ActionLayout.Default.with(page = 1, slot = 7, action = ControllerAction.Engine))
 
         assertEquals(ControllerAction.Engine, viewModel.state.value.actionLayout.pages[1][7])
         assertNull(viewModel.state.value.actionLayout.pages[0][0])
         assertEquals(viewModel.state.value.actionLayout, settings.game(Game.Ets2).actionLayout)
 
-        viewModel.onActionLayoutReset()
+        viewModel.onActionLayoutChange(ActionLayout.Default)
         assertEquals(ActionLayout.Default, viewModel.state.value.actionLayout)
     }
 

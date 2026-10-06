@@ -2,7 +2,7 @@
   "uniqueId": "io.tabler:tabler-icons",
   "artifactVersion": "3.48.0",
   "name": "Tabler Icons",
-  "description": "Icons of the quick actions panel: engine, caravan, hand-click, bulb, wiper, urgent, car-4wd, arrow-bar-to-up, square-rounded-plus, square-rounded-minus, chevrons-down, parking, circle-plus, circle-minus, player-play, steering-wheel, truck, camera-rotate, map-2, gauge, layout-dashboard, radio, device-floppy. Converted to Android vector drawables without changes of the shapes.",
+  "description": "Icons of the quick actions panel: engine, caravan, hand-click, bulb, wiper, urgent, car-4wd, arrow-bar-to-up, square-rounded-plus, square-rounded-minus, chevrons-down, parking, circle-plus, circle-minus, player-play, steering-wheel, truck, camera-rotate, map-2, gauge, layout-dashboard, radio, device-floppy, flip-horizontal, drone, home-up, window, car, wheel, movie, chevrons-left, chevrons-right, square-arrow-up, square-arrow-down, player-track-prev, music, zoom-out, route, tool, camera, menu-2. Converted to Android vector drawables without changes of the shapes.",
   "website": "https://tabler.io/icons",
   "developers": [
     {

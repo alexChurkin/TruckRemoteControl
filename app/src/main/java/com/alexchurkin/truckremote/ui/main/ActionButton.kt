@@ -43,6 +43,40 @@ val ActionButtons: Map<ControllerAction, ActionButton> = listOf(
     ActionButton(ControllerAction.Hud, R.string.action_hud, R.drawable.ic_action_hud),
     ActionButton(ControllerAction.RadioNext, R.string.action_radio_next, R.drawable.ic_action_radio_next),
     ActionButton(ControllerAction.QuickSave, R.string.action_quick_save, R.drawable.ic_action_quick_save),
+    ActionButton(ControllerAction.Mirrors, R.string.action_mirrors, R.drawable.ic_action_mirrors),
+    ActionButton(ControllerAction.CameraTop, R.string.action_camera_top, R.drawable.ic_action_camera_top),
+    ActionButton(ControllerAction.CameraRoof, R.string.action_camera_roof, R.drawable.ic_action_camera_roof),
+    ActionButton(
+        ControllerAction.CameraLeanOut,
+        R.string.action_camera_lean_out,
+        R.drawable.ic_action_camera_lean_out,
+    ),
+    ActionButton(ControllerAction.CameraBumper, R.string.action_camera_bumper, R.drawable.ic_action_camera_bumper),
+    ActionButton(ControllerAction.CameraWheel, R.string.action_camera_wheel, R.drawable.ic_action_camera_wheel),
+    ActionButton(
+        ControllerAction.CameraDriveBy,
+        R.string.action_camera_drive_by,
+        R.drawable.ic_action_camera_drive_by,
+    ),
+    ActionButton(ControllerAction.LookLeft, R.string.action_look_left, R.drawable.ic_action_look_left),
+    ActionButton(ControllerAction.LookRight, R.string.action_look_right, R.drawable.ic_action_look_right),
+    ActionButton(ControllerAction.GearUp, R.string.action_gear_up, R.drawable.ic_action_gear_up),
+    ActionButton(ControllerAction.GearDown, R.string.action_gear_down, R.drawable.ic_action_gear_down),
+    ActionButton(
+        ControllerAction.RadioPrevious,
+        R.string.action_radio_previous,
+        R.drawable.ic_action_radio_previous,
+    ),
+    ActionButton(ControllerAction.Radio, R.string.action_radio, R.drawable.ic_action_radio),
+    ActionButton(ControllerAction.AdvisorZoom, R.string.action_advisor_zoom, R.drawable.ic_action_advisor_zoom),
+    ActionButton(ControllerAction.AdvisorMode, R.string.action_advisor_mode, R.drawable.ic_action_advisor_mode),
+    ActionButton(
+        ControllerAction.RoadAssistance,
+        R.string.action_road_assistance,
+        R.drawable.ic_action_road_assistance,
+    ),
+    ActionButton(ControllerAction.Screenshot, R.string.action_screenshot, R.drawable.ic_action_screenshot),
+    ActionButton(ControllerAction.Menu, R.string.action_menu, R.drawable.ic_action_menu),
 ).associateBy { it.action }
 
 fun ControllerAction.button(): ActionButton = ActionButtons.getValue(this)

@@ -3,11 +3,14 @@ package com.alexchurkin.truckremote.ui.main
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -17,26 +20,37 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -47,28 +61,113 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.controller.ControllerAction
 import com.alexchurkin.truckremote.data.settings.ActionLayout
+import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val COLUMNS = 4
+private const val ROWS = ActionLayout.SLOTS / COLUMNS
 
 // A bit wider than high: the panel has the place of the middle controls it hides, up to the blinkers
 private val ItemWidth = 90.dp
 private val ItemHeight = 76.dp
 private val ItemMargin = 3.dp
-private val PageWidth = (ItemWidth + ItemMargin * 2) * COLUMNS
+private val CellWidth = ItemWidth + ItemMargin * 2
+private val CellHeight = ItemHeight + ItemMargin * 2
+private val PageWidth = CellWidth * COLUMNS
+private val GridHeight = CellHeight * ROWS
 private val ItemShape = RoundedCornerShape(10.dp)
+
+// A dragged button held at a side of the panel for this long turns the page
+private val PageEdge = 28.dp
+private const val PAGE_TURN_DELAY_MS = 600L
+private const val DRAGGED_SCALE = 1.08f
+
+// A button lifted by a long press: it follows the finger, also over the pages, and the others make room for it
+private class Drag(val action: ControllerAction, val from: Int, val grab: Offset, pointer: Offset) {
+    var pointer by mutableStateOf(pointer)
+}
+
+// Moving the buttons by dragging: what is lifted, where it would be dropped and the layout shown meanwhile.
+// Places are counted through all pages (see ActionLayout.moved), [cell] is the size of a place in pixels
+private class Reorder(private val pagerState: PagerState, val cell: Size) {
+    var drag by mutableStateOf<Drag?>(null)
+        private set
+
+    // The layout as it was dropped, shown until the saved one comes: the buttons don't jump back for a moment
+    var dropped by mutableStateOf<ActionLayout?>(null)
+
+    private val grid = Size(cell.width * COLUMNS, cell.height * ROWS)
+
+    // The place under a point of the shown page
+    fun placeAt(point: Offset): Int {
+        val column = (point.x / cell.width).toInt().coerceIn(0, COLUMNS - 1)
+        val row = (point.y / cell.height).toInt().coerceIn(0, ROWS - 1)
+        return pagerState.currentPage * ActionLayout.SLOTS + row * COLUMNS + column
+    }
+
+    // While a button is dragged, the layout is shown as if it were dropped where it is
+    fun shown(layout: ActionLayout): ActionLayout =
+        drag?.let { layout.moved(it.from, placeAt(it.pointer)) } ?: dropped ?: layout
+
+    // Returns false if the place is empty: nothing is lifted
+    fun lift(layout: ActionLayout, point: Offset): Boolean {
+        val from = placeAt(point)
+        val slot = from % ActionLayout.SLOTS
+        val corner = Offset(slot % COLUMNS * cell.width, slot / COLUMNS * cell.height)
+        drag = layout.pages.flatten()[from]?.let { Drag(it, from, grab = point - corner, pointer = point) }
+        return drag != null
+    }
+
+    fun drop(layout: ActionLayout, onLayoutChange: (ActionLayout) -> Unit) {
+        val lifted = drag ?: return
+        val moved = layout.moved(lifted.from, placeAt(lifted.pointer))
+        if (moved != layout) {
+            dropped = moved
+            onLayoutChange(moved)
+        }
+    }
+
+    fun end() {
+        drag = null
+    }
+
+    // Where the pages turn while the dragged button is held at a side of the panel: -1, 1 or 0
+    fun turn(edge: Float): Int {
+        val x = drag?.pointer?.x ?: return 0
+        return if (x < edge) {
+            -1
+        } else if (x > grid.width - edge) {
+            1
+        } else {
+            0
+        }
+    }
+
+    // The top left corner of the dragged button, kept inside the pages
+    fun corner(lifted: Drag): IntOffset {
+        val corner = lifted.pointer - lifted.grab
+        return IntOffset(
+            corner.x.coerceIn(0f, grid.width - cell.width).roundToInt(),
+            corner.y.coerceIn(0f, grid.height - cell.height).roundToInt(),
+        )
+    }
+}
 
 /**
  * The quick actions panel: pages of buttons (swiped sideways) with page indicators under them.
  * [onClick] and [onHold] return true if the action was sent (the button gives haptic feedback then),
  * [activeActions] are on in the game (e.g. the engine is running), [badges] are small texts on buttons (e.g. "2/4").
- * A long press on a button (or on an empty place) starts editing the [layout]: a tapped place shows
- * all actions to choose from, [onAssign] puts the chosen one there, [onReset] brings the default layout back.
+ * A long press on a button (or on an empty place) starts editing the [layout]. A button held so is lifted and can be
+ * dragged to another place as an icon of a launcher: the other buttons make room for it and a side of the panel
+ * turns the page. A tapped place shows all actions to choose from. Every change goes to [onLayoutChange].
  */
 @Composable
 fun ActionsPanel(
@@ -77,16 +176,19 @@ fun ActionsPanel(
     badges: Map<ControllerAction, String>,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
-    onAssign: (page: Int, slot: Int, action: ControllerAction?) -> Unit,
-    onReset: () -> Unit,
+    onLayoutChange: (ActionLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val view = LocalView.current
     val pagerState = rememberPagerState { ActionLayout.PAGES }
     val scope = rememberCoroutineScope()
     var editing by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf<Place?>(null) }
     val target = picking
+    val stopPicking = {
+        picking = null
+        if (target != null) scope.launch { pagerState.scrollToPage(target.page) }
+    }
+
     Column(
         modifier = modifier
             .background(colorResource(R.color.actionsPanel), RoundedCornerShape(14.dp))
@@ -104,30 +206,34 @@ fun ActionsPanel(
                 modifier = Modifier.width(PageWidth).padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }
-        HorizontalPager(state = pagerState, modifier = Modifier.width(PageWidth)) { page ->
-            if (target != null) {
-                // All actions in the default order, the empty place among them
+        if (target != null) {
+            // All actions in the default order, the empty place among them
+            HorizontalPager(state = pagerState, modifier = Modifier.size(PageWidth, GridHeight)) { page ->
                 PickerGrid(
                     choices = ActionLayout.Default.pages[page],
                     current = layout.pages[target.page][target.slot],
                     onPick = { action ->
-                        onAssign(target.page, target.slot, action)
-                        picking = null
-                        scope.launch { pagerState.scrollToPage(target.page) }
+                        onLayoutChange(layout.with(target.page, target.slot, action))
+                        stopPicking()
                     },
                 )
-            } else {
+            }
+        } else {
+            ReorderablePages(
+                pagerState = pagerState,
+                layout = layout,
+                editing = editing,
+                onEditingStart = { editing = true },
+                onLayoutChange = onLayoutChange,
+            ) { page, slots, dragged ->
                 ActionGrid(
-                    slots = layout.pages[page],
+                    slots = slots,
+                    dragged = dragged,
                     activeActions = activeActions,
                     badges = badges,
                     editing = editing,
                     onClick = onClick,
                     onHold = onHold,
-                    onLongPress = {
-                        editing = true
-                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                    },
                     onEdit = { slot -> picking = Place(page, slot) },
                 )
             }
@@ -139,71 +245,206 @@ fun ActionsPanel(
                 onSelect = { scope.launch { pagerState.animateScrollToPage(it) } },
                 modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
             )
-            if (editing) {
-                if (target != null) {
-                    PanelTextButton(
-                        text = stringResource(R.string.actions_pick_cancel),
-                        onClick = {
-                            picking = null
-                            scope.launch { pagerState.scrollToPage(target.page) }
-                        },
-                        modifier = Modifier.align(Alignment.CenterStart),
-                    )
-                } else {
-                    PanelTextButton(
-                        text = stringResource(R.string.actions_edit_reset),
-                        onClick = onReset,
-                        modifier = Modifier.align(Alignment.CenterStart),
-                    )
-                    PanelTextButton(
-                        text = stringResource(R.string.actions_edit_done),
-                        onClick = { editing = false },
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                    )
-                }
+            if (editing && target != null) {
+                PanelTextButton(
+                    text = stringResource(R.string.actions_pick_cancel),
+                    onClick = { stopPicking() },
+                    modifier = Modifier.align(Alignment.CenterStart),
+                )
+            } else if (editing) {
+                PanelTextButton(
+                    text = stringResource(R.string.actions_edit_reset),
+                    onClick = { onLayoutChange(ActionLayout.Default) },
+                    modifier = Modifier.align(Alignment.CenterStart),
+                )
+                PanelTextButton(
+                    text = stringResource(R.string.actions_edit_done),
+                    onClick = { editing = false },
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                )
             }
+        }
+    }
+}
+
+/**
+ * The pages of the panel whose buttons can be moved by dragging. [page] draws the buttons of a page: it gets
+ * the number of the page, what to show in its places (while a button is dragged, the others have already made room
+ * for it) and the dragged action, whose place is drawn empty: the button itself is drawn here, under the finger.
+ * A long press calls [onEditingStart].
+ */
+@Composable
+private fun ReorderablePages(
+    pagerState: PagerState,
+    layout: ActionLayout,
+    editing: Boolean,
+    onEditingStart: () -> Unit,
+    onLayoutChange: (ActionLayout) -> Unit,
+    modifier: Modifier = Modifier,
+    page: @Composable (page: Int, slots: List<ControllerAction?>, dragged: ControllerAction?) -> Unit,
+) {
+    val view = LocalView.current
+    val density = LocalDensity.current
+    val reorder = remember(pagerState, density) {
+        Reorder(pagerState, with(density) { Size(CellWidth.toPx(), CellHeight.toPx()) })
+    }
+    LaunchedEffect(layout) { reorder.dropped = null }
+
+    // A dragged button held at a side of the panel turns the pages one by one
+    val turn = reorder.turn(with(density) { PageEdge.toPx() })
+    LaunchedEffect(turn) {
+        var next = pagerState.currentPage + turn
+        while (turn != 0 && next in 0 until ActionLayout.PAGES) {
+            delay(PAGE_TURN_DELAY_MS)
+            pagerState.animateScrollToPage(next)
+            next += turn
+        }
+    }
+
+    // The gesture outlives the recompositions it causes, so it reads the current values through these
+    val currentLayout by rememberUpdatedState(reorder.dropped ?: layout)
+    val currentEditing by rememberUpdatedState(editing)
+    val currentOnEditingStart by rememberUpdatedState(onEditingStart)
+    val currentOnLayoutChange by rememberUpdatedState(onLayoutChange)
+
+    val dragged = reorder.drag
+    Box(
+        modifier = modifier
+            .size(PageWidth, GridHeight)
+            .pointerInput(reorder) {
+                detectLiftAndDrag(
+                    // A hold action is held while it's pressed, so a long press doesn't lift it
+                    canLift = { point ->
+                        currentEditing || currentLayout.pages.flatten()[reorder.placeAt(point)]?.isHold != true
+                    },
+                    onLift = { point ->
+                        currentOnEditingStart()
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                        reorder.lift(currentLayout, point)
+                    },
+                    onDrag = { point -> reorder.drag?.pointer = point },
+                    onDrop = { reorder.drop(currentLayout, currentOnLayoutChange) },
+                    onEnd = { reorder.end() },
+                )
+            },
+    ) {
+        val shown = reorder.shown(layout)
+        HorizontalPager(state = pagerState, userScrollEnabled = dragged == null) { number ->
+            page(number, shown.pages[number], dragged?.action)
+        }
+        if (dragged != null) {
+            // Over the pages: it stays under the finger while a page is turned
+            ActionTile(
+                button = dragged.action.button(),
+                background = colorResource(R.color.actionItemPressed),
+                modifier = Modifier
+                    .offset { reorder.corner(dragged) }
+                    .padding(ItemMargin)
+                    .scale(DRAGGED_SCALE)
+                    .clip(ItemShape),
+            )
         }
     }
 }
 
 private data class Place(val page: Int, val slot: Int)
 
+/**
+ * A long press lifts what is under the finger, then the finger drags it: as icons are moved in a launcher.
+ * [canLift] tells if the gesture may start at the point at all, [onLift] is called after the long press and returns
+ * false if nothing is lifted there; then [onDrag] gets the points of the finger, [onDrop] is called when it's
+ * released, and [onEnd] in any case (also if the gesture was broken).
+ * A swipe isn't a long press, so the pager under the finger still turns its pages.
+ */
+private suspend fun PointerInputScope.detectLiftAndDrag(
+    canLift: (Offset) -> Boolean,
+    onLift: (Offset) -> Boolean,
+    onDrag: (Offset) -> Unit,
+    onDrop: () -> Unit,
+    onEnd: () -> Unit,
+) = awaitEachGesture {
+    val down = awaitFirstDown(requireUnconsumed = false)
+    if (!canLift(down.position)) return@awaitEachGesture
+    val pressed = awaitLongPressOrCancellation(down.id) ?: return@awaitEachGesture
+    if (!onLift(pressed.position)) return@awaitEachGesture
+    try {
+        // Before the pager and the buttons see the moves and the release (they would scroll and click)
+        var change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id }
+        while (change != null && change.pressed) {
+            change.consume()
+            onDrag(change.position)
+            change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id }
+        }
+        if (change != null) {
+            change.consume()
+            onDrop()
+        }
+    } finally {
+        onEnd()
+    }
+}
+
+// The buttons of a page at their places. A button that gets another place (the layout was changed, or the others
+// make room for the dragged one) slides there; the place of the [dragged] button is only outlined
 @Composable
 private fun ActionGrid(
     slots: List<ControllerAction?>,
+    dragged: ControllerAction?,
     activeActions: Set<ControllerAction>,
     badges: Map<ControllerAction, String>,
     editing: Boolean,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
-    onLongPress: () -> Unit,
     onEdit: (slot: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier) {
-        slots.withIndex().chunked(COLUMNS).forEach { row ->
-            Row {
-                row.forEach { (slot, action) ->
-                    val itemModifier = Modifier.padding(ItemMargin)
-                    when {
-                        editing -> EditItem(action, onEdit = { onEdit(slot) }, modifier = itemModifier)
+    val cell = with(LocalDensity.current) { IntSize(CellWidth.roundToPx(), CellHeight.roundToPx()) }
+    Box(modifier.size(PageWidth, GridHeight)) {
+        slots.forEachIndexed { slot, action ->
+            val place = IntOffset(slot % COLUMNS * cell.width, slot / COLUMNS * cell.height)
+            val itemModifier = Modifier.padding(ItemMargin)
+            if (action == null) {
+                // An empty place is invisible until the layout is edited
+                if (editing) {
+                    Box(
+                        Modifier.offset {
+                            place
+                        },
+                    ) { EditItem(null, onEdit = { onEdit(slot) }, modifier = itemModifier) }
+                }
+            } else {
+                key(action) {
+                    val offset by animateIntOffsetAsState(place, label = "place")
+                    Box(Modifier.offset { offset }) {
+                        when {
+                            action == dragged -> DropPlace(itemModifier)
 
-                        action == null -> EmptyItem(onLongPress, itemModifier)
+                            editing -> EditItem(action, onEdit = { onEdit(slot) }, modifier = itemModifier)
 
-                        else -> ActionItem(
-                            button = action.button(),
-                            active = action in activeActions,
-                            badge = badges[action],
-                            onClick = onClick,
-                            onHold = onHold,
-                            onLongPress = onLongPress,
-                            modifier = itemModifier,
-                        )
+                            else -> ActionItem(
+                                button = action.button(),
+                                active = action in activeActions,
+                                badge = badges[action],
+                                onClick = onClick,
+                                onHold = onHold,
+                                modifier = itemModifier,
+                            )
+                        }
                     }
                 }
             }
         }
     }
+}
+
+// Where the dragged button will be dropped
+@Composable
+private fun DropPlace(modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .size(ItemWidth, ItemHeight)
+            .border(1.dp, Color.White.copy(alpha = 0.6f), ItemShape),
+    )
 }
 
 @Composable
@@ -249,7 +490,6 @@ private fun ActionItem(
     badge: String?,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
-    onLongPress: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val view = LocalView.current
@@ -265,7 +505,7 @@ private fun ActionItem(
     )
     val action = button.action
     val input = if (action.isHold) {
-        // Held while pressed (so a long press doesn't edit it); a swipe to another page releases the action
+        // Held while pressed (so a long press doesn't lift it); a swipe to another page releases the action
         Modifier.pointerInput(action) {
             detectTapGestures(
                 onPress = {
@@ -280,12 +520,8 @@ private fun ActionItem(
             )
         }
     } else {
-        Modifier.combinedClickable(
-            interactionSource = interactionSource,
-            indication = null,
-            role = Role.Button,
-            onLongClick = onLongPress,
-        ) {
+        // A long press is taken by the panel: it lifts the button to move it
+        Modifier.clickable(interactionSource = interactionSource, indication = null, role = Role.Button) {
             if (onClick(action)) view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
         }
     }
@@ -303,16 +539,6 @@ private fun ActionItem(
             )
         }
     }
-}
-
-// An empty place is invisible until the layout is edited
-@Composable
-private fun EmptyItem(onLongPress: () -> Unit, modifier: Modifier = Modifier) {
-    Box(
-        modifier
-            .size(ItemWidth, ItemHeight)
-            .pointerInput(Unit) { detectTapGestures(onLongPress = { onLongPress() }) },
-    )
 }
 
 @Composable
