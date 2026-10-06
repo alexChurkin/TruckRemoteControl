@@ -69,13 +69,15 @@
     <string name="close">Close</string>
 
     <string name="guide">Guide</string>
-    <string name="how_to_run">• How to run?</string>
-    <string name="how_to_run_text">1. On the computer with the game, download and run Truck Remote Server: https://github.com/alexChurkin/TruckRemoteServer . It\'s a single file, and it updates itself.</string>
-    <string name="how_to_run_text_2">2. On its first start the setup wizard installs the telemetry plugin of the game, the vJoy joystick driver and the firewall rule, and sets up the controls of your game profiles. The profiles are set up while the game is closed: if it was running, or the profile is new, close the game once and start it again.</string>
-    <string name="how_to_run_text_3">3. Connect the phone to the same Wi-Fi network as the computer: the app finds the server by itself. If it doesn\'t, scan the QR code of the server window in the app settings or enter the address there.</string>
-    <string name="how_to_run_text_4" formatted="false">4. In the game the \"Simple Automatic\" transmission is the easiest to drive with. The steering sensitivity and curve are set in the app (Settings → Steering).</string>
+    <string name="guide_next">Next</string>
+    <string name="guide_done">Got it</string>
+    <string name="how_to_run">How to run?</string>
+    <string name="how_to_run_text">On the computer with the game, download and run Truck Remote Server: https://github.com/alexChurkin/TruckRemoteServer. It\'s a single file, and it updates itself.</string>
+    <string name="how_to_run_text_2">On its first start the setup wizard installs the telemetry plugin of the game, the vJoy joystick driver and the firewall rule, and sets up the controls of your game profiles. The profiles are set up while the game is closed: if it was running, or the profile is new, close the game once and start it again.</string>
+    <string name="how_to_run_text_3">Connect the phone to the same Wi-Fi network as the computer: the app finds the server by itself. If it doesn\'t, scan the QR code of the server window in the app settings or enter the address there.</string>
+    <string name="how_to_run_text_4" formatted="false">In the game the \"Simple Automatic\" transmission is the easiest to drive with. The steering sensitivity and curve are set in the app (Settings → Steering).</string>
 
-    <string name="how_to_use">• How to use?</string>
+    <string name="how_to_use">How to use?</string>
     <string name="how_to_use_text_1">Tilt the phone as a steering wheel. \"Calibration\" in the menu (the gear icon) sets the straight position; the sensitivity, the dead zone and the curve are in Settings → Steering with a live preview.</string>
     <string name="how_to_use_text_2">Pedals and cruise control</string>
     <string name="how_to_use_text_3" formatted="false">Touch a pedal and drag up to press it harder, down to release it: the press force is shown over the pedals (keys can be used instead, see the settings). While holding the gas from 5%, swipe left to keep its level; touch a pedal to release it. Turn cruise control on by double-tapping the gas pedal, turn it off by another double tap or touching the brake.</string>

@@ -60,15 +60,3 @@ fun Dialog.showKeepingFullscreen() {
     window.hideSystemBars()
     window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
 }
-
-// Since targetSdk 35 activities are drawn edge-to-edge, so content is padded by system bars manually
-// (the top inset passed by AppCompat already includes the action bar)
-fun View.applySystemBarsPadding() {
-    ViewCompat.setOnApplyWindowInsetsListener(this) { view, windowInsets ->
-        val insets = windowInsets.getInsets(
-            WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout(),
-        )
-        view.updatePadding(left = insets.left, top = insets.top, right = insets.right, bottom = insets.bottom)
-        windowInsets
-    }
-}

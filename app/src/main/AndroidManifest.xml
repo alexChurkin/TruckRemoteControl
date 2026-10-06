@@ -71,7 +71,7 @@
             android:name=".ui.guide.GuideActivity"
             android:screenOrientation="fullSensor"
             android:label="@string/guide"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme.Compose" />
 
         <!-- Stores the language chosen in the app on Android 12 and older -->
         <service
