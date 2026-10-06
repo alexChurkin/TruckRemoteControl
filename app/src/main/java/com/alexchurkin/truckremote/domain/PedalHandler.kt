@@ -107,8 +107,9 @@ class PedalHandler(private val listener: Listener, var lockDistancePx: Float) {
     }
 
     private companion object {
-        // Part of the pedal area height that changes the level from 0 to 1
-        const val TRAVEL_HEIGHT_PART = 0.6f
+        // Part of the pedal area height that changes the level from 0 to 1: a short move of the thumb,
+        // the pedal is dosed without sliding the finger over half of the screen
+        const val TRAVEL_HEIGHT_PART = 0.4f
 
         // A pedal that is barely pressed isn't locked: a sideways move of a finger that has just touched it
         // would lock the gas at about zero

@@ -344,6 +344,9 @@ class MainViewModel(
     private fun onTruckState(truck: ServerState?) {
         val analogBefore = state.value.truck?.analogPedalsAvailable
         _state.update { it.copy(truck = truck) }
+        // The units set in the game come with its state
+        val imperial = imperialUnits()
+        if (imperial != state.value.imperialUnits) _state.update { it.copy(imperialUnits = imperial) }
         // The settings of the game being played (the dashboard tells the game)
         val game = truck?.dashboard?.let { if (it.isAts) Game.Ats else Game.Ets2 }
         if (game != null && game != settings.lastGame) settings.lastGame = game
@@ -426,7 +429,11 @@ class MainViewModel(
 
     private fun gameSettings() = settings.game(settings.lastGame)
 
-    // A swipe up on the gas or the cruise button of the dashboard; returns true if it was sent
+    // As chosen in the settings of the app; "as in the game" is what the game is set to, if the server knows it
+    private fun imperialUnits() =
+        gameSettings().speedUnits.isImperial(settings.lastGame, state.value.truck?.dashboard?.gameImperialUnits)
+
+    // A double tap on the gas or the cruise button of the dashboard; returns true if it was sent
     fun onCruiseToggle(): Boolean {
         if (!isControllable) return false
         controller.updateState { it.copy(cruiseClick = !it.cruiseClick) }
@@ -640,7 +647,7 @@ class MainViewModel(
             it.copy(
                 showDashboard = settings.showDashboard,
                 actionLayout = game.actionLayout,
-                imperialUnits = game.speedUnits.isImperial(settings.lastGame),
+                imperialUnits = imperialUnits(),
             )
         }
         analogPedalsMode = settings.pedalMode == PedalMode.Analog

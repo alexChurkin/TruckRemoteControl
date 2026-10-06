@@ -234,7 +234,7 @@ class MainViewModelTest {
     fun `pausing releases the pedals and shows an ad`() = runTest {
         val effects = collectEffects()
         connect()
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         assertTrue(controller.state.gasPressed)
 
         viewModel.togglePause()
@@ -248,7 +248,7 @@ class MainViewModelTest {
     fun `digital pedals are keys`() {
         settings.pedalMode = PedalMode.Digital
         connect()
-        viewModel.onPedalDown(Pedal.Brake, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Brake, 0f, 500f, 1500)
 
         assertTrue(controller.state.brakePressed)
         assertEquals(0f, controller.state.brakeLevel)
@@ -261,7 +261,7 @@ class MainViewModelTest {
     @Test
     fun `pedals are analog by default, levels when the server supports them, keys otherwise`() {
         connect(TRUCK.copy(analogPedalsAvailable = false))
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         assertTrue(controller.state.gasPressed)
 
         // The server starts supporting axes: the same press is sent as a level
@@ -278,9 +278,9 @@ class MainViewModelTest {
         val effects = collectEffects()
         connect(TRUCK.copy(analogPedalsAvailable = false))
 
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         viewModel.onPedalUp(Pedal.Gas)
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
 
         assertEquals(1, effects.count { it == MainEffect.Message(R.string.analog_pedals_unavailable) })
     }
@@ -289,7 +289,7 @@ class MainViewModelTest {
     fun `a released analog pedal returns by its spring, a pause drops it at once`() {
         settings.throttleLock = false
         connect(TRUCK.copy(analogPedalsAvailable = true))
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
         viewModel.onPedalUp(Pedal.Gas)
         assertEquals(0.5f, controller.state.gasLevel, 0.001f)
@@ -302,7 +302,7 @@ class MainViewModelTest {
         dispatcher.scheduler.advanceUntilIdle()
         assertEquals(0f, controller.state.gasLevel)
 
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
         viewModel.togglePause()
         assertEquals(0f, controller.state.gasLevel)
@@ -312,7 +312,7 @@ class MainViewModelTest {
     fun `throttle lock can be turned off`() {
         settings.throttleLock = false
         connect(TRUCK.copy(analogPedalsAvailable = true))
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
         viewModel.onPedalMove(Pedal.Gas, LOCK_DISTANCE + 1, 200f)
         viewModel.onPedalUp(Pedal.Gas)
@@ -326,7 +326,7 @@ class MainViewModelTest {
     fun `throttle is locked by default and the brake releases it`() = runTest {
         val effects = collectEffects()
         connect(TRUCK.copy(analogPedalsAvailable = true))
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
         viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
         viewModel.onPedalMove(Pedal.Gas, LOCK_DISTANCE + 1, 200f)
         viewModel.onPedalUp(Pedal.Gas)
@@ -334,7 +334,7 @@ class MainViewModelTest {
         assertEquals(0.5f, controller.state.gasLevel, 0.001f)
         assertTrue(MainEffect.ThrottleLockChanged in effects)
 
-        viewModel.onPedalDown(Pedal.Brake, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Brake, 0f, 500f, 1500)
 
         assertFalse(viewModel.state.value.pedals.gasLocked)
         dispatcher.scheduler.advanceUntilIdle()
@@ -345,7 +345,7 @@ class MainViewModelTest {
     fun `lost connection releases the pedals and is reported`() = runTest {
         val effects = collectEffects()
         connect()
-        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1500)
 
         controller.connectionState.value = ConnectionState.Lost
 

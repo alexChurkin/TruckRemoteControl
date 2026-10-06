@@ -164,6 +164,8 @@ data class Dashboard(
     val fuelPercent: Int,
     // American Truck Simulator (its signs are American, its speed is in mph unless the user chose otherwise)
     val isAts: Boolean,
+    // The speed units set in the game: miles per hour or km/h; null - the server doesn't know them
+    val gameImperialUnits: Boolean? = null,
     // null: the server doesn't send the warnings (no extended state), low fuel is guessed by its level then
     val warnings: Set<TruckWarning>? = null,
     // The most worn part of the truck and the trailer

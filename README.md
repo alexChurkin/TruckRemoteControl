@@ -10,7 +10,7 @@ and sets up everything the phone needs. Then:
 2) Connect the phone to the same network as the PC and run this app: it finds the server by itself
    (or scan the QR code of the server window in Settings → Connection)
 3) Tilt the phone to steer and press the pedals: drag a pedal up to press it harder, swipe sideways on the gas
-   to keep its level, swipe up on the gas for cruise control. The steering is set up in Settings → Steering
+   to keep its level, double-tap the gas for cruise control. The steering is set up in Settings → Steering
    (sensitivity, dead zone, curve) with a live preview
 4) The button at the bottom center opens the quick actions (engine, lights, retarder, cameras, map and more,
    several pages); long press a button to put another action in its place

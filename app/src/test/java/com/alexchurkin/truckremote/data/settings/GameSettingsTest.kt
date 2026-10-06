@@ -50,5 +50,9 @@ class GameSettingsTest {
         assertFalse(SpeedUnits.ByGame.isImperial(Game.Ets2))
         assertTrue(SpeedUnits.Imperial.isImperial(Game.Ets2))
         assertFalse(SpeedUnits.Metric.isImperial(Game.Ats))
+        // What the game is set to goes first, a choice made in the app goes over it
+        assertFalse(SpeedUnits.ByGame.isImperial(Game.Ats, inGame = false))
+        assertTrue(SpeedUnits.ByGame.isImperial(Game.Ets2, inGame = true))
+        assertTrue(SpeedUnits.Imperial.isImperial(Game.Ats, inGame = false))
     }
 }

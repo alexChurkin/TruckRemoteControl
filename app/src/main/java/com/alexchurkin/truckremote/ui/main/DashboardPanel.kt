@@ -103,23 +103,16 @@ private const val SPEED_WIDTH_SP = 96
  * The place of the instruments at the top of the controller screen. Without them it has no height, so the controls
  * under it stay at the top. When the game starts sending the truck state, the instruments slide in from the top and
  * push the controls down; when the state is gone ([dashboard] is null), they slide out and the controls come back.
- * [visible] is false while the quick actions panel is open: it needs the place of the pushed controls, so
- * instruments that come or go meanwhile move nothing.
+ * They stay when the quick actions panel is open: it takes the place of the controls under them.
  */
 @Composable
-fun DashboardSlot(
-    dashboard: Dashboard?,
-    job: Job?,
-    visible: Boolean,
-    imperialUnits: Boolean,
-    modifier: Modifier = Modifier,
-) {
+fun DashboardSlot(dashboard: Dashboard?, job: Job?, imperialUnits: Boolean, modifier: Modifier = Modifier) {
     // The last instruments are drawn while they slide out
     val last = remember { Ref<Dashboard>() }
     if (dashboard != null) last.value = dashboard
     val shown = dashboard ?: last.value
     AnimatedVisibility(
-        visible = visible && dashboard != null,
+        visible = dashboard != null,
         enter = expandVertically(tween(SLOT_ANIMATION_MS), expandFrom = Alignment.Bottom) +
             fadeIn(tween(SLOT_ANIMATION_MS)),
         exit = shrinkVertically(tween(SLOT_ANIMATION_MS), shrinkTowards = Alignment.Bottom) +
@@ -180,7 +173,7 @@ fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modi
     Column(
         modifier = modifier
             .animateContentSize(tween(SLOT_ANIMATION_MS))
-            .padding(top = 6.dp),
+            .padding(top = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // The arc spans the speed and both sides: its lowered ends are over the speed limit sign and the gear

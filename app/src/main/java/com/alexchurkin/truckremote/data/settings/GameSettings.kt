@@ -15,13 +15,19 @@ enum class Game(val prefValue: String) {
 }
 
 enum class SpeedUnits(val prefValue: String) {
-    // km/h in Euro Truck Simulator 2, mph in American Truck Simulator
+    // As set in the game; if the server couldn't read that: km/h in Euro Truck Simulator 2,
+    // mph in American Truck Simulator
     ByGame("game"),
     Metric("metric"),
     Imperial("imperial"),
     ;
 
-    fun isImperial(game: Game) = this == Imperial || (this == ByGame && game == Game.Ats)
+    // [inGame]: the units set in the game (miles per hour or not), null if they aren't known
+    fun isImperial(game: Game, inGame: Boolean? = null) = when (this) {
+        Imperial -> true
+        Metric -> false
+        ByGame -> inGame ?: (game == Game.Ats)
+    }
 
     companion object {
         fun fromPrefValue(value: String?) = entries.firstOrNull { it.prefValue == value } ?: ByGame

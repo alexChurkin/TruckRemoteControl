@@ -42,7 +42,6 @@ import com.alexchurkin.truckremote.ui.widget.showPedalPress
 import com.alexchurkin.truckremote.util.enterFullscreen
 import com.alexchurkin.truckremote.util.showKeepingFullscreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -141,16 +140,17 @@ class MainActivity :
     }
 
     /*
-     * The quick actions panel takes the middle of the screen: the horn, the parking brake and the lights fade out,
-     * the instruments slide out (see DashboardSlot), so the blinkers are at the top and the panel has its place.
-     * The hidden buttons keep following the blinkers, but nothing of them is seen or touched until the panel
-     * is closed, whatever happens to the instruments meanwhile.
+     * The quick actions panel takes the middle of the screen: everything there but the instruments fades out
+     * (the blinkers, the horn, the parking brake, the lights and the cruise control). The hidden buttons keep
+     * their places under the instruments, but nothing of them is seen or touched until the panel is closed.
      */
     private fun showActionsPanel(show: Boolean, animate: Boolean) = with(binding) {
         actionsShown = show
         val shift = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ACTIONS_SHIFT_DP, resources.displayMetrics)
         actionsPanel.fade(show, offset = shift, hiddenVisibility = View.GONE, animate = animate)
-        listOf(buttonHorn, buttonParking, buttonLights).forEach {
+        val controls =
+            listOf(buttonLeftSignal, buttonAllSignals, buttonRightSignal, buttonHorn, buttonParking, buttonLights)
+        controls.forEach {
             it.fade(!show, offset = -shift, hiddenVisibility = View.INVISIBLE, animate = animate)
         }
     }
@@ -206,7 +206,6 @@ class MainActivity :
             DashboardSlot(
                 dashboard = state.truck?.dashboard.takeIf { state.showDashboard },
                 job = state.truck?.job,
-                visible = !actionsShown,
                 imperialUnits = state.imperialUnits,
             )
         }
@@ -530,16 +529,11 @@ class MainActivity :
         return false
     }
 
+    // A double tap on the gas pedal turns the cruise control on and off
     private inner class CruiseGestureListener : GestureDetector.SimpleOnGestureListener() {
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-            if (e1 == null) return false
-            val movedX = abs(e1.x - e2.x)
-            val movedY = abs(e1.y - e2.y)
-            val isFastVerticalSwipeUp = velocityY < 0 &&
-                abs(velocityY) / MS_IN_SECOND > CRUISE_MIN_VELOCITY &&
-                movedX / movedY < CRUISE_MAX_SIDEWAYS_RATIO
-            if (isFastVerticalSwipeUp && viewModel.onCruiseToggle()) {
-                binding.gasImage.startCachedAnimation(R.anim.gas_cruise)
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            if (viewModel.onCruiseToggle()) {
+                binding.gasLayout.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             }
             return false
         }
@@ -618,10 +612,6 @@ class MainActivity :
         const val DIM_DELAY_MS = 3000L
         const val DIMMED_BRIGHTNESS = 0.03f
 
-        // Pixels per millisecond
-        const val CRUISE_MIN_VELOCITY = 1.5f
-        const val CRUISE_MAX_SIDEWAYS_RATIO = 0.5f
-        const val MS_IN_SECOND = 1000
         const val PERCENT = 100
 
         const val LIGHTS_OFF = 0

@@ -49,7 +49,9 @@ class DashboardViewModel(private val settings: AppSettings, private val viewer: 
             serverAddress = viewerState.serverAddress,
             truck = viewerState.truck,
             job = viewerState.job,
-            imperialUnits = settings.game(game).speedUnits.isImperial(game),
+            imperialUnits = settings.game(
+                game,
+            ).speedUnits.isImperial(game, viewerState.truck?.dashboard?.gameImperialUnits),
         )
     }
 

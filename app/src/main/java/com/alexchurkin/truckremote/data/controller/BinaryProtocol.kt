@@ -25,7 +25,8 @@ import kotlin.math.roundToInt
  * 2 rumble strip) | event count u8 | (event id u8, counter u8, strength u8) * count, see [HapticEvent].
  * Flags: 0 engine, 1 parking brake, 2 left blinker, 3 right blinker, 4 trailer, 5 wipers, 6 beacon,
  * 7 analog pedals available, 8-9 lights mode, 10 telemetry available (the dashboard values are real).
- * Flags2: 0-6 warnings (see [TruckWarning], in its order), 7 differential lock, 8 lift axle, 9 engine brake.
+ * Flags2: 0-6 warnings (see [TruckWarning], in its order), 7 differential lock, 8 lift axle, 9 engine brake,
+ * 10 the speed units of the game are known, 11 they are miles per hour (km/h otherwise).
  * Job, sent once a second by revision 3+: type 0x05 | delivery minutes left i32 | cargo length u8 | cargo UTF-8 |
  * destination city length u8 | destination city UTF-8; no cargo - no job.
  */
@@ -94,6 +95,10 @@ object BinaryProtocol {
     private const val ANALOG_PEDALS_BIT = 7
     private const val LIGHTS_SHIFT = 8
     private const val TELEMETRY_BIT = 10
+
+    // Of flags2
+    private const val UNITS_KNOWN_BIT = 10
+    private const val IMPERIAL_BIT = 11
     private const val TWO_BITS = 0x3
     private const val UINT16_MASK = 0xFFFF
 
@@ -184,6 +189,8 @@ object BinaryProtocol {
     // The extended part of the state: the whole message in the buffer
     private fun withExtras(dashboard: Dashboard, all: ByteBuffer, flags2: Int, length: Int) = dashboard.copy(
         warnings = TruckWarning.entries.filter { flags2 and (1 shl it.ordinal) != 0 }.toSet(),
+        // Sent by the servers that read the setting of the game
+        gameImperialUnits = (flags2 and (1 shl IMPERIAL_BIT) != 0).takeIf { flags2 and (1 shl UNITS_KNOWN_BIT) != 0 },
         wearPercent = all.get(WEAR_OFFSET).toInt() and BYTE_MASK,
         restStopMinutes = all.getShort(REST_STOP_OFFSET).toInt(),
         routeDistance = (all.getInt(ROUTE_DISTANCE_OFFSET).toLong() and UINT32_MASK).toFloat(),
