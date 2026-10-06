@@ -113,8 +113,8 @@
     <string name="action_camera_bumper">Камера ля бампера</string>
     <string name="action_camera_wheel">Камера ля кола</string>
     <string name="action_camera_drive_by">Камера пралёту</string>
-    <string name="action_look_left">Погляд улева</string>
-    <string name="action_look_right">Погляд управа</string>
+    <string name="action_look_left">Погляд</string>
+    <string name="action_look_right">Погляд</string>
     <string name="action_gear_up">Перадача +</string>
     <string name="action_gear_down">Перадача −</string>
     <string name="action_radio_previous">Папярэдняя станцыя</string>

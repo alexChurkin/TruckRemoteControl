@@ -179,6 +179,8 @@ class MainViewModelTest {
 
         controller.connectionState.value = ConnectionState.Lost
         assertTrue(viewModel.onActionHold(ControllerAction.EngineBrake, false))
+        // A tap is held for a moment
+        dispatcher.scheduler.advanceUntilIdle()
         assertTrue(controller.state.heldActions.isEmpty())
     }
 
@@ -188,6 +190,8 @@ class MainViewModelTest {
         assertTrue(viewModel.onActionHold(ControllerAction.LightHorn, true))
         assertEquals(setOf(ControllerAction.LightHorn), controller.state.heldActions)
         assertTrue(viewModel.onActionHold(ControllerAction.LightHorn, false))
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(controller.state.heldActions.isEmpty())
 
         connect(TRUCK.copy(serverRevision = ControllerAction.LightHorn.holdRevision - 1))
         assertTrue(viewModel.onActionHold(ControllerAction.LightHorn, true))
@@ -282,6 +286,29 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `a released analog pedal returns by its spring, a pause drops it at once`() {
+        settings.throttleLock = false
+        connect(TRUCK.copy(analogPedalsAvailable = true))
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
+        viewModel.onPedalUp(Pedal.Gas)
+        assertEquals(0.5f, controller.state.gasLevel, 0.001f)
+
+        dispatcher.scheduler.advanceTimeBy(50)
+        val returning = controller.state.gasLevel
+        assertTrue(returning > 0f && returning < 0.5f)
+        assertEquals(returning, viewModel.state.value.pedals.gasLevel, 0.001f)
+
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0f, controller.state.gasLevel)
+
+        viewModel.onPedalDown(Pedal.Gas, 0f, 500f, 1000)
+        viewModel.onPedalMove(Pedal.Gas, 0f, 200f)
+        viewModel.togglePause()
+        assertEquals(0f, controller.state.gasLevel)
+    }
+
+    @Test
     fun `throttle lock can be turned off`() {
         settings.throttleLock = false
         connect(TRUCK.copy(analogPedalsAvailable = true))
@@ -291,6 +318,7 @@ class MainViewModelTest {
         viewModel.onPedalUp(Pedal.Gas)
 
         assertFalse(viewModel.state.value.pedals.gasLocked)
+        dispatcher.scheduler.advanceUntilIdle()
         assertEquals(0f, controller.state.gasLevel)
     }
 
@@ -309,6 +337,7 @@ class MainViewModelTest {
         viewModel.onPedalDown(Pedal.Brake, 0f, 500f, 1000)
 
         assertFalse(viewModel.state.value.pedals.gasLocked)
+        dispatcher.scheduler.advanceUntilIdle()
         assertEquals(0f, controller.state.gasLevel)
     }
 

@@ -141,6 +141,16 @@ class MainViewModel(
 
     private val brakePedal = PedalHandler(this, lockDistancePx = Float.MAX_VALUE)
     private val gasPedal = PedalHandler(this, lockDistancePx = Float.MAX_VALUE)
+
+    // The levels of the pedals sent last, and of the released analog pedals their springs are returning
+    private val lastLevels = mutableMapOf<PedalHandler, Float>()
+    private val springLevels = mutableMapOf<PedalHandler, Float>()
+    private var springJob: Job? = null
+    private var releasingPedals = false
+
+    // Hold actions whose buttons are pressed now, and the shortest time each of them stays held
+    private val pressedActions = mutableSetOf<ControllerAction>()
+    private val holdJobs = mutableMapOf<ControllerAction, Job>()
     private val foreground = MutableStateFlow(false)
 
     // Settings are cached in it: tilt readings come very often
@@ -391,7 +401,20 @@ class MainViewModel(
             if (held) controller.clickAction(action)
             return true
         }
-        controller.setActionHeld(action, held)
+        if (held) {
+            pressedActions += action
+            controller.setActionHeld(action, true)
+            // A short tap is held long enough for the server and the game to see it
+            holdJobs[action] = viewModelScope.launch { delay(MIN_HOLD_MS) }
+        } else {
+            pressedActions -= action
+            val pressed = holdJobs[action]
+            viewModelScope.launch {
+                pressed?.join()
+                // Unless it was pressed again meanwhile
+                if (action !in pressedActions) controller.setActionHeld(action, false)
+            }
+        }
         return true
     }
 
@@ -453,9 +476,37 @@ class MainViewModel(
     fun onPedalUp(pedal: Pedal) = handler(pedal).onUp()
 
     override fun onPedalChanged(pedal: PedalHandler) {
+        // A released analog pedal goes back by its spring, as a real one, not at once
+        val last = lastLevels[pedal] ?: 0f
+        val released = !pedal.isActive && last > 0f
+        if (analogPedalsMode && !releasingPedals && released) startSpring(pedal, last)
         sendPedalsState()
         showPedals()
     }
+
+    private fun startSpring(pedal: PedalHandler, from: Float) {
+        springLevels[pedal] = from
+        if (springJob?.isActive == true) return
+        springJob = viewModelScope.launch {
+            while (springLevels.isNotEmpty()) {
+                delay(SPRING_STEP_MS)
+                springLevels.keys.toList().forEach { returning ->
+                    val level = (springLevels[returning] ?: 0f) - SPRING_STEP_MS.toFloat() / SPRING_RETURN_MS
+                    // Pressed again harder than it has returned: the finger holds the pedal now
+                    if (level <= 0f || returning.level >= level) {
+                        springLevels.remove(returning)
+                    } else {
+                        springLevels[returning] = level
+                    }
+                }
+                sendPedalsState()
+                showPedals()
+            }
+        }
+    }
+
+    // Where the pedal is: under the finger, or on its way back
+    private fun level(pedal: PedalHandler) = maxOf(pedal.level, springLevels[pedal] ?: 0f)
 
     override fun onPedalLockChanged(pedal: PedalHandler, locked: Boolean) {
         send(MainEffect.ThrottleLockChanged)
@@ -464,9 +515,13 @@ class MainViewModel(
 
     private fun handler(pedal: Pedal) = if (pedal == Pedal.Brake) brakePedal else gasPedal
 
+    // At once, without the spring: the controls are stopped (a pause, a lost connection, the app is left)
     private fun releasePedals() {
+        releasingPedals = true
+        springLevels.clear()
         brakePedal.release()
         gasPedal.release()
+        releasingPedals = false
         sendPedalsState()
         showPedals()
     }
@@ -474,8 +529,10 @@ class MainViewModel(
     // Analog levels are used when the server supports them, keys otherwise
     private fun sendPedalsState() {
         val analog = analogPedalsMode && state.value.truck?.analogPedalsAvailable == true
-        val brakeLevel = brakePedal.level
-        val gasLevel = gasPedal.level
+        val brakeLevel = level(brakePedal)
+        val gasLevel = level(gasPedal)
+        lastLevels[brakePedal] = brakeLevel
+        lastLevels[gasPedal] = gasLevel
         controller.updateState {
             it.copy(
                 // Without analog axes the key is pressed while the pedal is touched (an analog touch starts from 0)
@@ -491,8 +548,8 @@ class MainViewModel(
         it.copy(
             pedals = PedalsUiState(
                 analog = analogPedalsMode,
-                brakeLevel = brakePedal.level,
-                gasLevel = gasPedal.level,
+                brakeLevel = level(brakePedal),
+                gasLevel = level(gasPedal),
                 gasLocked = gasPedal.isLocked,
             ),
         )
@@ -610,6 +667,13 @@ class MainViewModel(
     companion object {
         private const val SENSOR_TIMEOUT_MS = 1000L
         private const val PERCENT = 100f
+
+        // A released analog pedal returns from the floor in this time (from a lighter press sooner)
+        private const val SPRING_RETURN_MS = 200L
+        private const val SPRING_STEP_MS = 16L
+
+        // A tap on a hold action (e.g. "Activate") holds its key at least this long
+        private const val MIN_HOLD_MS = 100L
 
         // The truck state with the cruise speed comes several times per second
         private const val CRUISE_CHECK_MS = 1500L

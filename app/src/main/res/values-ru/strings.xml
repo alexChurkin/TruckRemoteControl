@@ -113,8 +113,8 @@
     <string name="action_camera_bumper">Камера у бампера</string>
     <string name="action_camera_wheel">Камера у колеса</string>
     <string name="action_camera_drive_by">Камера пролёта</string>
-    <string name="action_look_left">Взгляд влево</string>
-    <string name="action_look_right">Взгляд вправо</string>
+    <string name="action_look_left">Взгляд</string>
+    <string name="action_look_right">Взгляд</string>
     <string name="action_gear_up">Передача +</string>
     <string name="action_gear_down">Передача −</string>
     <string name="action_radio_previous">Предыдущая станция</string>

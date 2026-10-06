@@ -17,7 +17,9 @@ enum class ControllerAction(
 ) {
     Engine(1),
     Trailer(2),
-    Activate(3),
+
+    // Held to refuel; a tap enters a place (a service, a rest stop)
+    Activate(3, isHold = true, holdCode = 43, holdRevision = 7),
 
     // The high beam is on while the button is held
     LightHorn(4, isHold = true, holdCode = 42, holdRevision = 7),

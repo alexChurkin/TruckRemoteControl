@@ -118,8 +118,8 @@
     <string name="action_camera_bumper">Bumper camera</string>
     <string name="action_camera_wheel">Wheel camera</string>
     <string name="action_camera_drive_by">Drive-by camera</string>
-    <string name="action_look_left">Look left</string>
-    <string name="action_look_right">Look right</string>
+    <string name="action_look_left">Look</string>
+    <string name="action_look_right">Look</string>
     <string name="action_gear_up">Gear up</string>
     <string name="action_gear_down">Gear down</string>
     <string name="action_radio_previous">Previous station</string>
