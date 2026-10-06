@@ -23,9 +23,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
@@ -104,8 +106,12 @@ private const val HOLD_MS = 80
 private const val FLASH_MS = 450
 private const val FLASH_WHITE = 0.3f
 private const val RING_ALPHA = 0.7f
-private val RingGrow = 8.dp
+private val RingGrow = 6.dp
 private val RingWidth = 2.dp
+
+// The pager clips its pages, so it is bigger than a page by this at every side: the ring of the buttons at the
+// edges is drawn there, over the margin and the padding of the panel
+private val PageBleed = RingGrow + RingWidth / 2
 private const val SHAKE_MS = 300
 private const val SHAKE_DP = 6f
 private val SHAKE_STEPS_DP = listOf(SHAKE_DP, -SHAKE_DP, SHAKE_DP / 2)
@@ -354,8 +360,14 @@ private fun ReorderablePages(
             },
     ) {
         val shown = reorder.shown(layout)
-        HorizontalPager(state = pagerState, userScrollEnabled = dragged == null) { number ->
-            page(number, shown.pages[number], dragged?.action)
+        HorizontalPager(
+            state = pagerState,
+            userScrollEnabled = dragged == null,
+            modifier = Modifier.requiredSize(PageWidth + PageBleed * 2, GridHeight + PageBleed * 2),
+        ) { number ->
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                page(number, shown.pages[number], dragged?.action)
+            }
         }
         if (dragged != null) {
             // Over the pages: it stays under the finger while a page is turned
