@@ -60,8 +60,9 @@ The app follows the [Android app architecture guide](https://developer.android.c
   and truck state as flows), `settings`, `sensor` (tilt sensor as a flow), `device` (vibration: `Haptics` plays the events of the server as
   `HapticPatterns` — composition primitives where the phone has them, amplitude waveforms or plain on/off otherwise —
   and Wi-Fi),
-  `billing`, `ads`, `analytics`, `viewer` (`ViewerClient`: the truck state for the dashboard mode, which
-  doesn't control anything).
+  `billing`, `ads`, `analytics`, `region` (`DataRegion`: the country of the device, from the mobile network,
+  the SIM card or the system language, decides where ads are shown and where statistics are sent),
+  `viewer` (`ViewerClient`: the truck state for the dashboard mode, which doesn't control anything).
 - `domain` — logic without Android dependencies: `SteeringProcessor` (the steering angle from the fused
   gyroscope and accelerometer is smoothed by the adaptive `OneEuroFilter`, then `SteeringCurve` applies the settings),
   `PedalHandler`.
