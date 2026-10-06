@@ -226,8 +226,11 @@ class TrackingClient(private val listener: Listener) {
                 sendFailed = true
                 if (running) report(ConnectionState.Lost)
             } else if (running) {
-                if (!connectedOnce) report(ConnectionState.NotFound)
-                Thread.sleep(reconnectDelayMs(failedAttempts++))
+                // The specified server didn't answer: the search starts at once, "not found" is told after it
+                val searched = isSearching
+                if (!connectedOnce && searched) report(ConnectionState.NotFound)
+                val attempt = failedAttempts++
+                if (searched) Thread.sleep(reconnectDelayMs(attempt))
             }
         }
 
@@ -247,7 +250,7 @@ class TrackingClient(private val listener: Listener) {
             if (!recreateSocketIfSendingFailed()) return false
             if (socket.isConnected) socket.disconnect()
             val addresses = targetAddresses()
-            socket.broadcast = ip == null
+            socket.broadcast = isSearching
             socket.soTimeout = HANDSHAKE_TIMEOUT_MS
             val hello = ControllerProtocol.HELLO.toByteArray()
             val answer = DatagramPacket(ByteArray(BUFFER_SIZE), BUFFER_SIZE)
@@ -299,15 +302,20 @@ class TrackingClient(private val listener: Listener) {
             return false
         }
 
+        // The specified server is only asked directly at first. If it doesn't answer, the search is added:
+        // the PC may have got another address from the router, and the saved one would never work again
+        private val isSearching: Boolean
+            get() = ip == null || failedAttempts > 0
+
         /*
-         * The specified server is asked directly. Searching uses broadcasts and the known server:
+         * Searching uses broadcasts and the known servers:
          * 255.255.255.255 goes only through the default interface, which may be wrong
          * (e.g. the phone shares a hotspot or has mobile data), so subnet broadcasts are added.
          * After a loss the found server is asked first (it may have got another address, so the search goes on too).
          */
         private fun targetAddresses(): List<InetAddress> {
-            if (ip != null) return listOf(InetAddress.getByName(ip))
-            val direct = listOfNotNull(serverAddress, knownIp).distinct().mapNotNull {
+            if (!isSearching) return listOf(InetAddress.getByName(ip))
+            val direct = listOfNotNull(ip, serverAddress, knownIp).distinct().mapNotNull {
                 runCatching { InetAddress.getByName(it) }.getOrNull()
             }
             val subnetBroadcasts = try {

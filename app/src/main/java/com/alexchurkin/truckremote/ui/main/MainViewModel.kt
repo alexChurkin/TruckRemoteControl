@@ -235,7 +235,8 @@ class MainViewModel(
         val serverIp = settings.specifiedServerIp
         if (isValidIpv4(serverIp)) {
             send(MainEffect.Message(R.string.trying_to_connect))
-            controller.connect(serverIp, settings.serverPort, knownIp = null)
+            // If the address doesn't answer (the PC has got another one), the server is searched for as well
+            controller.connect(serverIp, settings.serverPort, knownIp = settings.lastServerIp)
         } else {
             send(MainEffect.Message(R.string.def_server_ip_not_correct))
         }
@@ -273,7 +274,7 @@ class MainViewModel(
             connection.isConnected -> {
                 analogUnavailableWarned = false
                 send(MainEffect.Message(R.string.connected_to_server_at, suffix = controller.serverAddress))
-                if (searchingByBroadcast) settings.lastServerIp = controller.serverAddress
+                settings.lastServerIp = controller.serverAddress
                 reportConnected()
             }
 

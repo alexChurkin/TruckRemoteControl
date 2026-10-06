@@ -131,26 +131,25 @@
         android:id="@+id/buttonAllSignals"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="2dp"
         android:background="@null"
         android:paddingTop="14dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dashboardView"
         app:srcCompat="@drawable/emergency_off" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/buttonLeftSignal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:background="@null"
         android:paddingStart="6dp"
         android:paddingTop="14dp"
         android:paddingEnd="20dp"
         app:layout_constraintRight_toLeftOf="@+id/buttonAllSignals"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/buttonAllSignals"
         app:srcCompat="@drawable/left_disabled" />
 
     <androidx.appcompat.widget.AppCompatImageButton
@@ -158,13 +157,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:background="@null"
         android:paddingStart="20dp"
         android:paddingTop="14dp"
         android:paddingEnd="6dp"
         app:layout_constraintStart_toEndOf="@+id/buttonAllSignals"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/buttonAllSignals"
         app:srcCompat="@drawable/right_disabled" />
 
     <androidx.appcompat.widget.AppCompatImageButton
@@ -172,7 +170,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="24dp"
         android:background="?selectableItemBackgroundBorderless"
         app:layout_constraintRight_toLeftOf="@id/buttonParking"
@@ -183,7 +181,7 @@
         android:id="@+id/buttonParking"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:background="@null"
         android:paddingBottom="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -196,7 +194,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:background="?selectableItemBackgroundBorderless"
         app:layout_constraintLeft_toRightOf="@id/buttonParking"
         app:layout_constraintTop_toBottomOf="@+id/buttonRightSignal"
@@ -216,12 +214,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/ic_actions" />
 
-    <!-- Instruments of the truck (DashboardPanel), under the quick actions panel -->
+    <!-- Instruments of the truck (DashboardSlot) at the top. Without them the view has no height; when they
+         slide in, the blinkers and the controls under them are pushed down -->
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/dashboardView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/actionsButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- The cruise control (CruiseSlot) under the middle controls, shown with the instruments -->
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/cruiseView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonParking" />
@@ -231,15 +239,11 @@
         android:id="@+id/actionsPanel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
         android:visibility="gone"
-        app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toTopOf="@id/actionsButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonAllSignals"
-        app:layout_constraintVertical_bias="1" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <!-- Short messages (connection, auto pause): a system toast keeps away from the display cutout,
          so it isn't in the middle of the screen -->

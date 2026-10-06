@@ -1,6 +1,13 @@
 package com.alexchurkin.truckremote.ui.main
 
 import android.view.HapticFeedbackConstants
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,7 +19,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,7 +42,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -43,8 +52,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -75,65 +86,159 @@ private const val MINUTES_IN_HOUR = 60
 private const val MAX_ALERTS = 3
 private const val REPEAT_DELAY_MS = 450L
 private const val REPEAT_INTERVAL_MS = 220L
+private const val SLOT_ANIMATION_MS = 250
+
+// The place of the speed limit sign on one side of the speed and of the unit with the gear on the other
+private val SideWidth = 64.dp
+
+// Three digits of the speed
+private const val SPEED_WIDTH_SP = 96
 
 /**
- * Instruments in the middle of the controller screen: speed with its unit, the gear, the speed limit sign,
- * engine rpm and the cruise control (its speed is changed here). Only what matters is shown:
- * the speed limit when there is one, the route while driving by the navigation, the [job] (cargo, destination and
- * the time left), warnings when there are problems.
- * [onCruiseToggle] and [onCruiseStep] return true if the command was sent (the button gives haptic feedback then).
+ * The place of the instruments at the top of the controller screen. Without them it has no height, so the controls
+ * under it stay at the top. When the game starts sending the truck state, the instruments slide in from the top and
+ * push the controls down; when the state is gone ([dashboard] is null), they slide out and the controls come back.
+ * [visible] is false while the quick actions panel is open: it needs the place of the pushed controls, so
+ * instruments that come or go meanwhile move nothing.
  */
 @Composable
-fun DashboardPanel(
-    dashboard: Dashboard,
+fun DashboardSlot(
+    dashboard: Dashboard?,
     job: Job?,
+    visible: Boolean,
     imperialUnits: Boolean,
-    onCruiseToggle: () -> Boolean,
-    onCruiseStep: (up: Boolean) -> Boolean,
     modifier: Modifier = Modifier,
 ) {
+    // The last instruments are drawn while they slide out
+    val last = remember { Ref<Dashboard>() }
+    if (dashboard != null) last.value = dashboard
+    val shown = dashboard ?: last.value
+    AnimatedVisibility(
+        visible = visible && dashboard != null,
+        enter = expandVertically(tween(SLOT_ANIMATION_MS), expandFrom = Alignment.Bottom) +
+            fadeIn(tween(SLOT_ANIMATION_MS)),
+        exit = shrinkVertically(tween(SLOT_ANIMATION_MS), shrinkTowards = Alignment.Bottom) +
+            fadeOut(tween(SLOT_ANIMATION_MS)),
+        modifier = modifier,
+    ) {
+        if (shown != null) DashboardPanel(shown, job, imperialUnits)
+    }
+}
+
+/**
+ * The cruise control under the middle controls: a button that turns it on, or its speed with - and +.
+ * It is shown together with the instruments (the cruise speed comes with them) and fades in and out with them;
+ * it takes no place of the other controls. [onToggle] and [onStep] return true if the command was sent
+ * (the button gives haptic feedback then).
+ */
+@Composable
+fun CruiseSlot(
+    dashboard: Dashboard?,
+    visible: Boolean,
+    imperialUnits: Boolean,
+    onToggle: () -> Boolean,
+    onStep: (up: Boolean) -> Boolean,
+    modifier: Modifier = Modifier,
+) {
+    // The last speed is drawn while the control fades out
+    val last = remember { Ref<Dashboard>() }
+    if (dashboard != null) last.value = dashboard
+    val shown = dashboard ?: last.value
+    AnimatedVisibility(
+        visible = visible && dashboard != null,
+        enter = fadeIn(tween(SLOT_ANIMATION_MS)),
+        exit = fadeOut(tween(SLOT_ANIMATION_MS)),
+        modifier = modifier,
+    ) {
+        if (shown != null) {
+            CruiseControl(
+                speed = (shown.cruiseSpeed * if (imperialUnits) MPH_IN_MS else KMH_IN_MS).roundToInt(),
+                unit = stringResource(if (imperialUnits) R.string.dashboard_mph else R.string.dashboard_kmh),
+                onToggle = onToggle,
+                onStep = onStep,
+            )
+        }
+    }
+}
+
+/**
+ * Instruments at the top of the controller screen, in one row to take little height: the speed limit sign,
+ * the speed (always in the middle and of the same width, whatever its number of digits) with its unit and the gear,
+ * and the engine rpm under them. Only what matters is shown: the speed limit when there is one, the route while
+ * driving by the navigation, the [job] (cargo, destination and the time left), warnings when there are problems;
+ * the lines that come and go change the height smoothly.
+ */
+@Composable
+fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modifier: Modifier = Modifier) {
     val factor = if (imperialUnits) MPH_IN_MS else KMH_IN_MS
     val unit = stringResource(if (imperialUnits) R.string.dashboard_mph else R.string.dashboard_kmh)
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = modifier
+            .animateContentSize(tween(SLOT_ANIMATION_MS))
+            .padding(top = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (dashboard.speedLimit > 0f) {
-                SpeedLimitSign((dashboard.speedLimit * factor).roundToInt(), american = dashboard.isAts)
-                Spacer(Modifier.width(14.dp))
+            // The sides have the same width, so the speed stays in the middle with or without the sign
+            Box(modifier = Modifier.width(SideWidth), contentAlignment = Alignment.CenterEnd) {
+                if (dashboard.speedLimit > 0f) {
+                    SpeedLimitSign(
+                        limit = (dashboard.speedLimit * factor).roundToInt(),
+                        american = dashboard.isAts,
+                        modifier = Modifier.padding(end = 12.dp),
+                    )
+                }
             }
+            // The place of three digits: the row doesn't change its size while the speed grows
             BasicText(
                 text = (abs(dashboard.speed) * factor).roundToInt().toString(),
-                style = TextStyle(color = Color.White, fontSize = 52.sp, fontWeight = FontWeight.Bold),
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = 52.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFeatureSettings = "tnum",
+                    textAlign = TextAlign.Center,
+                    // Without the font padding the row is lower
+                    lineHeight = 52.sp,
+                    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
+                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                ),
+                maxLines = 1,
+                modifier = Modifier.width(with(LocalDensity.current) { SPEED_WIDTH_SP.sp.toDp() }),
             )
-            Spacer(Modifier.width(8.dp))
-            Column {
+            Column(modifier = Modifier.width(SideWidth).padding(start = 8.dp)) {
                 BasicText(
                     text = unit,
                     style = TextStyle(color = colorResource(R.color.dashboardSecondary), fontSize = 13.sp),
+                    maxLines = 1,
                 )
                 BasicText(
                     text = gearText(dashboard.gear),
                     style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                    maxLines = 1,
                 )
             }
         }
         RpmBar(dashboard.engineRpm, dashboard.engineRpmMax, Modifier.padding(top = 4.dp))
-        if (dashboard.routeDistance > 0f) {
-            BasicText(
-                text = routeText(dashboard, imperialUnits),
-                style = TextStyle(color = colorResource(R.color.dashboardSecondary), fontSize = 13.sp),
-                modifier = Modifier.padding(top = 4.dp),
-            )
+        // The route and the job share a line: everything under the instruments is pushed down by their height
+        if (dashboard.routeDistance > 0f || job != null) {
+            Row(
+                modifier = Modifier.padding(top = 4.dp).widthIn(max = 540.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (dashboard.routeDistance > 0f) {
+                    BasicText(
+                        text = routeText(dashboard, imperialUnits),
+                        style = TextStyle(color = colorResource(R.color.dashboardSecondary), fontSize = 13.sp),
+                        maxLines = 1,
+                    )
+                }
+                if (job != null) JobLine(job, Modifier.weight(1f, fill = false))
+            }
         }
-        if (job != null) JobLine(job, Modifier.padding(top = 2.dp))
-        CruiseControl(
-            speed = (dashboard.cruiseSpeed * factor).roundToInt(),
-            unit = unit,
-            onToggle = onCruiseToggle,
-            onStep = onCruiseStep,
-            modifier = Modifier.padding(top = 8.dp),
-        )
         val alerts = dashboard.alerts()
-        if (alerts.isNotEmpty()) Alerts(alerts, imperialUnits, Modifier.padding(top = 6.dp))
+        if (alerts.isNotEmpty()) Alerts(alerts, imperialUnits, Modifier.padding(top = 12.dp))
     }
 }
 
@@ -252,11 +357,11 @@ private fun gearText(gear: Int) = when {
 
 // A round European sign in ETS2, a rectangular American one in ATS
 @Composable
-private fun SpeedLimitSign(limit: Int, american: Boolean) {
+private fun SpeedLimitSign(limit: Int, american: Boolean, modifier: Modifier = Modifier) {
     val shape: Shape = if (american) RoundedCornerShape(4.dp) else CircleShape
     val description = stringResource(R.string.dashboard_speed_limit, limit)
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(width = if (american) 34.dp else 40.dp, height = 40.dp)
             .background(Color.White, shape)
             .border(

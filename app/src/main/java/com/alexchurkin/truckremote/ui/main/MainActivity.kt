@@ -76,7 +76,8 @@ class MainActivity :
 
     private var messageJob: Job? = null
 
-    private var actionsShown = false
+    // The quick actions panel is open; the instruments (Compose) give their place to it
+    private var actionsShown by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,13 +126,17 @@ class MainActivity :
         outState.putBoolean(STATE_ACTIONS_SHOWN, actionsShown)
     }
 
-    // The quick actions panel takes the middle of the screen: the horn, the parking brake, the lights and
-    // the instruments give it their place and come back when it's closed
+    /*
+     * The quick actions panel takes the middle of the screen: the horn, the parking brake and the lights fade out,
+     * the instruments slide out (see DashboardSlot), so the blinkers are at the top and the panel has its place.
+     * The hidden buttons keep following the blinkers, but nothing of them is seen or touched until the panel
+     * is closed, whatever happens to the instruments meanwhile.
+     */
     private fun showActionsPanel(show: Boolean, animate: Boolean) = with(binding) {
         actionsShown = show
         val shift = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, ACTIONS_SHIFT_DP, resources.displayMetrics)
         actionsPanel.fade(show, offset = shift, hiddenVisibility = View.GONE, animate = animate)
-        listOf(buttonHorn, buttonParking, buttonLights, dashboardView).forEach {
+        listOf(buttonHorn, buttonParking, buttonLights).forEach {
             it.fade(!show, offset = -shift, hiddenVisibility = View.INVISIBLE, animate = animate)
         }
     }
@@ -184,18 +189,24 @@ class MainActivity :
         actionsButton.setOnClickListener { showActionsPanel(!actionsShown, animate = true) }
         dashboardView.setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
-            val dashboard = state.truck?.dashboard
-            if (state.showDashboard && dashboard != null) {
-                DashboardPanel(
-                    dashboard = dashboard,
-                    job = state.truck?.job,
-                    imperialUnits = state.imperialUnits,
-                    onCruiseToggle = viewModel::onCruiseToggle,
-                    onCruiseStep = { up ->
-                        viewModel.onAction(if (up) ControllerAction.CruiseUp else ControllerAction.CruiseDown)
-                    },
-                )
-            }
+            DashboardSlot(
+                dashboard = state.truck?.dashboard.takeIf { state.showDashboard },
+                job = state.truck?.job,
+                visible = !actionsShown,
+                imperialUnits = state.imperialUnits,
+            )
+        }
+        cruiseView.setContent {
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            CruiseSlot(
+                dashboard = state.truck?.dashboard.takeIf { state.showDashboard },
+                visible = !actionsShown,
+                imperialUnits = state.imperialUnits,
+                onToggle = viewModel::onCruiseToggle,
+                onStep = { up ->
+                    viewModel.onAction(if (up) ControllerAction.CruiseUp else ControllerAction.CruiseDown)
+                },
+            )
         }
         actionsPanel.setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
