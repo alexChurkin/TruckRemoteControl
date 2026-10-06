@@ -1,0 +1,8 @@
+{
+  "uniqueId": "com.icons8:icons",
+  "name": "Icons8",
+  "description": "Earlier versions of the app credited Icons8 for the icons it uses (the control buttons were made then), so the attribution is kept.",
+  "website": "https://icons8.com",
+  "developers": [{ "name": "Icons8", "organisationUrl": "https://icons8.com" }],
+  "licenses": ["icons8"]
+}

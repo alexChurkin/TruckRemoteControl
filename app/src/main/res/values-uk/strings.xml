@@ -1,89 +1,271 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="version_changes_title">Изменения в версии</string>
-    <string name="version_changes_text">Исправлено для работы на новейший Android-устройствах; добавлены новые анимации. Для корректной работы РЕКОМЕНДУЕТСЯ загрузить самую последнюю версию Truck Remote Server на ваш ПК / ноутбук.</string>
+    <string name="version_changes_title">Зміни у версії</string>
+    <string name="version_changes_text">Спочатку оновіть Truck Remote Server на комп\'ютері до 1.3: новим можливостям він потрібен.\n\n• Аналогові педалі: ведіть угору, щоб натиснути сильніше, відпущена педаль повертається пружиною. Газ фіксується свайпом ліворуч.\n• Круїз-контроль: подвійний дотик до педалі газу.\n• Швидкі дії: шість сторінок (двигун, світло, ретардер, камери, карта, радіо…). Довге натискання на кнопку дозволяє перетягувати кнопки й ставити на їхні місця інші дії. Утримуйте «Дія», щоб заправитися.\n• Прилади вгорі: швидкість, оберти, обмеження, передача, попередження, вантаж і відстань до мети. Одиниці швидкості беруться з гри.\n• Телефон вібрує разом із вантажівкою: нерівності, зіткнення, двигун, поворотники.\n• Режим приладової панелі для планшета або другого телефона (Налаштування → Режим).\n• Кермо налаштовується в застосунку з попереднім переглядом; в ETS2 і ATS можуть бути свої налаштування.\n• Автопауза, поки телефон лежить на столі.\n• Сервер сам ставить усе потрібне, натискає ваші клавіші з гри й оновлюється.</string>
 
-    <string name="searching_on_local">Поиск серверов в локальной сети…</string>
-    <string name="signal_strength">Сила Wi-Fi сигнала:</string>
-    <string name="no_wifi_conn_detected">Wi-Fi подключение не обнаружено!</string>
-    <string name="connected_to_server_at">Подключен к серверу</string>
-    <string name="connection_lost">Соединение с сервером прервано</string>
-    <string name="def_server_ip_not_correct">Стандартный сервер указан некорректно!</string>
-    <string name="trying_to_connect">Попытка подключения…</string>
+    <string name="searching_on_local">Пошук серверів у локальній мережі…</string>
+    <string name="signal_strength">Сила сигналу Wi-Fi:</string>
+    <string name="no_wifi_conn_detected">Підключення Wi-Fi не виявлено!</string>
+    <string name="connected_to_server_at">Підключено до сервера</string>
+    <string name="connection_lost">Зв’язок втрачено, перепідключаємося…</string>
+    <string name="def_server_ip_not_correct">IP-адресу сервера вказано неправильно!</string>
+    <string name="trying_to_connect">Спроба підключення…</string>
 
-    <string name="auto_connect">Подключиться автоматически</string>
-    <string name="default_connect">Подключиться к стандартному серверу</string>
-    <string name="disconnect">Отключиться</string>
-    <string name="calibration">Калибровка</string>
-    <string name="settings">Настройки</string>
-    <string name="start_guide">Инструкция</string>
+    <string name="auto_connect">Підключитися автоматично</string>
+    <string name="default_connect">Підключитися за IP-адресою</string>
+    <string name="disconnect">Відключитися</string>
+    <string name="settings">Налаштування</string>
+    <string name="start_guide">Інструкція</string>
 
-    <string-array name="calibration_items">
-        <item>Калибровать</item>
-        <item>Сбросить калибровку</item>
-    </string-array>
-    <string name="calibration_completed">Калибровка завершена</string>
-    <string name="calibration_reset">Калибровка успешно сброшена</string>
+    <string name="calibration_completed">Кермо вирівняно</string>
+    <string name="calibration_reset">Вирівнювання скинуто</string>
 
-    <string name="connection">Подключение</string>
+    <string name="connection">Підключення</string>
     <string name="server_port_title">Порт сервера</string>
-    <string name="server_port_summary">Порт, используемый для всех видов подключений</string>
+    <string name="server_port_summary">Порт, що використовується для всіх видів підключень</string>
     <string name="server_port_dialog_title">Порт сервера</string>
 
-    <string name="connect_to_default_on_startup_title">Использовать стандартный сервер</string>
-    <string name="connect_to_default_on_startup_summary_off">Подключение к указанному серверу при запуске отключено</string>
-    <string name="connect_to_default_on_startup_summary_on">Подключение к указанному серверу производится при запуске</string>
 
-    <string name="def_server_ip_title">IP-адрес сервера</string>
-    <string name="def_server_ip_summary">IP-адрес стандартного сервера</string>
+    <string name="def_server_ip_title">IP-адреса сервера</string>
+    <string name="def_server_ip_summary">Не вказана. Адресу показано у вікні Truck Remote Server</string>
 
-    <string name="control">Управление</string>
-    <string name="ffb_text">Обратная связь</string>
-    <string name="ffb_summary">Вибрация при столкновениях</string>
+    <string name="ffb_text">Вібрація</string>
+    <string name="ffb_summary">Телефон вібрує разом із вантажівкою: зіткнення, вибоїни й дорога, причіп, двигун і прилади. З плагіном телеметрії на сервері, без нього — за зворотним зв’язком гри</string>
+    <string name="vibration_strength_title">Сила вібрації</string>
+    <string name="road_vibration_title">Дорожнє покриття</string>
+    <string name="road_vibration_summary">Нерівна дорога, бездоріжжя і шумові смуги</string>
+    <string name="dashboard_clicks_title">Клацання приладів</string>
+    <string name="dashboard_clicks_summary">Реле поворотників, перемикання передач і ступені ретардера</string>
+    <string name="vibration_test_title">Перевірити вібрацію</string>
+    <string name="vibration_capability_primitives">У телефоні точний вібромотор: ефекти чіткі й різні</string>
+    <string name="vibration_capability_amplitude">Телефон вібрує з різною силою</string>
+    <string name="vibration_capability_on_off">Телефон уміє лише вмикати й вимикати вібрацію: ефекти простіші</string>
     <string name="use_pneumatic_signal_text">Пневмосигнал</string>
-    <string name="use_pneumatic_signal_summary">Использовать пневматический сигнал вместо обычного</string>
-    <string name="deadzone_title">Мёртвая зона</string>
-    <string name="deadzone_summary">Включение мёртвой зоны для предотвращения медленного движения</string>
+    <string name="use_pneumatic_signal_summary">Кнопка сигналу вмикає пневматичний сигнал замість звичайного</string>
+    <string name="steering_dead_zone_title">Мертва зона керма</string>
+    <string name="steering_dead_zone_summary">Невеликий нахил біля центру не враховується: до %1$d°</string>
+    <string name="steering_max_angle_summary">Кермо повертається до упору при нахилі %1$d°</string>
+    <string name="steering_curve_title">Крива керма</string>
+    <string name="steering_curve_linear">Лінійна</string>
+    <string name="steering_curve_summary">Плавніше біля центру: %1$.1f</string>
 
-    <string name="profile_title">Профиль по умолчанию</string>
-    <string name="profile_summary">Позволяет сохранять состояние кнопок в нескольких игровых профилях / играх</string>
-    <string-array name="profile_variants">
-        <item>Профиль 1</item>
-        <item>Профиль 2</item>
-        <item>Всегда спрашивать</item>
+
+
+
+    <string name="github_page">Вихідний код на GitHub</string>
+    <string name="about_app">Про застосунок</string>
+    <string name="version">Версія</string>
+    <string name="about_app_text">Цей застосунок призначений для використання як кермо в симуляторах вантажівок (наприклад, Euro Truck Simulator 2, American Truck Simulator).\n\nРозробка: Олександр Чуркін\n\nЗв’язатися:\nchurkinapps@gmail.com\n\nЗначки, бібліотеки та їхні ліцензії — у «Налаштування → Стороннє ПЗ і ліцензії».</string>
+    <string name="close">Закрити</string>
+
+    <string name="guide">Інструкція</string>
+    <string name="guide_next">Далі</string>
+    <string name="guide_done">Зрозуміло</string>
+    <string name="how_to_run">Як запустити?</string>
+    <string name="how_to_run_text">На комп\'ютері з грою завантажте й запустіть Truck Remote Server: https://github.com/alexChurkin/TruckRemoteServer. Це один файл, і він оновлюється сам.</string>
+    <string name="how_to_run_text_2">Під час першого запуску майстер налаштування сам установить плагін телеметрії гри, драйвер джойстика vJoy і правило брандмауера та налаштує керування в профілях гри. Профілі налаштовуються, поки гра закрита: якщо вона була запущена або профіль новий, закрийте гру один раз і запустіть знову.</string>
+    <string name="how_to_run_text_3">Підключіть телефон до тієї самої мережі Wi-Fi, що й комп\'ютер: застосунок знайде сервер сам. Якщо не знайшов, відскануйте QR-код з вікна сервера в налаштуваннях застосунку або введіть там його адресу.</string>
+    <string name="how_to_run_text_4" formatted="false">У грі найпростіше їхати з коробкою «Проста автоматична». Чутливість і крива керма налаштовуються в застосунку (Налаштування → Кермо).</string>
+
+    <string name="how_to_use">Як користуватися?</string>
+    <string name="how_to_use_text_1">Нахиляйте телефон, як кермо. Положення «прямо» задає «Вирівняти кермо» в меню (значок шестерні); чутливість, мертва зона і крива — у розділі Налаштування → Кермо з попереднім переглядом.</string>
+    <string name="how_to_use_text_2">Педалі й круїз-контроль</string>
+    <string name="how_to_use_text_3" formatted="false">Торкніться педалі й ведіть угору, щоб натиснути сильніше, униз — щоб відпустити: сила натискання видна над педалями (замість цього можна використовувати клавіші, див. налаштування). Утримуючи газ від 5%, проведіть ліворуч, щоб зафіксувати його; дотик до педалі знімає фіксацію. Круїз-контроль вмикається подвійним дотиком до педалі газу, вимикається повторним подвійним дотиком або натисканням на гальмо.</string>
+    <string name="how_to_use_actions">Швидкі дії</string>
+    <string name="how_to_use_actions_text">Кнопка внизу по центру відкриває панель швидких дій під спідометром: двигун, світло, ретардер, камери, карта та багато іншого (сторінки гортаються свайпом). «Дія» і «Моргнути фарами» працюють, поки ви їх тримаєте: утримуйте «Дія», щоб заправитися. Довге натискання на будь-яку іншу кнопку вмикає редагування: кнопки можна перетягувати, а дотик до місця ставить туди іншу дію. Кожне натискання видно: кнопка пружинить, якщо воно дійшло до гри, і здригається, якщо ні.</string>
+    <string name="how_to_use_pause">Автопауза</string>
+    <string name="how_to_use_pause_text">Керування відпускається, поки телефон лежить екраном униз або вгору, тож вантажівка не поїде, коли ви покладете телефон на стіл. Її можна вимкнути в налаштуваннях.</string>
+    <string name="how_to_use_dashboard">Приладова панель</string>
+    <string name="how_to_use_dashboard_text">Планшет або другий телефон може показувати прилади вантажівки поруч із телефоном, яким ви керуєте: виберіть на ньому «Приладова панель», коли застосунок під час першого запуску запитає, як використовуватиметься пристрій (або пізніше в Налаштування → Режим). Вона сама знаходить сервер.</string>
+    <string name="how_to_use_vibration_text">Телефон вібрує разом із вантажівкою: нерівності та шумові смуги, зіткнення, двигун, поворотники, перемикання передач. Сила та види вібрації вибираються в налаштуваннях.</string>
+    <string name="how_to_use_vibration">Вібрація</string>
+    <string name="how_to_use_text_4">Приємного керування!</string>
+
+    <string name="actions">Швидкі дії</string>
+    <string name="action_engine">Двигун</string>
+    <string name="action_trailer">Причіп</string>
+    <string name="action_activate">Дія</string>
+    <string name="action_light_horn">Моргнути фарами</string>
+    <string name="action_wipers">Двірники</string>
+    <string name="action_beacon">Маячки</string>
+    <string name="action_diff_lock">Блок. диф.</string>
+    <string name="action_lift_axle">Підйом осі</string>
+    <string name="action_retarder_up">Ретардер +</string>
+    <string name="action_retarder_down">Ретардер −</string>
+    <string name="action_engine_brake">Моторне гальмо</string>
+    <string name="action_cruise_up">Круїз +</string>
+    <string name="action_cruise_down">Круїз −</string>
+    <string name="action_cruise_resume">Відновити круїз</string>
+    <string name="action_quick_park">Швидке паркування</string>
+    <string name="action_camera_interior">Камера в кабіні</string>
+    <string name="action_camera_chase">Камера ззаду</string>
+    <string name="action_camera_cycle">Інша камера</string>
+    <string name="action_map">Карта</string>
+    <string name="action_display">Приладова панель</string>
+    <string name="action_hud">Інтерфейс</string>
+    <string name="action_radio_next">Наступна станція</string>
+    <string name="action_quick_save">Швидке збереження</string>
+    <string name="action_mirrors">Дзеркала</string>
+    <string name="action_camera_top">Камера згори</string>
+    <string name="action_camera_roof">Камера з даху</string>
+    <string name="action_camera_lean_out">Камера з вікна</string>
+    <string name="action_camera_bumper">Камера біля бампера</string>
+    <string name="action_camera_wheel">Камера біля колеса</string>
+    <string name="action_camera_drive_by">Камера прольоту</string>
+    <string name="action_look_left">Погляд</string>
+    <string name="action_look_right">Погляд</string>
+    <string name="action_gear_up">Передача +</string>
+    <string name="action_gear_down">Передача −</string>
+    <string name="action_radio_previous">Попередня станція</string>
+    <string name="action_radio">Радіо</string>
+    <string name="action_advisor_zoom">Масштаб навігатора</string>
+    <string name="action_advisor_mode">Налаштування віджетів</string>
+    <string name="action_road_assistance">Допомога на дорозі</string>
+    <string name="action_screenshot">Знімок екрана</string>
+    <string name="action_menu">Меню</string>
+    <string name="actions_page">Сторінка %1$d з %2$d</string>
+
+    <string name="pedals">Педалі</string>
+    <string name="pedal_analog_title">Сила натискання</string>
+    <string name="pedal_analog_summary">Торкніться педалі й ведіть угору, щоб натиснути сильніше, униз — щоб відпустити. Потрібні ввімкнені осі Y і Z у vJoy на ПК</string>
+    <string name="pedal_digital_title">Цифрові педалі</string>
+    <string name="pedal_digital_summary">Педаль натиснута повністю, поки ви її торкаєтеся (клавіші-стрілки у грі)</string>
+    <string name="throttle_lock_title">Фіксація газу</string>
+    <string name="throttle_lock_summary">Утримуючи газ, проведіть пальцем ліворуч — рівень газу зафіксується. Торкніться газу або гальма, щоб відпустити</string>
+    <string name="analog_pedals_unavailable">Для аналогових педалей увімкніть осі Y і Z у vJoy на ПК (Configure vJoy). Поки використовуються клавіші</string>
+    <string name="back">Назад</string>
+    <string name="server_port_invalid">Порт має бути від 10000 до 65535</string>
+    <string name="server_ip_invalid">Введіть IP-адресу, наприклад 192.168.1.10</string>
+    <string name="third_party_title">Стороннє ПЗ і ліцензії</string>
+    <string name="third_party_summary">Значки та бібліотеки, що використовуються в застосунку</string>
+    <string name="privacy_policy_title">Політика конфіденційності</string>
+    <string name="privacy_policy_link">https://churkinapps.github.io/en/truckremote/privacy-policy.html</string>
+    <string name="restore_purchase_title">Відновити вимкнення реклами</string>
+    <string name="restore_purchase_summary">Якщо ви раніше купували вимкнення реклами на цьому обліковому записі Google</string>
+    <string name="ads_removed_title">Рекламу вимкнено</string>
+    <string name="ads_removed_summary">Дякуємо за підтримку застосунку!</string>
+    <string name="purchase_restored">Покупку відновлено, рекламу вимкнено</string>
+    <string name="purchase_returned">Покупку повернено, рекламу знову ввімкнено</string>
+    <string name="purchase_not_found">На цьому обліковому записі Google не знайдено покупки вимкнення реклами</string>
+    <string name="purchase_check_failed">Не вдалося перевірити покупки. Перевірте з’єднання з Google Play і спробуйте ще раз</string>
+    <string name="server_not_found_title">Сервер не знайдено</string>
+    <string name="server_not_found_text">Пошук триває у фоні. Перевірте, що:\n\n• Truck Remote Server запущено на ПК\n• телефон і ПК підключені до однієї мережі (гостьові мережі Wi-Fi часто не дають пристроям бачити одне одного)\n• сервер дозволено в брандмауері Windows (сервер пропонує це під час першого запуску)\n• порт у застосунку і на сервері збігається\n\nМожна також вказати IP-адресу сервера (вона показана у вікні сервера) у налаштуваннях.</string>
+    <string name="link_quality">Втрати пакетів: %1$s, розкид затримки: %2$d мс</string>
+    <string name="license_open_link">Відкрити в браузері</string>
+    <string name="steering_dead_zone_off">Вимкнена</string>
+    <string name="language_title">Мова</string>
+    <string name="language_system">Як у системі</string>
+    <string name="section_steering">Кермо</string>
+    <string name="section_app">Застосунок</string>
+    <string name="steering_sensitivity_title">Чутливість</string>
+    <string name="calibrate_title">Вирівняти кермо</string>
+    <string name="calibrate_summary">Тримайте телефон як під час їзди прямо й натисніть</string>
+    <string name="calibration_reset_title">Скинути вирівнювання</string>
+    <string name="calibrate_action">Вирівняти</string>
+    <string name="calibrate_dialog_text">Тримайте телефон як під час їзди прямо й натисніть «Вирівняти»: цей нахил стане положенням керма «прямо».</string>
+    <string name="search_mode_title">Пошук сервера</string>
+    <string name="search_mode_auto">Автоматично</string>
+    <string name="search_mode_ip">За IP-адресою</string>
+    <string name="search_mode_summary_auto">Застосунок знаходить сервер у локальній мережі</string>
+    <string name="search_mode_summary_ip">Застосунок підключається до адреси нижче</string>
+    <string name="scan_qr_title">Сканувати QR-код сервера</string>
+    <string name="scan_qr_summary">Код показано у вікні Truck Remote Server</string>
+    <string name="scan_qr_done">Сервер %1$s:%2$d збережено</string>
+    <string name="scan_qr_wrong">Це не QR-код Truck Remote Server</string>
+    <string name="scan_qr_unavailable">Для сканера потрібні сервіси Google Play</string>
+    <string name="steering_preview_left">Ліворуч %1$d%%</string>
+    <string name="steering_preview_right">Праворуч %1$d%%</string>
+    <string name="steering_preview_center">Прямо</string>
+    <string name="steering_test_title">Перевірка керма</string>
+    <string name="steering_test_summary">Покаже, як кермо слідує за телефоном. На час перевірки (%1$d с) поворот екрана блокується</string>
+    <string name="steering_test_start">Перевірити</string>
+    <string name="steering_test_stop">Стоп</string>
+    <string name="steering_test_locked">Поворот екрана заблоковано · залишилося %1$d с</string>
+    <string name="scan_qr_loading">Сервіси Google Play завантажують сканер, спробуйте за хвилину</string>
+    <string name="show_dashboard_title">Прилади на екрані</string>
+    <string name="show_dashboard_summary">Швидкість, круїз-контроль та оберти між педалями, поки працює гра</string>
+    <string name="dashboard_kmh">км/год</string>
+    <string name="dashboard_mph">миль/год</string>
+    <string name="dashboard_cruise">Круїз</string>
+    <string name="dashboard_cruise_on">Увімкнути круїз-контроль</string>
+    <string name="dashboard_cruise_off">Вимкнути круїз-контроль</string>
+    <string name="dashboard_cruise_up">Підвищити швидкість круїзу</string>
+    <string name="dashboard_cruise_down">Знизити швидкість круїзу</string>
+    <string name="dashboard_low_fuel">Пальне %1$d%%</string>
+    <string name="dashboard_speed_limit">Обмеження швидкості %1$d</string>
+    <string name="dashboard_gear_neutral">N</string>
+    <string name="dashboard_gear_reverse">R%1$d</string>
+    <string name="section_buttons">Екран і кнопки</string>
+    <string name="steering_smoothness_title">Плавність керма</string>
+    <string name="steering_smoothness_responsive">%1$d: чутливо, найшвидший відгук</string>
+    <string name="steering_smoothness_balanced">%1$d: збалансовано</string>
+    <string name="steering_smoothness_smooth">%1$d: м\'яко, без найменшого тремтіння</string>
+    <string name="actions_edit_hint">Утримуйте кнопку й тягніть, щоб перемістити; натисніть на місце, щоб поставити туди іншу дію</string>
+    <string name="actions_pick_hint">Виберіть дію. Якщо вона вже є на панелі, кнопки поміняються місцями</string>
+    <string name="actions_pick_cancel">Скасувати</string>
+    <string name="actions_edit_reset">Скинути</string>
+    <string name="actions_edit_done">Готово</string>
+    <string name="actions_empty">Порожньо</string>
+    <string name="actions_edit_place">Замінити: %1$s</string>
+    <string name="auto_pause_face_down">Автопауза: телефон лежить екраном донизу</string>
+    <string name="cruise_not_engaged_slow">Круїз-контроль не ввімкнувся: надто низька швидкість</string>
+    <string name="cruise_not_engaged">Круїз-контроль не ввімкнувся</string>
+    <string name="auto_pause_title">Автопауза</string>
+    <string name="auto_pause_summary">Керування відпускається, поки телефон лежить екраном донизу або догори</string>
+    <string name="auto_pause_face_up">Автопауза: телефон лежить екраном догори</string>
+    <string name="auto_pause_no_sensor">Автопауза: немає даних датчика нахилу</string>
+    <string name="auto_pause_off">Автопаузу знято</string>
+    <string name="alert_air_pressure">Тиск повітря</string>
+    <string name="alert_oil_pressure">Тиск оливи</string>
+    <string name="alert_water_temperature">Перегрів двигуна</string>
+    <string name="alert_battery">Акумулятор</string>
+    <string name="alert_adblue">AdBlue</string>
+    <string name="alert_wear">Знос %1$d%%</string>
+    <string name="alert_rest">Відпочинок через %1$d хв</string>
+    <string name="dashboard_route">%1$s %2$s · %3$s</string>
+    <string name="dashboard_time_hours">%1$d год %2$02d хв</string>
+    <string name="dashboard_time_minutes">%1$d хв</string>
+    <string name="dashboard_unit_km">км</string>
+    <string name="dashboard_unit_mi">милі</string>
+    <string name="server_outdated_title">Оновіть Truck Remote Server</string>
+    <string name="server_outdated_text">Сервер на ПК старіший за застосунок: прилади, попередження й інформація про вантаж можуть не показуватися. Завантажте нову версію та замініть нею стару.</string>
+    <string name="server_outdated_download">Завантажити</string>
+    <string name="server_outdated_later">Пізніше</string>
+    <string name="dashboard_job">%1$s → %2$s · %3$s</string>
+    <string name="dashboard_job_left">залишилося %1$s</string>
+    <string name="dashboard_job_late">запізнення %1$s</string>
+    <string name="section_game">Гра</string>
+    <string name="separate_game_settings_title">Окремі налаштування для кожної гри</string>
+    <string name="separate_game_settings_summary">Кермо, швидкі кнопки та одиниці швидкості задаються окремо для ETS2 і ATS; потрібні обираються самі за запущеною грою</string>
+    <string name="edited_game_title">Налаштування для</string>
+    <string name="copy_game_settings_title">Скопіювати з %1$s</string>
+    <string name="copy_game_settings_summary">Кермо, швидкі кнопки та одиниці %1$s стануть такими самими</string>
+    <string name="game_settings_copied">Налаштування скопійовано з %1$s</string>
+    <string name="speed_units_title">Одиниці швидкості</string>
+    <string name="dashboard_low_fuel_range">Пальне %1$d%% · %2$d %3$s</string>
+    <string-array name="speed_units_entries">
+        <item>Як у грі</item>
+        <item>км/год</item>
+        <item>миль/год</item>
     </string-array>
-    <string-array name="profile_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string name="what_profile_title">Какой профиль использовать?</string>
-
-    <string name="additionally">Дополнительно</string>
-    <string name="remove_ads">Отключить рекламу</string>
-    <string name="purchase_success">Покупка успешно завершена</string>
-    <string name="purchase_restored">Покупка успешно восстановлена</string>
-    <string name="purchase_returned">Покупка возвращена</string>
-    <string name="purchase_cancelled">Покупка отменена</string>
-
-
-    <string name="github_page">Исходный код на GitHub</string>
-    <string name="about_app">О приложении</string>
-    <string name="version">Версия</string>
-    <string name="about_app_text">Это приложение предназначено для использования в качестве руля в симуляторах грузовиков (например, Euro Truck Simulator 2, American Truck Simulator).\n\nРазработка: Александр Чуркин\n\nСвязаться:\nchurkinapps@gmail.com\n\nВ приложении использованы иконки с ресурса\nhttp://icons8.com</string>
-    <string name="close">Закрыть</string>
-
-    <string name="guide">Инструкция</string>
-    <string name="how_to_run">• Как запустить?</string>
-    <string name="how_to_run_text">Первым шагом необходимо загрузить Truck Remote Server и запустить его на компьютере, где установлена игра. Вы можете сделать это по следующей ссылке: https://github.com/alexChurkin/TruckRemoteServer .</string>
-    <string name="how_to_run_text_2">В программе вы можете настроить порт и чувствительность движения так, как вам удобно. Затем необходимо запустить игру и включить управление с помощью клавиатуры и vJoy.</string>
-    <string name="how_to_run_text_3">Важно использовать только упрощенную автоматическую КПП! Рекомендуется также увеличить \"Чувствительность руля\" и \"Нелинейность управления\", как на этом скриншоте:</string>
-    <string name="how_to_run_text_4">При использовании обратной связи рекомендуется отключить в игре все виды обратной связи, кроме столкновения (50%), ударов подвески (~15%) и поверхности под колёсами (~10%).</string>
-    <string name="how_to_run_text_5">Убедитесь, что все клавиши в настройках управления установлены стандартно, начните игру и проследуйте к следующему шагу инструкции.</string>
-
-    <string name="how_to_use">• Как использовать?</string>
-    <string name="how_to_use_text_1">Убедитесь, что смартфон/планшет подключен к той же сети, что и компьютер. Подключите Truck Remote Control к серверу на вашем компьютере. Это можно сделать автоматически или вручную. Вы можете настроить стандартный IP/сервер в настройках приложения.</string>
-    <string name="how_to_use_text_2">Круиз-контроль</string>
-    <string name="how_to_use_text_3">Круиз-контроль включается с помощью свайпа вверх по кнопке газа. Отключить его можно нажатием на тормоз или повторным свайпом.</string>
-    <string name="how_to_use_text_4">Приятного управления!</string>
+    <string name="dashboard_mode">Приладова панель</string>
+    <string name="dashboard_mode_searching">Пошук Truck Remote Server…</string>
+    <string name="dashboard_mode_searching_hint">Цей пристрій показує прилади вантажівки поруч із телефоном, яким ви керуєте. Він має бути в тій самій мережі Wi-Fi, що й комп’ютер; потрібен сервер 1.3 або новіший.</string>
+    <string name="dashboard_mode_connected">Під’єднано до %1$s</string>
+    <string name="dashboard_mode_no_game">Запустіть гру: прилади з’являться разом із її плагіном телеметрії.</string>
+    <string name="dashboard_mode_fuel">Пальне</string>
+    <string name="dashboard_mode_route">Маршрут</string>
+    <string name="dashboard_mode_job">Замовлення</string>
+    <string name="dashboard_mode_retarder">Ретардер</string>
+    <string name="dashboard_mode_warnings">Попередження</string>
+    <string name="app_mode_title">Режим</string>
+    <string name="app_mode_choice_title">Цей пристрій</string>
+    <string name="app_mode_choice_summary">Приладова панель лише показує прилади вантажівки: для планшета або другого телефона поруч із тим, яким ви керуєте. Вибраний режим відкривається одразу.</string>
+    <string name="app_mode_controller">Кермо і педалі</string>
+    <string name="app_mode_controller_summary">Телефон — це кермо, педалі та кнопки вантажівки.</string>
+    <string name="app_mode_dashboard">Приладова панель</string>
+    <string name="app_mode_dashboard_summary">Цей пристрій лише показує прилади вантажівки поруч із телефоном, яким ви керуєте.</string>
+    <string name="app_mode_question">Як ви використовуватимете цей пристрій?</string>
+    <string name="app_mode_question_hint">Це можна змінити пізніше в налаштуваннях.</string>
+    <string name="actions_edit_reset_confirm">Скинути все?</string>
 </resources>

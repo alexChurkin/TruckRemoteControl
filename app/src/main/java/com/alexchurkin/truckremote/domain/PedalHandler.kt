@@ -1,0 +1,118 @@
+package com.alexchurkin.truckremote.domain
+
+/**
+ * Touch logic of a pedal.
+ * Digital mode: pedal is fully pressed while it is touched.
+ * Analog mode: touch starts with zero level, dragging up presses the pedal harder, dragging down releases it.
+ * Lock (gas only): a swipe to the left while holding keeps the current level after release;
+ * the next touch of the pedal unlocks it and continues from the locked level.
+ */
+class PedalHandler(private val listener: Listener, var lockDistancePx: Float) {
+
+    interface Listener {
+        fun onPedalChanged(pedal: PedalHandler)
+
+        fun onPedalLockChanged(pedal: PedalHandler, locked: Boolean)
+    }
+
+    var isAnalog = false
+        private set
+    private var lockAllowed = false
+
+    private var touched = false
+    var isLocked = false
+        private set
+    private var currentLevel = 0f
+
+    private var downX = 0f
+    private var downY = 0f
+    private var downLevel = 0f
+    private var travelPx = 1f
+
+    val isActive: Boolean
+        get() = touched || isLocked
+
+    // From 0 to 1
+    val level: Float
+        get() = if (isActive) currentLevel else 0f
+
+    fun configure(analog: Boolean, lockAllowed: Boolean) {
+        isAnalog = analog
+        this.lockAllowed = lockAllowed
+        if (!lockAllowed) unlock()
+    }
+
+    fun onDown(x: Float, y: Float, viewHeight: Int) {
+        val wasLocked = isLocked
+        if (isLocked) {
+            isLocked = false
+            listener.onPedalLockChanged(this, false)
+        }
+        touched = true
+        downX = x
+        downY = y
+        travelPx = (viewHeight * TRAVEL_HEIGHT_PART).coerceAtLeast(1f)
+        downLevel = when {
+            !isAnalog -> 1f
+            wasLocked -> currentLevel
+            else -> 0f
+        }
+        currentLevel = downLevel
+        listener.onPedalChanged(this)
+    }
+
+    fun onMove(x: Float, y: Float) {
+        if (!touched || isLocked) return
+
+        if (isAnalog) {
+            val newLevel = (downLevel + (downY - y) / travelPx).coerceIn(0f, 1f)
+            if (newLevel != currentLevel) {
+                currentLevel = newLevel
+                listener.onPedalChanged(this)
+            }
+        }
+
+        // Only to the left (to the middle of the screen): a thumb that presses the pedal slides to the right
+        // by itself, and the gas was locked by accident
+        if (lockAllowed && currentLevel >= MIN_LOCK_LEVEL && downX - x > lockDistancePx) {
+            isLocked = true
+            listener.onPedalLockChanged(this, true)
+        }
+    }
+
+    fun onUp() {
+        if (!touched) return
+        touched = false
+        if (!isLocked) currentLevel = 0f
+        listener.onPedalChanged(this)
+    }
+
+    // Releases the pedal completely (including lock)
+    fun release() {
+        val wasLocked = isLocked
+        val wasActive = isActive
+        touched = false
+        isLocked = false
+        currentLevel = 0f
+        if (wasLocked) listener.onPedalLockChanged(this, false)
+        if (wasActive) listener.onPedalChanged(this)
+    }
+
+    fun unlock() {
+        if (!isLocked) return
+        isLocked = false
+        if (!touched) currentLevel = 0f
+        listener.onPedalLockChanged(this, false)
+        listener.onPedalChanged(this)
+    }
+
+    private companion object {
+        // Part of the pedal area height that changes the level from 0 to 1: a short move of the thumb,
+        // the pedal is dosed without sliding the finger over half of the screen
+        const val TRAVEL_HEIGHT_PART = 0.4f
+
+        // A pedal that is barely pressed isn't locked: a sideways move of a finger that has just touched it
+        // would lock the gas at about zero
+        const val MIN_LOCK_LEVEL = 0.05f
+    }
+}

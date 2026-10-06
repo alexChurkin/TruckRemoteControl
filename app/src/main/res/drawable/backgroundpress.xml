@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- The half of the screen under a pressed pedal: it is filled quickly and fades a bit slower when released -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:enterFadeDuration="90"
+    android:exitFadeDuration="180">
 
     <item android:state_pressed="true">
         <color android:color="@color/backgroundGray"/>

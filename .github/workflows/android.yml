@@ -1,0 +1,61 @@
+name: Android
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Release is signed only when the keystore secrets are set (they aren't available in PRs from forks)
+      KEYSTORE_BASE64: ${{ secrets.TRUCKREMOTE_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Build and check
+        run: ./gradlew --continue ktlintCheck detekt assembleDebug lintDebug testDebugUnitTest
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: reports
+          path: app/build/reports/
+          if-no-files-found: ignore
+
+      - name: Build signed release
+        if: github.event_name == 'push' && env.KEYSTORE_BASE64 != ''
+        env:
+          TRUCKREMOTE_KEYSTORE_FILE: ${{ runner.temp }}/release.jks
+          TRUCKREMOTE_KEYSTORE_PASSWORD: ${{ secrets.TRUCKREMOTE_KEYSTORE_PASSWORD }}
+          TRUCKREMOTE_KEY_ALIAS: ${{ secrets.TRUCKREMOTE_KEY_ALIAS }}
+          TRUCKREMOTE_KEY_PASSWORD: ${{ secrets.TRUCKREMOTE_KEY_PASSWORD }}
+          TRUCKREMOTE_APPMETRICA_API_KEY: ${{ secrets.TRUCKREMOTE_APPMETRICA_API_KEY }}
+          TRUCKREMOTE_INTERSTITIAL_AD_ID: ${{ secrets.TRUCKREMOTE_INTERSTITIAL_AD_ID }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$TRUCKREMOTE_KEYSTORE_FILE"
+          ./gradlew assembleRelease bundleRelease
+          rm "$TRUCKREMOTE_KEYSTORE_FILE"
+
+      - name: Upload release
+        if: github.event_name == 'push' && env.KEYSTORE_BASE64 != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: release
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab

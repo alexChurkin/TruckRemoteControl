@@ -2,9 +2,31 @@
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar" />
 
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <!-- Compose screens draw everything themselves, the window has the color of their surface -->
+    <style name="AppTheme.Compose" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/m3_surface</item>
+    </style>
+
+    <!-- Main screen: its own look, Material 3 for dialogs (the same colors as the Compose screens) -->
+    <style name="AppTheme.Main" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowBackground">@color/backgroundMain</item>
+        <item name="colorPrimary">@color/m3_primary</item>
+        <item name="colorOnPrimary">@color/m3_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/m3_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/m3_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/m3_secondary</item>
+        <item name="colorOnSecondary">@color/m3_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/m3_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/m3_onSecondaryContainer</item>
+        <item name="colorSurface">@color/m3_surface</item>
+        <item name="colorOnSurface">@color/m3_onSurface</item>
+        <item name="colorOnSurfaceVariant">@color/m3_onSurfaceVariant</item>
+        <item name="colorSurfaceContainer">@color/m3_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/m3_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/m3_surfaceContainerHighest</item>
+        <item name="colorOutline">@color/m3_outline</item>
+        <item name="colorOutlineVariant">@color/m3_outlineVariant</item>
+        <item name="colorError">@color/m3_error</item>
     </style>
 
 
@@ -24,15 +46,28 @@
 
     <style name="MenuItem">
         <item name="android:textSize">16sp</item>
-        <item name="android:layout_width">0dp</item>
+        <!-- The column is as wide as its longest label, every item fills it -->
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingStart">22dp</item>
-        <item name="android:paddingEnd">16dp</item>
-        <item name="android:paddingBottom">20dp</item>
-        <item name="android:paddingTop">20dp</item>
-        <item name="android:drawablePadding">28dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">28dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:drawablePadding">20dp</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:background">?selectableItemBackground</item>
+    </style>
+
+    <style name="PedalLevelLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:shadowColor">#99000000</item>
+        <item name="android:shadowRadius">4</item>
+        <item name="android:visibility">invisible</item>
     </style>
 </resources>

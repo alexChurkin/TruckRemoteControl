@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- Real problems should fail the build -->
+    <issue id="UnusedResources" severity="warning" />
+    <issue id="MissingTranslation" severity="error" />
+    <issue id="HardcodedText" severity="error" />
+    <!-- Library versions are managed manually in libs.versions.toml -->
+    <issue id="GradleDependency" severity="informational" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <issue id="AndroidGradlePluginVersion" severity="informational" />
+</lint>

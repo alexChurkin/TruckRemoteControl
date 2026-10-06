@@ -1,0 +1,8 @@
+# Copy this file to ad.properties (in the same folder) and put the real values in.
+# ad.properties is ignored by git. Without it the release build uses the demo ad unit and sends no statistics.
+
+# The interstitial ad unit of Yandex Mobile Ads, as in the Yandex Advertising Network account: R-M-XXXXXXX-N
+interstitialAdId=R-M-0000000-0
+
+# The API key of the app in AppMetrica (Settings of the app -> API key): 36 characters
+appMetricaApiKey=00000000-0000-0000-0000-000000000000

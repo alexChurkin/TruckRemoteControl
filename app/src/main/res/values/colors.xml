@@ -5,8 +5,42 @@
     <color name="backgroundGray">#313131</color>
     <color name="indicatorRed">#DA4343</color>
     <color name="indicatorGreen">#2CC75F</color>
+    <!-- Press force inside the pedals -->
+    <color name="pedalFillGas">#A62CC75F</color>
+    <color name="pedalFillBrake">#A6DA4343</color>
+    <color name="pedalFillLocked">#A6FFB300</color>
+    <color name="indicatorYellow">#FFB300</color>
+
+    <color name="lockedAmber">#FFB300</color>
+    <color name="actionsPanel">#E62E2E2E</color>
+    <color name="actionItem">#3A3A3A</color>
+    <color name="actionItemPressed">#555555</color>
+    <color name="actionItemActive">#1E7A3F</color>
 
     <color name="white">#ffffff</color>
-    <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
+
+    <!-- Material 3 dark scheme from the brand green, the same as ui/theme/Theme.kt -->
+    <color name="m3_primary">#51E478</color>
+    <color name="m3_onPrimary">#003914</color>
+    <color name="m3_primaryContainer">#2CC75F</color>
+    <color name="m3_onPrimaryContainer">#004D1D</color>
+    <color name="m3_secondary">#97D59C</color>
+    <color name="m3_onSecondary">#003914</color>
+    <color name="m3_secondaryContainer">#195428</color>
+    <color name="m3_onSecondaryContainer">#8AC78F</color>
+    <color name="m3_surface">#0E150E</color>
+    <color name="m3_onSurface">#DCE5D9</color>
+    <color name="m3_onSurfaceVariant">#BCCBB9</color>
+    <color name="m3_surfaceContainer">#1A211A</color>
+    <color name="m3_surfaceContainerHigh">#242C24</color>
+    <color name="m3_surfaceContainerHighest">#2F372E</color>
+    <color name="m3_outline">#869584</color>
+    <color name="m3_outlineVariant">#3D4A3D</color>
+    <color name="m3_error">#FFB4AB</color>
+    <!-- Instruments on the controller screen -->
+    <color name="dashboardSecondary">#B0B0B0</color>
+    <color name="dashboardTrack">#33FFFFFF</color>
+    <color name="dashboardRpm">#E0E0E0</color>
+    <color name="dashboardCaution">#FFB300</color>
 </resources>

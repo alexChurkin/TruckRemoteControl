@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.alexchurkin.truckremote">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
         android:name="android.hardware.sensor.accelerometer"
@@ -11,25 +10,38 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.android.vending.BILLING" />
+    <!-- The advertising identifier isn't used: Yandex Ads and Google Play services libraries request it,
+         and without the permission Android gives them only zeros instead of the identifier -->
+    <uses-permission
+        android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove" />
 
     <application
-        android:name=".TruckRemote"
+        android:name=".TruckRemoteApp"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
+        tools:targetApi="33"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         tools:ignore="GoogleAppIndexingWarning">
 
+        <!-- Google Play services download the QR code scanner together with the app -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode_ui" />
+
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".ui.main.MainActivity"
             android:exported="true"
             android:hardwareAccelerated="true"
             android:resizeableActivity="false"
             android:screenOrientation="sensorLandscape"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme.Main"
             android:turnScreenOn="true"
             tools:ignore="NonResizeableActivity,UnusedAttribute">
             <intent-filter>
@@ -39,17 +51,36 @@
         </activity>
 
         <activity
-            android:name=".activity.SettingsActivity"
+            android:name=".ui.settings.SettingsActivity"
+            android:screenOrientation="fullSensor"
             android:label="@string/settings"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme.Compose" />
+
+        <!-- A tablet or a second phone as the dashboard: any orientation -->
+        <activity
+            android:name=".ui.dashboard.DashboardActivity"
+            android:label="@string/dashboard_mode"
+            android:theme="@style/AppTheme.Compose" />
+
+        <!-- The question of the first start -->
+        <activity
+            android:name=".ui.mode.ModeActivity"
+            android:theme="@style/AppTheme.Compose" />
 
         <activity
-            android:name=".activity.GuideActivity"
+            android:name=".ui.guide.GuideActivity"
+            android:screenOrientation="fullSensor"
             android:label="@string/guide"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme.Compose" />
 
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="${admobAppId}" />
+        <!-- Stores the language chosen in the app on Android 12 and older -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
     </application>
 </manifest>
