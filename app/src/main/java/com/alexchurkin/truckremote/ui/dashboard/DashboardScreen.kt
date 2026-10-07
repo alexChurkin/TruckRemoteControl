@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -99,12 +100,21 @@ private val LampColumn = 56.dp
 // The place of the settings button under the cards
 private val SettingsRow = 40.dp
 
+// The instruments under a black veil at night
+private const val NIGHT_SCRIM = 0.35f
+private const val NIGHT_FADE_MS = 400
+
 /**
  * The dashboard mode: big instruments of the truck for a tablet or a second phone. Wide screens have the gauge
  * on the left and the cards on the right, tall ones have the cards under it.
  */
 @Composable
-fun DashboardScreen(state: DashboardUiState, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
+fun DashboardScreen(
+    state: DashboardUiState,
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+    onNightChange: (Boolean) -> Unit = {},
+) {
     Box(modifier = modifier.fillMaxSize().background(Background)) {
         val truck = state.truck
         val dashboard = truck?.dashboard
@@ -113,9 +123,24 @@ fun DashboardScreen(state: DashboardUiState, onOpenSettings: () -> Unit, modifie
         } else {
             Instruments(truck, dashboard, state.job, state.imperialUnits, state.speedingWarning)
         }
-        // The mode of the app is changed in the settings
-        TextButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
-            Text(stringResource(R.string.settings))
+        // At night the screen is at its lowest brightness (the activity sets it), and even that is too bright
+        // on many tablets: the instruments are dimmed more
+        val scrim by animateFloatAsState(if (state.night) NIGHT_SCRIM else 0f, tween(NIGHT_FADE_MS), label = "night")
+        if (scrim > 0f) Box(Modifier.matchParentSize().background(Color.Black.copy(alpha = scrim)))
+        Row(modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
+            TextButton(onClick = { onNightChange(!state.night) }) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_night),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(if (state.night) R.string.dashboard_mode_day else R.string.dashboard_mode_night))
+            }
+            // The mode of the app is changed in the settings
+            TextButton(onClick = onOpenSettings) {
+                Text(stringResource(R.string.settings))
+            }
         }
     }
 }

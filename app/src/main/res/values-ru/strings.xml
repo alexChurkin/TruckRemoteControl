@@ -271,6 +271,8 @@
     <string name="dashboard_mode_job">Заказ</string>
     <string name="dashboard_mode_retarder">Ретардер</string>
     <string name="dashboard_mode_warnings">Предупреждения</string>
+    <string name="dashboard_mode_night">Ночной режим</string>
+    <string name="dashboard_mode_day">Дневной режим</string>
     <string name="app_mode_title">Режим</string>
     <string name="app_mode_choice_title">Это устройство</string>
     <string name="app_mode_choice_summary">Приборная панель только показывает приборы грузовика: для планшета или второго телефона рядом с тем, которым вы управляете. Выбранный режим открывается сразу.</string>

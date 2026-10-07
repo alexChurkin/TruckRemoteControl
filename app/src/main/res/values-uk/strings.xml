@@ -271,6 +271,8 @@
     <string name="dashboard_mode_job">Замовлення</string>
     <string name="dashboard_mode_retarder">Ретардер</string>
     <string name="dashboard_mode_warnings">Попередження</string>
+    <string name="dashboard_mode_night">Нічний режим</string>
+    <string name="dashboard_mode_day">Денний режим</string>
     <string name="app_mode_title">Режим</string>
     <string name="app_mode_choice_title">Цей пристрій</string>
     <string name="app_mode_choice_summary">Приладова панель лише показує прилади вантажівки: для планшета або другого телефона поруч із тим, яким ви керуєте. Вибраний режим відкривається одразу.</string>

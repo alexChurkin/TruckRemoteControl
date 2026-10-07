@@ -26,6 +26,8 @@ data class DashboardUiState(
     val job: Job? = null,
     val imperialUnits: Boolean = false,
     val speedingWarning: Boolean = true,
+    // The screen is dimmed for the night
+    val night: Boolean = false,
 )
 
 /**
@@ -42,6 +44,10 @@ class DashboardViewModel(private val settings: AppSettings, private val viewer: 
 
     fun setForeground(shown: Boolean) = if (shown) viewer.start() else viewer.stop()
 
+    fun setNight(night: Boolean) {
+        settings.dashboardNight = night
+    }
+
     override fun onCleared() = viewer.stop()
 
     private fun snapshot(viewerState: ViewerState): DashboardUiState {
@@ -54,6 +60,7 @@ class DashboardViewModel(private val settings: AppSettings, private val viewer: 
                 game,
             ).speedUnits.isImperial(game, viewerState.truck?.dashboard?.gameImperialUnits),
             speedingWarning = settings.speedingWarning,
+            night = settings.dashboardNight,
         )
     }
 

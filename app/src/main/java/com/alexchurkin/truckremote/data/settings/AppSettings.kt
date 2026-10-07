@@ -93,6 +93,11 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_SHOW_DASHBOARD, true)
         set(value) = prefs.edit { putBoolean(KEY_SHOW_DASHBOARD, value) }
 
+    // The dashboard mode dims the screen for driving at night
+    var dashboardNight: Boolean
+        get() = prefs.getBoolean(KEY_DASHBOARD_NIGHT, false)
+        set(value) = prefs.edit { putBoolean(KEY_DASHBOARD_NIGHT, value) }
+
     // The speed turns amber, then red above the speed limit
     var speedingWarning: Boolean
         get() = prefs.getBoolean(KEY_SPEEDING_WARNING, true)
@@ -213,6 +218,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_PNEUMATIC_HORN = "pneumaticSignal"
         private const val KEY_SHOW_DASHBOARD = "showDashboard"
         private const val KEY_SPEEDING_WARNING = "speedingWarning"
+        private const val KEY_DASHBOARD_NIGHT = "dashboardNight"
         private const val KEY_SEPARATE_GAME_SETTINGS = "separateGameSettings"
         private const val KEY_LAST_GAME = "lastGame"
         private const val ATS_PREFIX = "ats."

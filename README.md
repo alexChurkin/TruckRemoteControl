@@ -23,7 +23,8 @@ network. Android 7.0 or newer is needed.
   the game controls.
 - **Shortcuts** of the launcher icon (a long press): settings, the dashboard mode and the guide.
 - **Vibration** with the truck: bumps, rough roads, collisions, the engine, the blinkers, gear shifts.
-- **Dashboard mode**: a tablet or a second phone shows the instruments beside the phone that drives.
+- **Dashboard mode**: a tablet or a second phone shows the instruments beside the phone that drives; its night mode
+  dims the screen.
 - English, Russian, Belarusian and Ukrainian.
 
 ![The quick actions panel](https://github.com/alexChurkin/TruckRemoteControl/raw/master/Screenshot_actions.png)

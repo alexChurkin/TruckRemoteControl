@@ -279,6 +279,8 @@
     <string name="dashboard_mode_job">Job</string>
     <string name="dashboard_mode_retarder">Retarder</string>
     <string name="dashboard_mode_warnings">Warnings</string>
+    <string name="dashboard_mode_night">Night mode</string>
+    <string name="dashboard_mode_day">Day mode</string>
     <string name="app_mode_title">Mode</string>
     <string name="app_mode_choice_title">This device is</string>
     <string name="app_mode_choice_summary">The dashboard only shows the instruments of the truck: for a tablet or a second phone beside the one that drives. The chosen mode opens at once.</string>

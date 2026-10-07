@@ -271,6 +271,8 @@
     <string name="dashboard_mode_job">Заказ</string>
     <string name="dashboard_mode_retarder">Рэтардэр</string>
     <string name="dashboard_mode_warnings">Папярэджанні</string>
+    <string name="dashboard_mode_night">Начны рэжым</string>
+    <string name="dashboard_mode_day">Дзённы рэжым</string>
     <string name="app_mode_title">Рэжым</string>
     <string name="app_mode_choice_title">Гэтая прылада</string>
     <string name="app_mode_choice_summary">Прыборная панэль толькі паказвае прыборы грузавіка: для планшэта або другога тэлефона побач з тым, якім вы кіруеце. Выбраны рэжым адкрываецца адразу.</string>
