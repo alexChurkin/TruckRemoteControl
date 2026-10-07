@@ -19,7 +19,11 @@ import com.alexchurkin.truckremote.ui.settings.SettingsActivity
  */
 object AppShortcuts {
 
-    private enum class Shortcut(@StringRes val label: Int, @DrawableRes val icon: Int, val screen: Class<*>) {
+    private enum class Shortcut(
+        @param:StringRes val label: Int,
+        @param:DrawableRes val icon: Int,
+        val screen: Class<*>,
+    ) {
         Settings(R.string.settings, R.drawable.ic_shortcut_settings, SettingsActivity::class.java),
         Dashboard(R.string.dashboard_mode, R.drawable.ic_shortcut_dashboard, DashboardActivity::class.java),
         Guide(R.string.guide, R.drawable.ic_shortcut_guide, GuideActivity::class.java),

@@ -184,6 +184,8 @@
     <string name="scan_qr_loading">Сервіси Google Play завантажують сканер, спробуйте за хвилину</string>
     <string name="show_dashboard_title">Прилади на екрані</string>
     <string name="show_dashboard_summary">Швидкість, круїз-контроль та оберти між педалями, поки працює гра</string>
+    <string name="speeding_warning_title">Підсвічування перевищення швидкості</string>
+    <string name="speeding_warning_summary">Швидкість плавно жовтіє, а потім червоніє понад обмеження</string>
     <string name="dashboard_kmh">км/год</string>
     <string name="dashboard_mph">миль/год</string>
     <string name="dashboard_cruise">Круїз</string>
@@ -207,6 +209,8 @@
     <string name="actions_edit_done">Готово</string>
     <string name="actions_empty">Порожньо</string>
     <string name="actions_edit_place">Замінити: %1$s</string>
+    <string name="action_unbound">Дія «%1$s» не має клавіші в грі. Призначте її в налаштуваннях керування гри</string>
+    <string name="action_unbound_state">Немає клавіші в грі</string>
     <string name="auto_pause_face_down">Автопауза: телефон лежить екраном донизу</string>
     <string name="cruise_not_engaged_slow">Круїз-контроль не ввімкнувся: надто низька швидкість</string>
     <string name="cruise_not_engaged">Круїз-контроль не ввімкнувся</string>

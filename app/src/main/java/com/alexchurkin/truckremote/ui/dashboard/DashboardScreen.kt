@@ -64,6 +64,7 @@ import com.alexchurkin.truckremote.ui.main.alerts
 import com.alexchurkin.truckremote.ui.main.durationText
 import com.alexchurkin.truckremote.ui.main.gearText
 import com.alexchurkin.truckremote.ui.main.routeText
+import com.alexchurkin.truckremote.ui.main.speedColor
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -110,7 +111,7 @@ fun DashboardScreen(state: DashboardUiState, onOpenSettings: () -> Unit, modifie
         if (truck == null || dashboard == null) {
             Waiting(state, Modifier.align(Alignment.Center))
         } else {
-            Instruments(truck, dashboard, state.job, state.imperialUnits)
+            Instruments(truck, dashboard, state.job, state.imperialUnits, state.speedingWarning)
         }
         // The mode of the app is changed in the settings
         TextButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
@@ -151,12 +152,18 @@ private fun Waiting(state: DashboardUiState, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Instruments(truck: ServerState, dashboard: Dashboard, job: Job?, imperialUnits: Boolean) {
+private fun Instruments(
+    truck: ServerState,
+    dashboard: Dashboard,
+    job: Job?,
+    imperialUnits: Boolean,
+    speedingWarning: Boolean,
+) {
     BoxWithConstraints(Modifier.fillMaxSize().padding(16.dp)) {
         val wide = maxWidth > maxHeight * WIDE_RATIO
         if (wide) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Cluster(truck, dashboard, imperialUnits, Modifier.weight(1.3f).fillMaxHeight())
+                Cluster(truck, dashboard, imperialUnits, speedingWarning, Modifier.weight(1.3f).fillMaxHeight())
                 Cards(
                     truck,
                     dashboard,
@@ -167,7 +174,7 @@ private fun Instruments(truck: ServerState, dashboard: Dashboard, job: Job?, imp
             }
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Cluster(truck, dashboard, imperialUnits, Modifier.fillMaxWidth().aspectRatio(1.2f))
+                Cluster(truck, dashboard, imperialUnits, speedingWarning, Modifier.fillMaxWidth().aspectRatio(1.2f))
                 Cards(
                     truck,
                     dashboard,
@@ -183,9 +190,15 @@ private fun Instruments(truck: ServerState, dashboard: Dashboard, job: Job?, imp
 // The instrument cluster as in a truck: the gauge in the middle of its place, the blinkers at the upper corners
 // and the lamps in two columns beside the gauge (what is switched on the left, the systems on the right)
 @Composable
-private fun Cluster(truck: ServerState, dashboard: Dashboard, imperialUnits: Boolean, modifier: Modifier = Modifier) {
+private fun Cluster(
+    truck: ServerState,
+    dashboard: Dashboard,
+    imperialUnits: Boolean,
+    speedingWarning: Boolean,
+    modifier: Modifier = Modifier,
+) {
     Box(modifier) {
-        Gauge(dashboard, imperialUnits, Modifier.fillMaxSize().padding(horizontal = LampColumn))
+        Gauge(dashboard, imperialUnits, speedingWarning, Modifier.fillMaxSize().padding(horizontal = LampColumn))
         Lamp(
             icon = if (truck.leftBlinker) R.drawable.left_enabled else R.drawable.left_disabled,
             tint = null,
@@ -249,7 +262,12 @@ private fun Lamp(@DrawableRes icon: Int, tint: Color?, modifier: Modifier = Modi
 
 // The rpm on the arc with the zones of a truck tachometer, the speed and the gear inside, the limit and the cruise
 @Composable
-private fun Gauge(dashboard: Dashboard, imperialUnits: Boolean, modifier: Modifier = Modifier) {
+private fun Gauge(
+    dashboard: Dashboard,
+    imperialUnits: Boolean,
+    speedingWarning: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val factor = if (imperialUnits) MPH_IN_MS else KMH_IN_MS
     val unit = stringResource(if (imperialUnits) R.string.dashboard_mph else R.string.dashboard_kmh)
     val rpmMax = dashboard.engineRpmMax
@@ -291,7 +309,7 @@ private fun Gauge(dashboard: Dashboard, imperialUnits: Boolean, modifier: Modifi
             BasicText(
                 text = (abs(dashboard.speed) * factor).roundToInt().toString(),
                 style = TextStyle(
-                    color = Color.White,
+                    color = speedColor(dashboard, speedingWarning),
                     fontSize = (side.value * 0.26f).sp,
                     fontWeight = FontWeight.Bold,
                     fontFeatureSettings = "tnum",

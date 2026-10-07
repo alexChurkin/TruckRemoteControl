@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
@@ -70,6 +71,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -113,6 +115,9 @@ private val RingWidth = 2.dp
 // edges is drawn there, over the margin and the padding of the panel
 private val PageBleed = RingGrow + RingWidth / 2
 private const val SHAKE_MS = 300
+
+// The icon and the label of a button without a key in the game
+private const val UNBOUND_ALPHA = 0.45f
 private const val SHAKE_DP = 6f
 private val SHAKE_STEPS_DP = listOf(SHAKE_DP, -SHAKE_DP, SHAKE_DP / 2)
 
@@ -196,7 +201,8 @@ private class Reorder(private val pagerState: PagerState, val cell: Size) {
 /**
  * The quick actions panel: pages of buttons (swiped sideways) with page indicators under them.
  * [onClick] and [onHold] return true if the action was sent (the button gives haptic feedback then),
- * [activeActions] are on in the game (e.g. the engine is running), [badges] are small texts on buttons (e.g. "2/4").
+ * [activeActions] are on in the game (e.g. the engine is running), [badges] are small texts on buttons (e.g. "2/4"),
+ * [unboundActions] have no key in the game (their buttons are dimmed and marked, a press tells why it does nothing).
  * A long press on a button (or on an empty place) starts editing the [layout]. A button held so is lifted and can be
  * dragged to another place as an icon of a launcher: the other buttons make room for it and a side of the panel
  * turns the page. A tapped place shows all actions to choose from. Every change goes to [onLayoutChange].
@@ -210,6 +216,7 @@ fun ActionsPanel(
     onHold: (ControllerAction, Boolean) -> Boolean,
     onLayoutChange: (ActionLayout) -> Unit,
     modifier: Modifier = Modifier,
+    unboundActions: Set<ControllerAction> = emptySet(),
     shown: Boolean = true,
 ) {
     val pagerState = rememberPagerState { ActionLayout.PAGES }
@@ -280,6 +287,7 @@ fun ActionsPanel(
                     dragged = dragged,
                     activeActions = activeActions,
                     badges = badges,
+                    unboundActions = unboundActions,
                     editing = editing,
                     onClick = onClick,
                     onHold = onHold,
@@ -453,6 +461,7 @@ private fun ActionGrid(
     dragged: ControllerAction?,
     activeActions: Set<ControllerAction>,
     badges: Map<ControllerAction, String>,
+    unboundActions: Set<ControllerAction>,
     editing: Boolean,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
@@ -486,6 +495,7 @@ private fun ActionGrid(
                                 button = action.button(),
                                 active = action in activeActions,
                                 badge = badges[action],
+                                unbound = action in unboundActions,
                                 onClick = onClick,
                                 onHold = onHold,
                                 modifier = itemModifier,
@@ -548,12 +558,14 @@ private fun PickerGrid(
  * A button of the panel. Most actions show nothing in the game state (a camera, the map, a gear), so every press
  * that reached the server answers on the button itself: it springs, flashes and sends a ring outwards. A press
  * that couldn't be sent (no connection, paused) shakes the button instead. A hold action stays pushed in while held.
+ * An [unbound] action (no key in the game) is dimmed and has an amber dot; its press is refused, the screen tells why.
  */
 @Composable
 private fun ActionItem(
     button: ActionButton,
     active: Boolean,
     badge: String?,
+    unbound: Boolean,
     onClick: (ControllerAction) -> Boolean,
     onHold: (ControllerAction, Boolean) -> Boolean,
     modifier: Modifier = Modifier,
@@ -595,12 +607,26 @@ private fun ActionItem(
             }
         }
     }
+    val unboundState = stringResource(R.string.action_unbound_state)
     Box(modifier.pressFeedback(feedback)) {
         ActionTile(
             button = button,
             background = lerp(background, Color.White, feedback.flash.value * FLASH_WHITE),
-            modifier = Modifier.clip(ItemShape).then(input),
+            contentAlpha = if (unbound) UNBOUND_ALPHA else 1f,
+            modifier = Modifier
+                .clip(ItemShape)
+                .then(input)
+                .then(if (unbound) Modifier.semantics { stateDescription = unboundState } else Modifier),
         )
+        if (unbound) {
+            Box(
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(top = 6.dp, start = 6.dp)
+                    .size(6.dp)
+                    .background(colorResource(R.color.indicatorYellow), CircleShape),
+            )
+        }
         if (badge != null) {
             BasicText(
                 text = badge,
@@ -707,7 +733,12 @@ private fun EditItem(action: ControllerAction?, onEdit: () -> Unit, modifier: Mo
 
 // The icon with the label under it; null button: an empty place
 @Composable
-private fun ActionTile(button: ActionButton?, background: Color, modifier: Modifier = Modifier) {
+private fun ActionTile(
+    button: ActionButton?,
+    background: Color,
+    modifier: Modifier = Modifier,
+    contentAlpha: Float = 1f,
+) {
     Column(
         modifier = modifier
             .size(ItemWidth, ItemHeight)
@@ -723,14 +754,18 @@ private fun ActionTile(button: ActionButton?, background: Color, modifier: Modif
         Image(
             painter = painterResource(button.icon),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(Color.White),
+            colorFilter = ColorFilter.tint(Color.White.copy(alpha = contentAlpha)),
             modifier = Modifier.size(28.dp),
         )
         Spacer(Modifier.height(4.dp))
         // Long labels (e.g. in Russian) take two lines under the icon
         BasicText(
             text = stringResource(button.label),
-            style = TextStyle(color = Color.White, textAlign = TextAlign.Center, lineHeight = 14.sp),
+            style = TextStyle(
+                color = Color.White.copy(alpha = contentAlpha),
+                textAlign = TextAlign.Center,
+                lineHeight = 14.sp,
+            ),
             maxLines = 2,
             autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = 13.sp, stepSize = 0.5.sp),
         )

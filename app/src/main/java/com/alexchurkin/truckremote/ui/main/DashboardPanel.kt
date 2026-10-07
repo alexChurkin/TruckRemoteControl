@@ -2,6 +2,7 @@ package com.alexchurkin.truckremote.ui.main
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalConfiguration
@@ -99,6 +101,12 @@ private val SideWidth = 64.dp
 // Three digits of the speed
 private const val SPEED_WIDTH_SP = 96
 
+// km/h over the speed limit where the speed starts to change its color, is amber and is red (see speedingLevel)
+private const val SPEEDING_START_KMH = 2f
+private const val SPEEDING_AMBER_KMH = 7f
+private const val SPEEDING_RED_KMH = 14f
+private const val SPEED_COLOR_MS = 400
+
 /**
  * The place of the instruments at the top of the controller screen. Without them it has no height, so the controls
  * under it stay at the top. When the game starts sending the truck state, the instruments slide in from the top and
@@ -106,7 +114,13 @@ private const val SPEED_WIDTH_SP = 96
  * They stay when the quick actions panel is open: it takes the place of the controls under them.
  */
 @Composable
-fun DashboardSlot(dashboard: Dashboard?, job: Job?, imperialUnits: Boolean, modifier: Modifier = Modifier) {
+fun DashboardSlot(
+    dashboard: Dashboard?,
+    job: Job?,
+    imperialUnits: Boolean,
+    modifier: Modifier = Modifier,
+    speedingWarning: Boolean = true,
+) {
     // The last instruments are drawn while they slide out
     val last = remember { Ref<Dashboard>() }
     if (dashboard != null) last.value = dashboard
@@ -119,7 +133,7 @@ fun DashboardSlot(dashboard: Dashboard?, job: Job?, imperialUnits: Boolean, modi
             fadeOut(tween(SLOT_ANIMATION_MS)),
         modifier = modifier,
     ) {
-        if (shown != null) DashboardPanel(shown, job, imperialUnits)
+        if (shown != null) DashboardPanel(shown, job, imperialUnits, speedingWarning = speedingWarning)
     }
 }
 
@@ -167,7 +181,13 @@ fun CruiseSlot(
  * are problems; the lines that come and go change the height smoothly.
  */
 @Composable
-fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modifier: Modifier = Modifier) {
+fun DashboardPanel(
+    dashboard: Dashboard,
+    job: Job?,
+    imperialUnits: Boolean,
+    modifier: Modifier = Modifier,
+    speedingWarning: Boolean = true,
+) {
     val factor = if (imperialUnits) MPH_IN_MS else KMH_IN_MS
     val unit = stringResource(if (imperialUnits) R.string.dashboard_mph else R.string.dashboard_kmh)
     Column(
@@ -194,7 +214,7 @@ fun DashboardPanel(dashboard: Dashboard, job: Job?, imperialUnits: Boolean, modi
             BasicText(
                 text = (abs(dashboard.speed) * factor).roundToInt().toString(),
                 style = TextStyle(
-                    color = Color.White,
+                    color = speedColor(dashboard, speedingWarning),
                     fontSize = 52.sp,
                     fontWeight = FontWeight.Bold,
                     fontFeatureSettings = "tnum",
@@ -353,6 +373,32 @@ internal fun gearText(gear: Int) = when {
     gear < 0 -> stringResource(R.string.dashboard_gear_reverse, -gear)
     gear == 0 -> stringResource(R.string.dashboard_gear_neutral)
     else -> gear.toString()
+}
+
+/**
+ * How much the speed is over the limit: 0 up to [SPEEDING_START_KMH] over it (the speed of a truck at the limit
+ * wavers), 1 at [SPEEDING_AMBER_KMH] over, 2 from [SPEEDING_RED_KMH] over; in between it grows evenly.
+ * Always 0 without a limit.
+ */
+internal fun speedingLevel(speed: Float, limit: Float): Float {
+    if (limit <= 0f) return 0f
+    val over = (abs(speed) - limit) * KMH_IN_MS
+    return when {
+        over <= SPEEDING_START_KMH -> 0f
+        over <= SPEEDING_AMBER_KMH -> (over - SPEEDING_START_KMH) / (SPEEDING_AMBER_KMH - SPEEDING_START_KMH)
+        else -> 1f + ((over - SPEEDING_AMBER_KMH) / (SPEEDING_RED_KMH - SPEEDING_AMBER_KMH)).coerceAtMost(1f)
+    }
+}
+
+// The speed is white, over the limit it turns amber and then red through the colors in between; the change of the
+// color is animated, so it flows along with the speed
+@Composable
+internal fun speedColor(dashboard: Dashboard, enabled: Boolean): Color {
+    val level = if (enabled) speedingLevel(dashboard.speed, dashboard.speedLimit) else 0f
+    val amber = colorResource(R.color.indicatorYellow)
+    val red = colorResource(R.color.indicatorRed)
+    val target = if (level <= 1f) lerp(Color.White, amber, level) else lerp(amber, red, level - 1f)
+    return animateColorAsState(target, tween(SPEED_COLOR_MS), label = "speed").value
 }
 
 // A round European sign in ETS2, a rectangular American one in ATS

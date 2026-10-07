@@ -161,6 +161,7 @@ data class SettingsActions(
     val onTestVibration: () -> Unit = {},
     val onPneumaticHornChange: (Boolean) -> Unit = {},
     val onShowDashboardChange: (Boolean) -> Unit = {},
+    val onSpeedingWarningChange: (Boolean) -> Unit = {},
     val onAutoPauseChange: (Boolean) -> Unit = {},
     val onSteeringDeadZoneChange: (Int) -> Unit = {},
     val onSteeringMaxAngleChange: (Int) -> Unit = {},
@@ -217,6 +218,7 @@ fun SettingsScreen(
             onTestVibration = viewModel::testVibration,
             onPneumaticHornChange = viewModel::setPneumaticHorn,
             onShowDashboardChange = viewModel::setShowDashboard,
+            onSpeedingWarningChange = viewModel::setSpeedingWarning,
             onAutoPauseChange = viewModel::setAutoPause,
             onSteeringDeadZoneChange = viewModel::setSteeringDeadZone,
             onSteeringMaxAngleChange = viewModel::setSteeringMaxAngle,
@@ -450,6 +452,14 @@ private fun SettingsList(
                 summary = stringResource(R.string.show_dashboard_summary),
                 checked = state.showDashboard,
                 onCheckedChange = actions.onShowDashboardChange,
+            )
+        }
+        centeredItem {
+            SwitchItem(
+                title = stringResource(R.string.speeding_warning_title),
+                summary = stringResource(R.string.speeding_warning_summary),
+                checked = state.speedingWarning,
+                onCheckedChange = actions.onSpeedingWarningChange,
             )
         }
         centeredItem {
@@ -1283,6 +1293,7 @@ private fun SettingsPreview() {
                 vibrationCapability = HapticCapability.Primitives,
                 pneumaticHorn = false,
                 showDashboard = true,
+                speedingWarning = true,
                 autoPause = true,
                 steeringDeadZone = 3,
                 steeringMaxAngle = 60,

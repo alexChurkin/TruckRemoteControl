@@ -53,6 +53,7 @@ data class SettingsUiState(
     val vibrationCapability: HapticCapability,
     val pneumaticHorn: Boolean,
     val showDashboard: Boolean,
+    val speedingWarning: Boolean,
     val autoPause: Boolean,
     val steeringDeadZone: Int,
     val steeringMaxAngle: Int,
@@ -198,6 +199,10 @@ class SettingsViewModel(
         settings.showDashboard = value
     }
 
+    fun setSpeedingWarning(value: Boolean) {
+        settings.speedingWarning = value
+    }
+
     fun setAutoPause(value: Boolean) {
         settings.autoPause = value
     }
@@ -275,6 +280,7 @@ class SettingsViewModel(
         vibrationCapability = haptics.capability,
         pneumaticHorn = settings.pneumaticHorn,
         showDashboard = settings.showDashboard,
+        speedingWarning = settings.speedingWarning,
         autoPause = settings.autoPause,
         steeringDeadZone = game.steeringDeadZone,
         steeringMaxAngle = game.steeringMaxAngle,

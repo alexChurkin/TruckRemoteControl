@@ -191,6 +191,8 @@
     <string name="scan_qr_loading">The scanner is being downloaded by Google Play services, try again in a minute</string>
     <string name="show_dashboard_title">Instruments on the screen</string>
     <string name="show_dashboard_summary">Speed, cruise control and engine rpm between the pedals while the game is running</string>
+    <string name="speeding_warning_title">Speeding warning</string>
+    <string name="speeding_warning_summary">The speed turns amber and then red above the speed limit</string>
     <string name="dashboard_kmh">km/h</string>
     <string name="dashboard_mph">mph</string>
     <string name="dashboard_cruise">Cruise</string>
@@ -214,6 +216,8 @@
     <string name="actions_edit_done">Done</string>
     <string name="actions_empty">Empty</string>
     <string name="actions_edit_place">Change: %1$s</string>
+    <string name="action_unbound">“%1$s” has no key in the game. Assign one in the game controls settings</string>
+    <string name="action_unbound_state">No key in the game</string>
     <string name="auto_pause_face_down">Auto pause: the phone lies screen down</string>
     <string name="cruise_not_engaged_slow">Cruise control did not turn on: the speed is too low</string>
     <string name="cruise_not_engaged">Cruise control did not turn on</string>

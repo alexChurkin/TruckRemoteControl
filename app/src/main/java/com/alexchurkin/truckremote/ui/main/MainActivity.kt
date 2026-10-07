@@ -73,6 +73,9 @@ class MainActivity :
     private var activeActions by mutableStateOf(emptySet<ControllerAction>())
     private var actionBadges by mutableStateOf(emptyMap<ControllerAction, String>())
 
+    // Actions the player has no key for in the game: their buttons are marked
+    private var unboundActions by mutableStateOf(emptySet<ControllerAction>())
+
     // The screen is dimmed a moment after the controls are paused (to save the battery), a touch brightens it
     private var paused = false
     private var dimJob: Job? = null
@@ -209,6 +212,7 @@ class MainActivity :
                 dashboard = state.truck?.dashboard.takeIf { state.showDashboard },
                 job = state.truck?.job,
                 imperialUnits = state.imperialUnits,
+                speedingWarning = state.speedingWarning,
             )
         }
         cruiseView.setContent {
@@ -229,6 +233,7 @@ class MainActivity :
                 layout = state.actionLayout,
                 activeActions = activeActions,
                 badges = actionBadges,
+                unboundActions = unboundActions,
                 onClick = viewModel::onAction,
                 onHold = viewModel::onActionHold,
                 onLayoutChange = viewModel::onActionLayoutChange,
@@ -381,6 +386,7 @@ class MainActivity :
         } else {
             emptyMap()
         }
+        unboundActions = truck.unboundActions
     }
 
     private fun scheduleDimming() {
@@ -449,6 +455,10 @@ class MainActivity :
             MainEffect.ServerOutdated -> showServerOutdatedHint()
 
             MainEffect.ShowAd -> app.container.ads.tryShowFullscreenAd(this)
+
+            is MainEffect.ActionUnbound -> showMessage(
+                getString(R.string.action_unbound, getString(effect.action.button().label)),
+            )
 
             MainEffect.ThrottleLockChanged -> binding.gasLayout.performHapticFeedback(
                 HapticFeedbackConstants.LONG_PRESS,

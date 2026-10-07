@@ -195,6 +195,21 @@ class BinaryProtocolTest {
     }
 
     @Test
+    fun `unbound actions are decoded by their click and hold codes, unknown codes are skipped`() {
+        // Map, the hold of "Activate", an unknown code; the count is more than the message has
+        val message = byteArrayOf(0x06, 4, 19, 43, 200)
+
+        assertTrue(BinaryProtocol.isUnboundActions(message, message.size))
+        assertFalse(BinaryProtocol.isJob(message, message.size))
+        assertEquals(
+            setOf(ControllerAction.Map, ControllerAction.Activate),
+            BinaryProtocol.decodeUnboundActions(message, message.size),
+        )
+        assertEquals(emptySet<ControllerAction>(), BinaryProtocol.decodeUnboundActions(byteArrayOf(0x06, 0), 2))
+        assertNull(ControllerProtocol.decodeServerMessage(message))
+    }
+
+    @Test
     fun `fuel range comes with revision 4`() {
         val state = ByteBuffer.allocate(40).order(ByteOrder.LITTLE_ENDIAN)
             .put(0x02)

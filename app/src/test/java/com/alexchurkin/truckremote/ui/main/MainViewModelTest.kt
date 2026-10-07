@@ -254,6 +254,21 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `an action without a key in the game isn't sent, the screen tells why`() = runTest {
+        val effects = collectEffects()
+        connect(TRUCK.copy(unboundActions = setOf(ControllerAction.Map, ControllerAction.LookLeft)))
+
+        assertFalse(viewModel.onAction(ControllerAction.Map))
+        assertFalse(viewModel.onActionHold(ControllerAction.LookLeft, true))
+        assertNull(controller.state.actionCounters[ControllerAction.Map])
+        assertEquals(
+            listOf(MainEffect.ActionUnbound(ControllerAction.Map), MainEffect.ActionUnbound(ControllerAction.LookLeft)),
+            effects.filterIsInstance<MainEffect.ActionUnbound>(),
+        )
+        assertTrue(viewModel.onAction(ControllerAction.Engine))
+    }
+
+    @Test
     fun `pausing releases the pedals and shows an ad`() = runTest {
         val effects = collectEffects()
         connect()

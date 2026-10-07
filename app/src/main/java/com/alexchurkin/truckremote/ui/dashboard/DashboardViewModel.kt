@@ -25,6 +25,7 @@ data class DashboardUiState(
     val truck: ServerState? = null,
     val job: Job? = null,
     val imperialUnits: Boolean = false,
+    val speedingWarning: Boolean = true,
 )
 
 /**
@@ -52,6 +53,7 @@ class DashboardViewModel(private val settings: AppSettings, private val viewer: 
             imperialUnits = settings.game(
                 game,
             ).speedUnits.isImperial(game, viewerState.truck?.dashboard?.gameImperialUnits),
+            speedingWarning = settings.speedingWarning,
         )
     }
 

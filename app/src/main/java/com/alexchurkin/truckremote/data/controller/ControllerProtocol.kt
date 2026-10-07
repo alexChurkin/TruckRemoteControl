@@ -126,6 +126,8 @@ data class ServerState(
     val retarderSteps: Int = 0,
     // The current job (binary protocol), null without a job or while the server doesn't send it
     val job: Job? = null,
+    // The actions the player has no key for in the game: the server can't press them (revision 8+)
+    val unboundActions: Set<ControllerAction> = emptySet(),
     // What the server sends (see BinaryProtocol.REVISION): 0 - the text protocol
     val serverRevision: Int = 0,
     // What the driver feels (revision 6+)

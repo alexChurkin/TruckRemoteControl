@@ -84,6 +84,7 @@ data class MainUiState(
     val autoPause: AutoPause? = null,
     // Instruments are shown while the server sends them (the game and its telemetry plugin are running)
     val showDashboard: Boolean = true,
+    val speedingWarning: Boolean = true,
     val actionLayout: ActionLayout = ActionLayout.Default,
     // Speed and distances in miles (by the game or the user's choice)
     val imperialUnits: Boolean = false,
@@ -108,6 +109,9 @@ sealed interface MainEffect {
 
     // The server on the PC is older than the app: the dashboard, warnings or the job aren't shown
     data object ServerOutdated : MainEffect
+
+    // The player has no key for the action in the game: the server can't press it
+    data class ActionUnbound(val action: ControllerAction) : MainEffect
 }
 
 // What the screen shows on its first start
@@ -409,14 +413,14 @@ class MainViewModel(
 
     // Returns true if the action was sent (the button gives haptic feedback then)
     fun onAction(action: ControllerAction): Boolean {
-        if (!isControllable) return false
+        if (!isControllable || isUnbound(action)) return false
         controller.clickAction(action)
         return true
     }
 
     // A hold action is held while its button is pressed; returns true if it was sent
     fun onActionHold(action: ControllerAction, held: Boolean): Boolean {
-        if (held && !isControllable) return false
+        if (held && (!isControllable || isUnbound(action))) return false
         // An older server knows only the click of the action
         if ((state.value.truck?.serverRevision ?: 0) < action.holdRevision) {
             if (held) controller.clickAction(action)
@@ -437,6 +441,13 @@ class MainViewModel(
             }
         }
         return true
+    }
+
+    // Told on a press: the button is only marked, it doesn't get in the way otherwise
+    private fun isUnbound(action: ControllerAction): Boolean {
+        val unbound = action in state.value.truck?.unboundActions.orEmpty()
+        if (unbound) send(MainEffect.ActionUnbound(action))
+        return unbound
     }
 
     // The quick actions panel was edited: an action was put into a place or dragged to another one,
@@ -671,6 +682,7 @@ class MainViewModel(
         _state.update {
             it.copy(
                 showDashboard = settings.showDashboard,
+                speedingWarning = settings.speedingWarning,
                 actionLayout = game.actionLayout,
                 imperialUnits = imperialUnits(),
             )
