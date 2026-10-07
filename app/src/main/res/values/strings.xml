@@ -218,6 +218,15 @@
     <string name="actions_edit_place">Change: %1$s</string>
     <string name="action_unbound">“%1$s” has no key in the game. Assign one in the game controls settings</string>
     <string name="action_unbound_state">No key in the game</string>
+    <string name="control_left_blinker">Left blinker</string>
+    <string name="control_right_blinker">Right blinker</string>
+    <string name="control_hazard_lights">Hazard lights</string>
+    <string name="control_parking_brake">Parking brake</string>
+    <string name="control_lights">Lights</string>
+    <string name="control_high_beam">High beam</string>
+    <string name="control_horn">Horn</string>
+    <string name="control_air_horn">Air horn</string>
+    <string name="control_cruise">Cruise control</string>
     <string name="auto_pause_face_down">Auto pause: the phone lies screen down</string>
     <string name="cruise_not_engaged_slow">Cruise control did not turn on: the speed is too low</string>
     <string name="cruise_not_engaged">Cruise control did not turn on</string>

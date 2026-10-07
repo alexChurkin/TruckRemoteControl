@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -101,6 +102,9 @@ private val SideWidth = 64.dp
 // Three digits of the speed
 private const val SPEED_WIDTH_SP = 96
 
+// A button without a key in the game (see MainActivity)
+private const val UNBOUND_ALPHA = 0.45f
+
 // km/h over the speed limit where the speed starts to change its color, is amber and is red (see speedingLevel)
 private const val SPEEDING_START_KMH = 2f
 private const val SPEEDING_AMBER_KMH = 7f
@@ -151,6 +155,7 @@ fun CruiseSlot(
     onToggle: () -> Boolean,
     onStep: (up: Boolean) -> Boolean,
     modifier: Modifier = Modifier,
+    unbound: Boolean = false,
 ) {
     // The last speed is drawn while the control fades out
     val last = remember { Ref<Dashboard>() }
@@ -168,6 +173,8 @@ fun CruiseSlot(
                 unit = stringResource(if (imperialUnits) R.string.dashboard_mph else R.string.dashboard_kmh),
                 onToggle = onToggle,
                 onStep = onStep,
+                // No key in the game: dimmed as the other buttons, a press tells why
+                modifier = if (unbound) Modifier.alpha(UNBOUND_ALPHA) else Modifier,
             )
         }
     }

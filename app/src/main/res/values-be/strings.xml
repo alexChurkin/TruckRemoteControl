@@ -211,6 +211,15 @@
     <string name="actions_edit_place">Замяніць: %1$s</string>
     <string name="action_unbound">У дзеяння «%1$s» няма клавішы ў гульні. Прызначце яе ў наладах кіравання гульні</string>
     <string name="action_unbound_state">Няма клавішы ў гульні</string>
+    <string name="control_left_blinker">Левы паказальнік павароту</string>
+    <string name="control_right_blinker">Правы паказальнік павароту</string>
+    <string name="control_hazard_lights">Аварыйка</string>
+    <string name="control_parking_brake">Стаянкавы тормаз</string>
+    <string name="control_lights">Фары</string>
+    <string name="control_high_beam">Дальняе святло</string>
+    <string name="control_horn">Гудок</string>
+    <string name="control_air_horn">Пнеўмасігнал</string>
+    <string name="control_cruise">Круіз-кантроль</string>
     <string name="auto_pause_face_down">Аўтапаўза: тэлефон ляжыць экранам уніз</string>
     <string name="cruise_not_engaged_slow">Круіз-кантроль не ўключыўся: занадта нізкая хуткасць</string>
     <string name="cruise_not_engaged">Круіз-кантроль не ўключыўся</string>

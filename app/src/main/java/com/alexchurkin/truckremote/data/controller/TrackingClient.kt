@@ -45,8 +45,8 @@ class TrackingClient(private val listener: Listener) {
         // The job is sent once a second, null - no job
         fun onJob(job: Job?)
 
-        // The actions the player has no key for in the game, sent once a second by the server revision 8+
-        fun onUnboundActions(actions: Set<ControllerAction>)
+        // What the player has no key for in the game, sent once a second by the server revision 8+
+        fun onUnboundKeys(keys: UnboundKeys)
 
         // About once per second while connected
         fun onLinkQuality(quality: LinkQuality)
@@ -399,7 +399,7 @@ class TrackingClient(private val listener: Listener) {
             if (BinaryProtocol.isJob(packet.data, packet.length)) {
                 listener.onJob(BinaryProtocol.decodeJob(packet.data, packet.length))
             } else if (BinaryProtocol.isUnboundActions(packet.data, packet.length)) {
-                listener.onUnboundActions(BinaryProtocol.decodeUnboundActions(packet.data, packet.length))
+                listener.onUnboundKeys(BinaryProtocol.decodeUnboundActions(packet.data, packet.length))
             } else {
                 ControllerProtocol.decodeServerMessage(packet.data, packet.length)?.let {
                     meter.onMessage(now, it.sequence)

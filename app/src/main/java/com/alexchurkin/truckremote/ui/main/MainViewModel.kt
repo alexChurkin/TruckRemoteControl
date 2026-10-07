@@ -17,6 +17,7 @@ import com.alexchurkin.truckremote.data.controller.ControllerState
 import com.alexchurkin.truckremote.data.controller.Feedback
 import com.alexchurkin.truckremote.data.controller.HornState
 import com.alexchurkin.truckremote.data.controller.LinkQuality
+import com.alexchurkin.truckremote.data.controller.MainControl
 import com.alexchurkin.truckremote.data.controller.RoadFeel
 import com.alexchurkin.truckremote.data.controller.ServerState
 import com.alexchurkin.truckremote.data.controller.isConnected
@@ -85,6 +86,7 @@ data class MainUiState(
     // Instruments are shown while the server sends them (the game and its telemetry plugin are running)
     val showDashboard: Boolean = true,
     val speedingWarning: Boolean = true,
+    val pneumaticHorn: Boolean = false,
     val actionLayout: ActionLayout = ActionLayout.Default,
     // Speed and distances in miles (by the game or the user's choice)
     val imperialUnits: Boolean = false,
@@ -110,8 +112,10 @@ sealed interface MainEffect {
     // The server on the PC is older than the app: the dashboard, warnings or the job aren't shown
     data object ServerOutdated : MainEffect
 
-    // The player has no key for the action in the game: the server can't press it
+    // The player has no key for the action or the control in the game: the server can't press it
     data class ActionUnbound(val action: ControllerAction) : MainEffect
+
+    data class ControlUnbound(val control: MainControl) : MainEffect
 }
 
 // What the screen shows on its first start
@@ -397,19 +401,20 @@ class MainViewModel(
         get() = state.value.isConnected && !state.value.isPaused
 
     // Toggles are flipped on every click, so a lost message can't lose a click
-    private fun toggle(transform: (ControllerState) -> ControllerState) {
-        if (isControllable) controller.updateState(transform)
+    private fun toggle(vararg keys: MainControl, transform: (ControllerState) -> ControllerState) {
+        if (isControllable && keys.none { isUnbound(it) }) controller.updateState(transform)
     }
 
-    fun onLeftSignal() = toggle { it.copy(leftSignalClick = !it.leftSignalClick) }
+    fun onLeftSignal() = toggle(MainControl.LeftBlinker) { it.copy(leftSignalClick = !it.leftSignalClick) }
 
-    fun onRightSignal() = toggle { it.copy(rightSignalClick = !it.rightSignalClick) }
+    fun onRightSignal() = toggle(MainControl.RightBlinker) { it.copy(rightSignalClick = !it.rightSignalClick) }
 
-    fun onEmergencySignal() = toggle { it.copy(emergencyClick = !it.emergencyClick) }
+    fun onEmergencySignal() = toggle(MainControl.HazardLights) { it.copy(emergencyClick = !it.emergencyClick) }
 
-    fun onParkingBrake() = toggle { it.copy(parkingBrakeClick = !it.parkingBrakeClick) }
+    fun onParkingBrake() = toggle(MainControl.ParkingBrake) { it.copy(parkingBrakeClick = !it.parkingBrakeClick) }
 
-    fun onLights() = toggle { it.copy(lightsClick = !it.lightsClick) }
+    // The button switches the low beam and the high beam
+    fun onLights() = toggle(MainControl.Lights, MainControl.HighBeam) { it.copy(lightsClick = !it.lightsClick) }
 
     // Returns true if the action was sent (the button gives haptic feedback then)
     fun onAction(action: ControllerAction): Boolean {
@@ -445,8 +450,14 @@ class MainViewModel(
 
     // Told on a press: the button is only marked, it doesn't get in the way otherwise
     private fun isUnbound(action: ControllerAction): Boolean {
-        val unbound = action in state.value.truck?.unboundActions.orEmpty()
+        val unbound = action in state.value.truck?.unbound?.actions.orEmpty()
         if (unbound) send(MainEffect.ActionUnbound(action))
+        return unbound
+    }
+
+    private fun isUnbound(control: MainControl): Boolean {
+        val unbound = control in state.value.truck?.unbound?.controls.orEmpty()
+        if (unbound) send(MainEffect.ControlUnbound(control))
         return unbound
     }
 
@@ -464,7 +475,7 @@ class MainViewModel(
 
     // A double tap on the gas or the cruise button of the dashboard; returns true if it was sent
     fun onCruiseToggle(): Boolean {
-        if (!isControllable) return false
+        if (!isControllable || isUnbound(MainControl.Cruise)) return false
         controller.updateState { it.copy(cruiseClick = !it.cruiseClick) }
         checkCruiseEngaged()
         return true
@@ -489,6 +500,7 @@ class MainViewModel(
     // Returns true if the horn works now (the button is animated then)
     fun onHorn(pressed: Boolean): Boolean {
         if (!state.value.isConnected) return false
+        if (pressed && isUnbound(if (pneumaticHorn) MainControl.AirHorn else MainControl.Horn)) return false
         val horn = when {
             !pressed -> HornState.Off
             pneumaticHorn -> HornState.Pneumatic
@@ -683,6 +695,7 @@ class MainViewModel(
             it.copy(
                 showDashboard = settings.showDashboard,
                 speedingWarning = settings.speedingWarning,
+                pneumaticHorn = settings.pneumaticHorn,
                 actionLayout = game.actionLayout,
                 imperialUnits = imperialUnits(),
             )

@@ -211,6 +211,15 @@
     <string name="actions_edit_place">Заменить: %1$s</string>
     <string name="action_unbound">У действия «%1$s» нет клавиши в игре. Назначьте её в настройках управления игры</string>
     <string name="action_unbound_state">Нет клавиши в игре</string>
+    <string name="control_left_blinker">Левый поворотник</string>
+    <string name="control_right_blinker">Правый поворотник</string>
+    <string name="control_hazard_lights">Аварийка</string>
+    <string name="control_parking_brake">Стояночный тормоз</string>
+    <string name="control_lights">Фары</string>
+    <string name="control_high_beam">Дальний свет</string>
+    <string name="control_horn">Гудок</string>
+    <string name="control_air_horn">Пневмосигнал</string>
+    <string name="control_cruise">Круиз-контроль</string>
     <string name="auto_pause_face_down">Автопауза: телефон лежит экраном вниз</string>
     <string name="cruise_not_engaged_slow">Круиз-контроль не включился: слишком низкая скорость</string>
     <string name="cruise_not_engaged">Круиз-контроль не включился</string>

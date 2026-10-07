@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.data.controller.ControllerAction
+import com.alexchurkin.truckremote.data.controller.MainControl
 
 data class ActionButton(
     val action: ControllerAction,
@@ -80,3 +81,17 @@ val ActionButtons: Map<ControllerAction, ActionButton> = listOf(
 ).associateBy { it.action }
 
 fun ControllerAction.button(): ActionButton = ActionButtons.getValue(this)
+
+// The name of a control of the main screen, as a press without its key in the game tells it
+@StringRes
+fun MainControl.label(): Int = when (this) {
+    MainControl.LeftBlinker -> R.string.control_left_blinker
+    MainControl.RightBlinker -> R.string.control_right_blinker
+    MainControl.HazardLights -> R.string.control_hazard_lights
+    MainControl.ParkingBrake -> R.string.control_parking_brake
+    MainControl.Lights -> R.string.control_lights
+    MainControl.HighBeam -> R.string.control_high_beam
+    MainControl.Horn -> R.string.control_horn
+    MainControl.AirHorn -> R.string.control_air_horn
+    MainControl.Cruise -> R.string.control_cruise
+}

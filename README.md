@@ -14,9 +14,14 @@ network. Android 7.0 or newer is needed.
 - **Analog pedals**: drag a pedal up to press it harder, it springs back when released; swipe left on the gas
   to keep its level, double-tap the gas for cruise control.
 - **Instruments of the truck** at the top of the screen: speed, rpm, speed limit, gear, cruise control, warnings,
-  the job and the distance left, in the speed units of the game.
+  the job and the distance left, in the speed units of the game. Over the speed limit the speed turns amber and then
+  red (can be turned off in the settings).
 - **Quick actions**: six pages of buttons (engine, lights, retarder, cameras, map, radio and more) that can be
   moved and replaced; "Activate" is held to refuel.
+- **Buttons without a key in the game** are marked: with a server that tells them (protocol revision 8) a button whose
+  action has no key in the player's game profile is dimmed with an amber dot, and its press tells to bind a key in
+  the game controls.
+- **Shortcuts** of the launcher icon (a long press): settings, the dashboard mode and the guide.
 - **Vibration** with the truck: bumps, rough roads, collisions, the engine, the blinkers, gear shifts.
 - **Dashboard mode**: a tablet or a second phone shows the instruments beside the phone that drives.
 - English, Russian, Belarusian and Ukrainian.

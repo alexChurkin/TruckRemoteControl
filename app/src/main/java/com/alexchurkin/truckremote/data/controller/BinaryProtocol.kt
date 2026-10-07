@@ -29,8 +29,8 @@ import kotlin.math.roundToInt
  * 10 the speed units of the game are known, 11 they are miles per hour (km/h otherwise).
  * Job, sent once a second by revision 3+: type 0x05 | delivery minutes left i32 | cargo length u8 | cargo UTF-8 |
  * destination city length u8 | destination city UTF-8; no cargo - no job.
- * Unbound actions, sent once a second by revision 8+: type 0x06 | count u8 | action code u8 * count: the actions the
- * player has no key for in the game (the server can't press them).
+ * Unbound actions, sent once a second by revision 8+: type 0x06 | count u8 | code u8 * count: the actions of the panel
+ * and the controls of the main screen ([MainControl], 200+) the player has no key for in the game.
  */
 object BinaryProtocol {
     const val VERSION = 2
@@ -214,10 +214,13 @@ object BinaryProtocol {
         length >= UNBOUND_ACTIONS_HEADER_SIZE && data[0] == UNBOUND_ACTIONS_TYPE
 
     // The codes of the click and of the hold of an action are both its own; unknown codes are skipped
-    fun decodeUnboundActions(data: ByteArray, length: Int): Set<ControllerAction> {
+    fun decodeUnboundActions(data: ByteArray, length: Int): UnboundKeys {
         val count = minOf(data[1].toInt() and BYTE_MASK, length - UNBOUND_ACTIONS_HEADER_SIZE)
         val codes = (0 until count).map { data[UNBOUND_ACTIONS_HEADER_SIZE + it].toInt() and BYTE_MASK }.toSet()
-        return ControllerAction.entries.filterTo(mutableSetOf()) { it.code in codes || it.holdCode in codes }
+        return UnboundKeys(
+            actions = ControllerAction.entries.filterTo(mutableSetOf()) { it.code in codes || it.holdCode in codes },
+            controls = MainControl.entries.filterTo(mutableSetOf()) { it.code in codes },
+        )
     }
 
     // null without a job (or if the message is malformed)

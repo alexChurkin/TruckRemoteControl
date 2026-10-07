@@ -57,7 +57,7 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
     private var job: Job? = null
 
     @Volatile
-    private var unboundActions: Set<ControllerAction> = emptySet()
+    private var unbound = UnboundKeys()
 
     private val _connectionState = MutableStateFlow(ConnectionState.Disconnected)
     override val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
@@ -108,7 +108,7 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
         _connectionState.value = state
         if (!state.isConnected) {
             job = null
-            unboundActions = emptySet()
+            unbound = UnboundKeys()
             _truckState.value = null
             _linkQuality.value = null
             feedbackTracker.reset()
@@ -124,7 +124,7 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
             ffbDurationMs = 0,
             sequence = null,
             job = job,
-            unboundActions = unboundActions,
+            unbound = unbound,
             haptics = null,
         )
     }
@@ -133,8 +133,8 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
         this.job = job
     }
 
-    override fun onUnboundActions(actions: Set<ControllerAction>) {
-        unboundActions = actions
+    override fun onUnboundKeys(keys: UnboundKeys) {
+        unbound = keys
     }
 
     override fun onLinkQuality(quality: LinkQuality) {

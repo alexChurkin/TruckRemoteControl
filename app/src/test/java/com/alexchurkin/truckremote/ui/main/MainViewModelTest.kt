@@ -12,9 +12,11 @@ import com.alexchurkin.truckremote.data.controller.Feedback
 import com.alexchurkin.truckremote.data.controller.HapticEvent
 import com.alexchurkin.truckremote.data.controller.HornState
 import com.alexchurkin.truckremote.data.controller.LinkQuality
+import com.alexchurkin.truckremote.data.controller.MainControl
 import com.alexchurkin.truckremote.data.controller.RoadFeel
 import com.alexchurkin.truckremote.data.controller.RoadSurface
 import com.alexchurkin.truckremote.data.controller.ServerState
+import com.alexchurkin.truckremote.data.controller.UnboundKeys
 import com.alexchurkin.truckremote.data.device.HapticCapability
 import com.alexchurkin.truckremote.data.device.Haptics
 import com.alexchurkin.truckremote.data.device.WifiStatus
@@ -256,7 +258,7 @@ class MainViewModelTest {
     @Test
     fun `an action without a key in the game isn't sent, the screen tells why`() = runTest {
         val effects = collectEffects()
-        connect(TRUCK.copy(unboundActions = setOf(ControllerAction.Map, ControllerAction.LookLeft)))
+        connect(TRUCK.copy(unbound = UnboundKeys(actions = setOf(ControllerAction.Map, ControllerAction.LookLeft))))
 
         assertFalse(viewModel.onAction(ControllerAction.Map))
         assertFalse(viewModel.onActionHold(ControllerAction.LookLeft, true))
@@ -266,6 +268,30 @@ class MainViewModelTest {
             effects.filterIsInstance<MainEffect.ActionUnbound>(),
         )
         assertTrue(viewModel.onAction(ControllerAction.Engine))
+    }
+
+    @Test
+    fun `a control of the main screen without a key isn't sent, the screen tells why`() = runTest {
+        val effects = collectEffects()
+        val unbound = setOf(MainControl.LeftBlinker, MainControl.HighBeam, MainControl.Horn, MainControl.Cruise)
+        connect(TRUCK.copy(unbound = UnboundKeys(controls = unbound)))
+
+        viewModel.onLeftSignal()
+        // The lights button needs both of its keys
+        viewModel.onLights()
+        assertFalse(viewModel.onHorn(pressed = true))
+        assertFalse(viewModel.onCruiseToggle())
+        assertFalse(controller.state.leftSignalClick)
+        assertFalse(controller.state.lightsClick)
+        assertFalse(controller.state.cruiseClick)
+        assertEquals(
+            unbound.map(MainEffect::ControlUnbound),
+            effects.filterIsInstance<MainEffect.ControlUnbound>(),
+        )
+
+        // The other controls work
+        viewModel.onRightSignal()
+        assertTrue(controller.state.rightSignalClick)
     }
 
     @Test
