@@ -23,8 +23,9 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        // Not on every rotation
-        if (savedInstanceState == null) app.container.ads.tryShowFullscreenAd(this)
+        // Not on every rotation, and not when the settings start the app (the shortcut of the launcher icon):
+        // an ad mustn't be the first thing seen
+        if (savedInstanceState == null && !isTaskRoot) app.container.ads.tryShowFullscreenAd(this)
 
         setContent {
             TruckRemoteTheme {

@@ -3,9 +3,9 @@
     <string name="app_name" translatable="false">Truck Remote</string>
     <string name="github_link" translatable="false">https://github.com/alexChurkin/TruckRemoteControl</string>
 
-    <integer name="version">15</integer>
+    <integer name="version">16</integer>
     <string name="version_changes_title">New in this version</string>
-    <string name="version_changes_text">First update Truck Remote Server on your computer to 1.3: the new features need it.\n\n• Analog pedals: drag up to press harder, a released pedal springs back. Swipe left on the gas to keep its level.\n• Cruise control: double-tap the gas pedal.\n• Quick actions: six pages (engine, lights, retarder, cameras, map, radio…). Long press a button to move the buttons or put other actions in their places. Hold \"Activate\" to refuel.\n• Instruments at the top: speed, rpm, speed limit, gear, warnings, the job and the distance left. The speed units are taken from the game.\n• The phone vibrates with the truck: bumps, collisions, the engine, the blinkers.\n• Dashboard mode for a tablet or a second phone (Settings → Mode).\n• The steering is set up in the app with a live preview; ETS2 and ATS can have their own settings.\n• Auto pause while the phone lies on the table.\n• The server installs everything it needs, presses your own keys of the game and updates itself.</string>
+    <string name="version_changes_text">First update Truck Remote Server on your computer to 1.4: the new features need it.\n\n• The speed turns amber and then red over the speed limit (can be turned off in Settings).\n• Buttons whose action has no key in your game profile are dimmed with an amber dot; a press tells which one to assign in the game controls.\n• Dashboard mode: a night mode dims the screen.\n• Long press the app icon for Settings, the dashboard mode and the guide.\n• The server can start with Windows (Settings menu of the server).\n• A refreshed icon.</string>
 
     <string name="searching_on_local">Searching for servers on the local network…</string>
     <string name="signal_strength">Wi-Fi signal strength:</string>
