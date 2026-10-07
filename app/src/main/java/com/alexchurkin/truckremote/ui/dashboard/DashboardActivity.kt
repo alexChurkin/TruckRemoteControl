@@ -6,6 +6,7 @@ import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alexchurkin.truckremote.ui.settings.SettingsActivity
@@ -27,9 +28,11 @@ class DashboardActivity : AppCompatActivity() {
         setContent {
             TruckRemoteTheme {
                 val state by viewModel.state.collectAsStateWithLifecycle()
+                LaunchedEffect(state.night) { setNightBrightness(state.night) }
                 DashboardScreen(
                     state = state,
                     onOpenSettings = { startActivity(Intent(this, SettingsActivity::class.java)) },
+                    onNightChange = viewModel::setNight,
                 )
             }
         }
@@ -44,5 +47,16 @@ class DashboardActivity : AppCompatActivity() {
     override fun onStop() {
         viewModel.setForeground(false)
         super.onStop()
+    }
+
+    // The lowest brightness at night, the system one by day
+    private fun setNightBrightness(night: Boolean) {
+        window.attributes = window.attributes.apply {
+            screenBrightness = if (night) NIGHT_BRIGHTNESS else WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+        }
+    }
+
+    private companion object {
+        const val NIGHT_BRIGHTNESS = 0.01f
     }
 }

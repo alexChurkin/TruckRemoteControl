@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="backgroundMain">#242424</color>
-    <color name="backgroundMid">#2E2E2E</color>
     <color name="backgroundGray">#313131</color>
     <color name="indicatorRed">#DA4343</color>
     <color name="indicatorGreen">#2CC75F</color>
@@ -19,6 +18,10 @@
 
     <color name="white">#ffffff</color>
     <color name="transparent">#00000000</color>
+
+    <!-- Shortcuts of the launcher icon: the blue of the app icon -->
+    <color name="shortcut_background">#D3ECFF</color>
+    <color name="shortcut_glyph">#185EA2</color>
 
     <!-- Material 3 dark scheme from the brand green, the same as ui/theme/Theme.kt -->
     <color name="m3_primary">#51E478</color>
@@ -40,7 +43,6 @@
     <color name="m3_error">#FFB4AB</color>
     <!-- Instruments on the controller screen -->
     <color name="dashboardSecondary">#B0B0B0</color>
-    <color name="dashboardTrack">#33FFFFFF</color>
     <color name="dashboardRpm">#E0E0E0</color>
     <color name="dashboardCaution">#FFB300</color>
 </resources>

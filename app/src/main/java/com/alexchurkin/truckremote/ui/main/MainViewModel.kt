@@ -17,6 +17,7 @@ import com.alexchurkin.truckremote.data.controller.ControllerState
 import com.alexchurkin.truckremote.data.controller.Feedback
 import com.alexchurkin.truckremote.data.controller.HornState
 import com.alexchurkin.truckremote.data.controller.LinkQuality
+import com.alexchurkin.truckremote.data.controller.MainControl
 import com.alexchurkin.truckremote.data.controller.RoadFeel
 import com.alexchurkin.truckremote.data.controller.ServerState
 import com.alexchurkin.truckremote.data.controller.isConnected
@@ -45,6 +46,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -83,6 +85,8 @@ data class MainUiState(
     val autoPause: AutoPause? = null,
     // Instruments are shown while the server sends them (the game and its telemetry plugin are running)
     val showDashboard: Boolean = true,
+    val speedingWarning: Boolean = true,
+    val pneumaticHorn: Boolean = false,
     val actionLayout: ActionLayout = ActionLayout.Default,
     // Speed and distances in miles (by the game or the user's choice)
     val imperialUnits: Boolean = false,
@@ -107,6 +111,11 @@ sealed interface MainEffect {
 
     // The server on the PC is older than the app: the dashboard, warnings or the job aren't shown
     data object ServerOutdated : MainEffect
+
+    // The player has no key for the action or the control in the game: the server can't press it
+    data class ActionUnbound(val action: ControllerAction) : MainEffect
+
+    data class ControlUnbound(val control: MainControl) : MainEffect
 }
 
 // What the screen shows on its first start
@@ -114,6 +123,9 @@ enum class StartAction {
     None,
     Guide,
     ReleaseNotes,
+
+    // The rating dialog of Google Play, after the truck was driven enough
+    Review,
 }
 
 data class SignalInfo(val wifiEnabled: Boolean, val rssi: Int, val linkQuality: LinkQuality?)
@@ -190,6 +202,15 @@ class MainViewModel(
             .onEach { if (it == null) haptics.setRoad(RoadFeel.None, 0f) else haptics.setRoad(it.first, it.second) }
             .launchIn(viewModelScope)
 
+        // Minutes of driving: the screen is shown and the truck is controlled
+        combine(foreground, state.map { it.isConnected && !it.isPaused }.distinctUntilChanged()) { shown, controlled ->
+            shown && controlled
+        }
+            .distinctUntilChanged()
+            .flatMapLatest { driving -> if (driving) minuteTicks() else emptyFlow() }
+            .onEach { settings.drivingMinutes += 1 }
+            .launchIn(viewModelScope)
+
         // The tilt sensor works only while the screen is shown and the server is connected
         combine(foreground, state.map { it.isConnected }.distinctUntilChanged()) { shown, connected ->
             shown && connected
@@ -235,6 +256,11 @@ class MainViewModel(
             }
 
             settings.lastShownReleaseNotes != releaseNotesVersion -> StartAction.ReleaseNotes
+
+            !settings.reviewRequested && settings.drivingMinutes >= REVIEW_AFTER_DRIVING_MINUTES -> {
+                settings.reviewRequested = true
+                StartAction.Review
+            }
 
             else -> StartAction.None
         }
@@ -375,30 +401,31 @@ class MainViewModel(
         get() = state.value.isConnected && !state.value.isPaused
 
     // Toggles are flipped on every click, so a lost message can't lose a click
-    private fun toggle(transform: (ControllerState) -> ControllerState) {
-        if (isControllable) controller.updateState(transform)
+    private fun toggle(vararg keys: MainControl, transform: (ControllerState) -> ControllerState) {
+        if (isControllable && keys.none { isUnbound(it) }) controller.updateState(transform)
     }
 
-    fun onLeftSignal() = toggle { it.copy(leftSignalClick = !it.leftSignalClick) }
+    fun onLeftSignal() = toggle(MainControl.LeftBlinker) { it.copy(leftSignalClick = !it.leftSignalClick) }
 
-    fun onRightSignal() = toggle { it.copy(rightSignalClick = !it.rightSignalClick) }
+    fun onRightSignal() = toggle(MainControl.RightBlinker) { it.copy(rightSignalClick = !it.rightSignalClick) }
 
-    fun onEmergencySignal() = toggle { it.copy(emergencyClick = !it.emergencyClick) }
+    fun onEmergencySignal() = toggle(MainControl.HazardLights) { it.copy(emergencyClick = !it.emergencyClick) }
 
-    fun onParkingBrake() = toggle { it.copy(parkingBrakeClick = !it.parkingBrakeClick) }
+    fun onParkingBrake() = toggle(MainControl.ParkingBrake) { it.copy(parkingBrakeClick = !it.parkingBrakeClick) }
 
-    fun onLights() = toggle { it.copy(lightsClick = !it.lightsClick) }
+    // The button switches the low beam and the high beam
+    fun onLights() = toggle(MainControl.Lights, MainControl.HighBeam) { it.copy(lightsClick = !it.lightsClick) }
 
     // Returns true if the action was sent (the button gives haptic feedback then)
     fun onAction(action: ControllerAction): Boolean {
-        if (!isControllable) return false
+        if (!isControllable || isUnbound(action)) return false
         controller.clickAction(action)
         return true
     }
 
     // A hold action is held while its button is pressed; returns true if it was sent
     fun onActionHold(action: ControllerAction, held: Boolean): Boolean {
-        if (held && !isControllable) return false
+        if (held && (!isControllable || isUnbound(action))) return false
         // An older server knows only the click of the action
         if ((state.value.truck?.serverRevision ?: 0) < action.holdRevision) {
             if (held) controller.clickAction(action)
@@ -421,6 +448,19 @@ class MainViewModel(
         return true
     }
 
+    // Told on a press: the button is only marked, it doesn't get in the way otherwise
+    private fun isUnbound(action: ControllerAction): Boolean {
+        val unbound = action in state.value.truck?.unbound?.actions.orEmpty()
+        if (unbound) send(MainEffect.ActionUnbound(action))
+        return unbound
+    }
+
+    private fun isUnbound(control: MainControl): Boolean {
+        val unbound = control in state.value.truck?.unbound?.controls.orEmpty()
+        if (unbound) send(MainEffect.ControlUnbound(control))
+        return unbound
+    }
+
     // The quick actions panel was edited: an action was put into a place or dragged to another one,
     // or the layout was reset
     fun onActionLayoutChange(layout: ActionLayout) {
@@ -435,7 +475,7 @@ class MainViewModel(
 
     // A double tap on the gas or the cruise button of the dashboard; returns true if it was sent
     fun onCruiseToggle(): Boolean {
-        if (!isControllable) return false
+        if (!isControllable || isUnbound(MainControl.Cruise)) return false
         controller.updateState { it.copy(cruiseClick = !it.cruiseClick) }
         checkCruiseEngaged()
         return true
@@ -460,6 +500,7 @@ class MainViewModel(
     // Returns true if the horn works now (the button is animated then)
     fun onHorn(pressed: Boolean): Boolean {
         if (!state.value.isConnected) return false
+        if (pressed && isUnbound(if (pneumaticHorn) MainControl.AirHorn else MainControl.Horn)) return false
         val horn = when {
             !pressed -> HornState.Off
             pneumaticHorn -> HornState.Pneumatic
@@ -570,6 +611,13 @@ class MainViewModel(
         }
     }
 
+    private fun minuteTicks(): Flow<Unit> = flow {
+        while (true) {
+            delay(MINUTE_MS)
+            emit(Unit)
+        }
+    }
+
     /* Steering */
 
     // null after the sensor has been silent for SENSOR_TIMEOUT_MS
@@ -646,6 +694,8 @@ class MainViewModel(
         _state.update {
             it.copy(
                 showDashboard = settings.showDashboard,
+                speedingWarning = settings.speedingWarning,
+                pneumaticHorn = settings.pneumaticHorn,
                 actionLayout = game.actionLayout,
                 imperialUnits = imperialUnits(),
             )
@@ -696,6 +746,10 @@ class MainViewModel(
         // and when it lies there is no steering angle to read anyway
         private const val FACE_UP_ENTER = 0.97f
         private const val FACE_UP_EXIT = 0.94f
+
+        // A player who has driven an hour knows the app well enough to rate it
+        const val REVIEW_AFTER_DRIVING_MINUTES = 60
+        private const val MINUTE_MS = 60_000L
 
         val Factory = viewModelFactory {
             initializer {

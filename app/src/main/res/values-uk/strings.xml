@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Зміни у версії</string>
-    <string name="version_changes_text">Спочатку оновіть Truck Remote Server на комп\'ютері до 1.3: новим можливостям він потрібен.\n\n• Аналогові педалі: ведіть угору, щоб натиснути сильніше, відпущена педаль повертається пружиною. Газ фіксується свайпом ліворуч.\n• Круїз-контроль: подвійний дотик до педалі газу.\n• Швидкі дії: шість сторінок (двигун, світло, ретардер, камери, карта, радіо…). Довге натискання на кнопку дозволяє перетягувати кнопки й ставити на їхні місця інші дії. Утримуйте «Дія», щоб заправитися.\n• Прилади вгорі: швидкість, оберти, обмеження, передача, попередження, вантаж і відстань до мети. Одиниці швидкості беруться з гри.\n• Телефон вібрує разом із вантажівкою: нерівності, зіткнення, двигун, поворотники.\n• Режим приладової панелі для планшета або другого телефона (Налаштування → Режим).\n• Кермо налаштовується в застосунку з попереднім переглядом; в ETS2 і ATS можуть бути свої налаштування.\n• Автопауза, поки телефон лежить на столі.\n• Сервер сам ставить усе потрібне, натискає ваші клавіші з гри й оновлюється.</string>
+    <string name="version_changes_text">Спочатку оновіть Truck Remote Server на комп’ютері до 1.4: новим можливостям він потрібен.\n\n• Швидкість жовтіє, а потім червоніє понад обмеження (вимикається в налаштуваннях).\n• Кнопки, дії яких не мають клавіші у вашому профілі гри, приглушені й позначені жовтою крапкою; натискання підкаже, що призначити в налаштуваннях керування гри.\n• Режим приладової панелі: нічний режим затемнює екран.\n• Довге натискання на значок застосунку відкриває налаштування, приладову панель та інструкцію.\n• Сервер може запускатися разом із Windows (меню «Налаштування» сервера).\n• Оновлений значок.</string>
 
     <string name="searching_on_local">Пошук серверів у локальній мережі…</string>
     <string name="signal_strength">Сила сигналу Wi-Fi:</string>
@@ -22,7 +22,6 @@
 
     <string name="connection">Підключення</string>
     <string name="server_port_title">Порт сервера</string>
-    <string name="server_port_summary">Порт, що використовується для всіх видів підключень</string>
     <string name="server_port_dialog_title">Порт сервера</string>
 
 
@@ -72,11 +71,11 @@
     <string name="how_to_use_text_2">Педалі й круїз-контроль</string>
     <string name="how_to_use_text_3" formatted="false">Торкніться педалі й ведіть угору, щоб натиснути сильніше, униз — щоб відпустити: сила натискання видна над педалями (замість цього можна використовувати клавіші, див. налаштування). Утримуючи газ від 5%, проведіть ліворуч, щоб зафіксувати його; дотик до педалі знімає фіксацію. Круїз-контроль вмикається подвійним дотиком до педалі газу, вимикається повторним подвійним дотиком або натисканням на гальмо.</string>
     <string name="how_to_use_actions">Швидкі дії</string>
-    <string name="how_to_use_actions_text">Кнопка внизу по центру відкриває панель швидких дій під спідометром: двигун, світло, ретардер, камери, карта та багато іншого (сторінки гортаються свайпом). «Дія» і «Моргнути фарами» працюють, поки ви їх тримаєте: утримуйте «Дія», щоб заправитися. Довге натискання на будь-яку іншу кнопку вмикає редагування: кнопки можна перетягувати, а дотик до місця ставить туди іншу дію. Кожне натискання видно: кнопка пружинить, якщо воно дійшло до гри, і здригається, якщо ні.</string>
+    <string name="how_to_use_actions_text">Кнопка внизу по центру відкриває панель швидких дій під спідометром: двигун, світло, ретардер, камери, карта та багато іншого (сторінки гортаються свайпом). «Дія», «Моргнути фарами», моторне гальмо та погляд убік працюють, поки ви їх тримаєте: утримуйте «Дія», щоб заправитися. Довге натискання на будь-яку іншу кнопку вмикає редагування: кнопки можна перетягувати, а дотик до місця ставить туди іншу дію. Кожне натискання видно: кнопка пружинить, якщо воно дійшло до гри, і здригається, якщо ні. Приглушена кнопка з жовтою крапкою не має клавіші у вашому профілі гри: призначте її в налаштуваннях керування гри.</string>
     <string name="how_to_use_pause">Автопауза</string>
     <string name="how_to_use_pause_text">Керування відпускається, поки телефон лежить екраном униз або вгору, тож вантажівка не поїде, коли ви покладете телефон на стіл. Її можна вимкнути в налаштуваннях.</string>
     <string name="how_to_use_dashboard">Приладова панель</string>
-    <string name="how_to_use_dashboard_text">Планшет або другий телефон може показувати прилади вантажівки поруч із телефоном, яким ви керуєте: виберіть на ньому «Приладова панель», коли застосунок під час першого запуску запитає, як використовуватиметься пристрій (або пізніше в Налаштування → Режим). Вона сама знаходить сервер.</string>
+    <string name="how_to_use_dashboard_text">Планшет або другий телефон може показувати прилади вантажівки поруч із телефоном, яким ви керуєте: виберіть на ньому «Приладова панель», коли застосунок під час першого запуску запитає, як використовуватиметься пристрій (або пізніше в Налаштування → Режим). Вона сама знаходить сервер, а нічний режим затемнює екран.</string>
     <string name="how_to_use_vibration_text">Телефон вібрує разом із вантажівкою: нерівності та шумові смуги, зіткнення, двигун, поворотники, перемикання передач. Сила та види вібрації вибираються в налаштуваннях.</string>
     <string name="how_to_use_vibration">Вібрація</string>
     <string name="how_to_use_text_4">Приємного керування!</string>
@@ -101,7 +100,7 @@
     <string name="action_camera_chase">Камера ззаду</string>
     <string name="action_camera_cycle">Інша камера</string>
     <string name="action_map">Карта</string>
-    <string name="action_display">Приладова панель</string>
+    <string name="action_display">Екран приладів</string>
     <string name="action_hud">Інтерфейс</string>
     <string name="action_radio_next">Наступна станція</string>
     <string name="action_quick_save">Швидке збереження</string>
@@ -184,6 +183,8 @@
     <string name="scan_qr_loading">Сервіси Google Play завантажують сканер, спробуйте за хвилину</string>
     <string name="show_dashboard_title">Прилади на екрані</string>
     <string name="show_dashboard_summary">Швидкість, круїз-контроль та оберти між педалями, поки працює гра</string>
+    <string name="speeding_warning_title">Підсвічування перевищення швидкості</string>
+    <string name="speeding_warning_summary">Швидкість плавно жовтіє, а потім червоніє понад обмеження</string>
     <string name="dashboard_kmh">км/год</string>
     <string name="dashboard_mph">миль/год</string>
     <string name="dashboard_cruise">Круїз</string>
@@ -207,6 +208,17 @@
     <string name="actions_edit_done">Готово</string>
     <string name="actions_empty">Порожньо</string>
     <string name="actions_edit_place">Замінити: %1$s</string>
+    <string name="action_unbound">Дія «%1$s» не має клавіші в грі. Призначте її в налаштуваннях керування гри</string>
+    <string name="action_unbound_state">Немає клавіші в грі</string>
+    <string name="control_left_blinker">Лівий поворотник</string>
+    <string name="control_right_blinker">Правий поворотник</string>
+    <string name="control_hazard_lights">Аварійка</string>
+    <string name="control_parking_brake">Стоянкове гальмо</string>
+    <string name="control_lights">Фари</string>
+    <string name="control_high_beam">Дальнє світло</string>
+    <string name="control_horn">Гудок</string>
+    <string name="control_air_horn">Пневмосигнал</string>
+    <string name="control_cruise">Круїз-контроль</string>
     <string name="auto_pause_face_down">Автопауза: телефон лежить екраном донизу</string>
     <string name="cruise_not_engaged_slow">Круїз-контроль не ввімкнувся: надто низька швидкість</string>
     <string name="cruise_not_engaged">Круїз-контроль не ввімкнувся</string>
@@ -228,7 +240,7 @@
     <string name="dashboard_unit_km">км</string>
     <string name="dashboard_unit_mi">милі</string>
     <string name="server_outdated_title">Оновіть Truck Remote Server</string>
-    <string name="server_outdated_text">Сервер на ПК старіший за застосунок: прилади, попередження й інформація про вантаж можуть не показуватися. Завантажте нову версію та замініть нею стару.</string>
+    <string name="server_outdated_text">Сервер на ПК старіший за застосунок: прилади, попередження, замовлення або позначки кнопок без клавіші можуть не показуватися. Завантажте нову версію та замініть нею стару.</string>
     <string name="server_outdated_download">Завантажити</string>
     <string name="server_outdated_later">Пізніше</string>
     <string name="dashboard_job">%1$s → %2$s · %3$s</string>
@@ -236,10 +248,10 @@
     <string name="dashboard_job_late">запізнення %1$s</string>
     <string name="section_game">Гра</string>
     <string name="separate_game_settings_title">Окремі налаштування для кожної гри</string>
-    <string name="separate_game_settings_summary">Кермо, швидкі кнопки та одиниці швидкості задаються окремо для ETS2 і ATS; потрібні обираються самі за запущеною грою</string>
+    <string name="separate_game_settings_summary">Кермо, швидкі дії та одиниці швидкості задаються окремо для ETS2 і ATS; потрібні обираються самі за запущеною грою</string>
     <string name="edited_game_title">Налаштування для</string>
     <string name="copy_game_settings_title">Скопіювати з %1$s</string>
-    <string name="copy_game_settings_summary">Кермо, швидкі кнопки та одиниці %1$s стануть такими самими</string>
+    <string name="copy_game_settings_summary">Кермо, швидкі дії та одиниці %1$s стануть такими самими</string>
     <string name="game_settings_copied">Налаштування скопійовано з %1$s</string>
     <string name="speed_units_title">Одиниці швидкості</string>
     <string name="dashboard_low_fuel_range">Пальне %1$d%% · %2$d %3$s</string>
@@ -258,6 +270,8 @@
     <string name="dashboard_mode_job">Замовлення</string>
     <string name="dashboard_mode_retarder">Ретардер</string>
     <string name="dashboard_mode_warnings">Попередження</string>
+    <string name="dashboard_mode_night">Нічний режим</string>
+    <string name="dashboard_mode_day">Денний режим</string>
     <string name="app_mode_title">Режим</string>
     <string name="app_mode_choice_title">Цей пристрій</string>
     <string name="app_mode_choice_summary">Приладова панель лише показує прилади вантажівки: для планшета або другого телефона поруч із тим, яким ви керуєте. Вибраний режим відкривається одразу.</string>

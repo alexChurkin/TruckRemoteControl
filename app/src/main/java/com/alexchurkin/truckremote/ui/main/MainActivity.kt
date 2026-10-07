@@ -2,6 +2,8 @@ package com.alexchurkin.truckremote.ui.main
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.GestureDetector
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -30,6 +33,7 @@ import com.alexchurkin.truckremote.R
 import com.alexchurkin.truckremote.app
 import com.alexchurkin.truckremote.data.controller.ConnectionState
 import com.alexchurkin.truckremote.data.controller.ControllerAction
+import com.alexchurkin.truckremote.data.controller.MainControl
 import com.alexchurkin.truckremote.data.controller.ServerState
 import com.alexchurkin.truckremote.data.settings.AppMode
 import com.alexchurkin.truckremote.databinding.ActivityMainBinding
@@ -42,6 +46,7 @@ import com.alexchurkin.truckremote.ui.widget.showPedalPress
 import com.alexchurkin.truckremote.util.enterFullscreen
 import com.alexchurkin.truckremote.util.showKeepingFullscreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.play.core.review.ReviewManagerFactory
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -71,6 +76,11 @@ class MainActivity :
     // Actions that are on in the game: their buttons are highlighted
     private var activeActions by mutableStateOf(emptySet<ControllerAction>())
     private var actionBadges by mutableStateOf(emptyMap<ControllerAction, String>())
+
+    // Actions and controls the player has no key for in the game: their buttons are marked
+    private var unboundActions by mutableStateOf(emptySet<ControllerAction>())
+    private var cruiseUnbound by mutableStateOf(false)
+    private val markedViews = mutableSetOf<View>()
 
     // The screen is dimmed a moment after the controls are paused (to save the battery), a touch brightens it
     private var paused = false
@@ -110,6 +120,7 @@ class MainActivity :
         when (viewModel.start(releaseNotesVersion())) {
             StartAction.Guide -> startActivity(Intent(this, GuideActivity::class.java))
             StartAction.ReleaseNotes -> showReleaseNotesDialog()
+            StartAction.Review -> requestReview()
             StartAction.None -> Unit
         }
     }
@@ -207,6 +218,7 @@ class MainActivity :
                 dashboard = state.truck?.dashboard.takeIf { state.showDashboard },
                 job = state.truck?.job,
                 imperialUnits = state.imperialUnits,
+                speedingWarning = state.speedingWarning,
             )
         }
         cruiseView.setContent {
@@ -215,6 +227,7 @@ class MainActivity :
                 dashboard = state.truck?.dashboard.takeIf { state.showDashboard },
                 visible = !actionsShown,
                 imperialUnits = state.imperialUnits,
+                unbound = cruiseUnbound,
                 onToggle = viewModel::onCruiseToggle,
                 onStep = { up ->
                     viewModel.onAction(if (up) ControllerAction.CruiseUp else ControllerAction.CruiseDown)
@@ -227,6 +240,7 @@ class MainActivity :
                 layout = state.actionLayout,
                 activeActions = activeActions,
                 badges = actionBadges,
+                unboundActions = unboundActions,
                 onClick = viewModel::onAction,
                 onHold = viewModel::onActionHold,
                 onLayoutChange = viewModel::onActionLayoutChange,
@@ -379,6 +393,42 @@ class MainActivity :
         } else {
             emptyMap()
         }
+        unboundActions = truck.unbound.actions
+        showUnboundControls(truck.unbound.controls)
+    }
+
+    // A button without a key in the game is dimmed and has an amber dot, as the buttons of the panel
+    private fun showUnboundControls(unbound: Set<MainControl>) {
+        val horn = if (viewModel.state.value.pneumaticHorn) MainControl.AirHorn else MainControl.Horn
+        with(binding) {
+            markUnbound(buttonLeftSignal, MainControl.LeftBlinker in unbound)
+            markUnbound(buttonRightSignal, MainControl.RightBlinker in unbound)
+            markUnbound(buttonAllSignals, MainControl.HazardLights in unbound)
+            markUnbound(buttonParking, MainControl.ParkingBrake in unbound)
+            markUnbound(buttonLights, MainControl.Lights in unbound || MainControl.HighBeam in unbound)
+            markUnbound(buttonHorn, horn in unbound)
+        }
+        cruiseUnbound = MainControl.Cruise in unbound
+    }
+
+    private fun markUnbound(view: View, unbound: Boolean) {
+        if (!(if (unbound) markedViews.add(view) else markedViews.remove(view))) return
+        view.alpha = if (unbound) UNBOUND_ALPHA else 1f
+        view.overlay.clear()
+        if (unbound) view.overlay.add(unboundDot())
+        ViewCompat.setStateDescription(view, if (unbound) getString(R.string.action_unbound_state) else null)
+    }
+
+    private fun unboundDot(): Drawable {
+        fun px(dp: Float) =
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).roundToInt()
+        val size = px(UNBOUND_DOT_DP)
+        val inset = px(UNBOUND_DOT_INSET_DP)
+        return GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(ContextCompat.getColor(this@MainActivity, R.color.indicatorYellow))
+            setBounds(inset, inset, inset + size, inset + size)
+        }
     }
 
     private fun scheduleDimming() {
@@ -447,6 +497,14 @@ class MainActivity :
             MainEffect.ServerOutdated -> showServerOutdatedHint()
 
             MainEffect.ShowAd -> app.container.ads.tryShowFullscreenAd(this)
+
+            is MainEffect.ActionUnbound -> showMessage(
+                getString(R.string.action_unbound, getString(effect.action.button().label)),
+            )
+
+            is MainEffect.ControlUnbound -> showMessage(
+                getString(R.string.action_unbound, getString(effect.control.label())),
+            )
 
             MainEffect.ThrottleLockChanged -> binding.gasLayout.performHapticFeedback(
                 HapticFeedbackConstants.LONG_PRESS,
@@ -560,6 +618,14 @@ class MainActivity :
 
     private fun releaseNotesVersion() = resources.getInteger(R.integer.version)
 
+    // Google Play decides itself whether to show its dialog (and how often), the result isn't known to the app
+    private fun requestReview() {
+        val manager = ReviewManagerFactory.create(this)
+        manager.requestReviewFlow().addOnCompleteListener { request ->
+            if (request.isSuccessful && !isFinishing) manager.launchReviewFlow(this, request.result)
+        }
+    }
+
     private fun showReleaseNotesDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.version_changes_title)
@@ -598,6 +664,11 @@ class MainActivity :
 
         // Horizontal swipe distance on gas which locks the throttle
         const val THROTTLE_LOCK_DISTANCE_DP = 70f
+
+        // A button without a key in the game: dimmed, with an amber dot at its corner
+        const val UNBOUND_ALPHA = 0.45f
+        const val UNBOUND_DOT_DP = 7f
+        const val UNBOUND_DOT_INSET_DP = 2f
 
         // Width of the lock in the layout: the press force and the lock stay centered over the pedal
         const val LOCK_ICON_WIDTH_DP = 28f

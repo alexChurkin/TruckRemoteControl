@@ -133,6 +133,7 @@
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/buttonAllSignals"
+        android:contentDescription="@string/control_hazard_lights"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
@@ -145,6 +146,7 @@
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/buttonLeftSignal"
+        android:contentDescription="@string/control_left_blinker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -158,6 +160,7 @@
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/buttonRightSignal"
+        android:contentDescription="@string/control_right_blinker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -171,6 +174,7 @@
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/buttonHorn"
+        android:contentDescription="@string/control_horn"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="24dp"
@@ -183,6 +187,7 @@
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/buttonParking"
+        android:contentDescription="@string/control_parking_brake"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -195,6 +200,7 @@
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/buttonLights"
+        android:contentDescription="@string/control_lights"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="24dp"

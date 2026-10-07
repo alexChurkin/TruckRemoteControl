@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -64,6 +65,7 @@ import com.alexchurkin.truckremote.ui.main.alerts
 import com.alexchurkin.truckremote.ui.main.durationText
 import com.alexchurkin.truckremote.ui.main.gearText
 import com.alexchurkin.truckremote.ui.main.routeText
+import com.alexchurkin.truckremote.ui.main.speedColor
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -98,23 +100,47 @@ private val LampColumn = 56.dp
 // The place of the settings button under the cards
 private val SettingsRow = 40.dp
 
+// The instruments under a black veil at night
+private const val NIGHT_SCRIM = 0.35f
+private const val NIGHT_FADE_MS = 400
+
 /**
  * The dashboard mode: big instruments of the truck for a tablet or a second phone. Wide screens have the gauge
  * on the left and the cards on the right, tall ones have the cards under it.
  */
 @Composable
-fun DashboardScreen(state: DashboardUiState, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
+fun DashboardScreen(
+    state: DashboardUiState,
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+    onNightChange: (Boolean) -> Unit = {},
+) {
     Box(modifier = modifier.fillMaxSize().background(Background)) {
         val truck = state.truck
         val dashboard = truck?.dashboard
         if (truck == null || dashboard == null) {
             Waiting(state, Modifier.align(Alignment.Center))
         } else {
-            Instruments(truck, dashboard, state.job, state.imperialUnits)
+            Instruments(truck, dashboard, state.job, state.imperialUnits, state.speedingWarning)
         }
-        // The mode of the app is changed in the settings
-        TextButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
-            Text(stringResource(R.string.settings))
+        // At night the screen is at its lowest brightness (the activity sets it), and even that is too bright
+        // on many tablets: the instruments are dimmed more
+        val scrim by animateFloatAsState(if (state.night) NIGHT_SCRIM else 0f, tween(NIGHT_FADE_MS), label = "night")
+        if (scrim > 0f) Box(Modifier.matchParentSize().background(Color.Black.copy(alpha = scrim)))
+        Row(modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
+            TextButton(onClick = { onNightChange(!state.night) }) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_night),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(if (state.night) R.string.dashboard_mode_day else R.string.dashboard_mode_night))
+            }
+            // The mode of the app is changed in the settings
+            TextButton(onClick = onOpenSettings) {
+                Text(stringResource(R.string.settings))
+            }
         }
     }
 }
@@ -151,12 +177,18 @@ private fun Waiting(state: DashboardUiState, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Instruments(truck: ServerState, dashboard: Dashboard, job: Job?, imperialUnits: Boolean) {
+private fun Instruments(
+    truck: ServerState,
+    dashboard: Dashboard,
+    job: Job?,
+    imperialUnits: Boolean,
+    speedingWarning: Boolean,
+) {
     BoxWithConstraints(Modifier.fillMaxSize().padding(16.dp)) {
         val wide = maxWidth > maxHeight * WIDE_RATIO
         if (wide) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Cluster(truck, dashboard, imperialUnits, Modifier.weight(1.3f).fillMaxHeight())
+                Cluster(truck, dashboard, imperialUnits, speedingWarning, Modifier.weight(1.3f).fillMaxHeight())
                 Cards(
                     truck,
                     dashboard,
@@ -167,7 +199,7 @@ private fun Instruments(truck: ServerState, dashboard: Dashboard, job: Job?, imp
             }
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Cluster(truck, dashboard, imperialUnits, Modifier.fillMaxWidth().aspectRatio(1.2f))
+                Cluster(truck, dashboard, imperialUnits, speedingWarning, Modifier.fillMaxWidth().aspectRatio(1.2f))
                 Cards(
                     truck,
                     dashboard,
@@ -183,9 +215,15 @@ private fun Instruments(truck: ServerState, dashboard: Dashboard, job: Job?, imp
 // The instrument cluster as in a truck: the gauge in the middle of its place, the blinkers at the upper corners
 // and the lamps in two columns beside the gauge (what is switched on the left, the systems on the right)
 @Composable
-private fun Cluster(truck: ServerState, dashboard: Dashboard, imperialUnits: Boolean, modifier: Modifier = Modifier) {
+private fun Cluster(
+    truck: ServerState,
+    dashboard: Dashboard,
+    imperialUnits: Boolean,
+    speedingWarning: Boolean,
+    modifier: Modifier = Modifier,
+) {
     Box(modifier) {
-        Gauge(dashboard, imperialUnits, Modifier.fillMaxSize().padding(horizontal = LampColumn))
+        Gauge(dashboard, imperialUnits, speedingWarning, Modifier.fillMaxSize().padding(horizontal = LampColumn))
         Lamp(
             icon = if (truck.leftBlinker) R.drawable.left_enabled else R.drawable.left_disabled,
             tint = null,
@@ -249,7 +287,12 @@ private fun Lamp(@DrawableRes icon: Int, tint: Color?, modifier: Modifier = Modi
 
 // The rpm on the arc with the zones of a truck tachometer, the speed and the gear inside, the limit and the cruise
 @Composable
-private fun Gauge(dashboard: Dashboard, imperialUnits: Boolean, modifier: Modifier = Modifier) {
+private fun Gauge(
+    dashboard: Dashboard,
+    imperialUnits: Boolean,
+    speedingWarning: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val factor = if (imperialUnits) MPH_IN_MS else KMH_IN_MS
     val unit = stringResource(if (imperialUnits) R.string.dashboard_mph else R.string.dashboard_kmh)
     val rpmMax = dashboard.engineRpmMax
@@ -291,7 +334,7 @@ private fun Gauge(dashboard: Dashboard, imperialUnits: Boolean, modifier: Modifi
             BasicText(
                 text = (abs(dashboard.speed) * factor).roundToInt().toString(),
                 style = TextStyle(
-                    color = Color.White,
+                    color = speedColor(dashboard, speedingWarning),
                     fontSize = (side.value * 0.26f).sp,
                     fontWeight = FontWeight.Bold,
                     fontFeatureSettings = "tnum",

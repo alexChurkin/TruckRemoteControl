@@ -52,9 +52,12 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
 
     private val client = TrackingClient(this)
 
-    // The last job received, joined to the truck state
+    // The last job and unbound actions received, joined to the truck state
     @Volatile
     private var job: Job? = null
+
+    @Volatile
+    private var unbound = UnboundKeys()
 
     private val _connectionState = MutableStateFlow(ConnectionState.Disconnected)
     override val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
@@ -105,6 +108,7 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
         _connectionState.value = state
         if (!state.isConnected) {
             job = null
+            unbound = UnboundKeys()
             _truckState.value = null
             _linkQuality.value = null
             feedbackTracker.reset()
@@ -116,11 +120,21 @@ class UdpControllerRepository(private val wifiLock: LowLatencyWifiLock) :
     override fun onServerState(state: ServerState) {
         feedbackTracker.onState(state).forEach(_feedback::tryEmit)
         _road.value = feedbackTracker.road
-        _truckState.value = state.copy(ffbDurationMs = 0, sequence = null, job = job, haptics = null)
+        _truckState.value = state.copy(
+            ffbDurationMs = 0,
+            sequence = null,
+            job = job,
+            unbound = unbound,
+            haptics = null,
+        )
     }
 
     override fun onJob(job: Job?) {
         this.job = job
+    }
+
+    override fun onUnboundKeys(keys: UnboundKeys) {
+        unbound = keys
     }
 
     override fun onLinkQuality(quality: LinkQuality) {

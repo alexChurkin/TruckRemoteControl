@@ -14,6 +14,7 @@ import com.alexchurkin.truckremote.app
 import com.alexchurkin.truckremote.data.settings.AppMode
 import com.alexchurkin.truckremote.ui.guide.GuideActivity
 import com.alexchurkin.truckremote.ui.mode.screen
+import com.alexchurkin.truckremote.ui.shortcuts.AppShortcuts
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 
 // AppCompat applies the language chosen in the app on Android 12 and older
@@ -22,8 +23,9 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        // Not on every rotation
-        if (savedInstanceState == null) app.container.ads.tryShowFullscreenAd(this)
+        // Not on every rotation, and not when the settings start the app (the shortcut of the launcher icon):
+        // an ad mustn't be the first thing seen
+        if (savedInstanceState == null && !isTaskRoot) app.container.ads.tryShowFullscreenAd(this)
 
         setContent {
             TruckRemoteTheme {
@@ -40,6 +42,7 @@ class SettingsActivity : AppCompatActivity() {
 
     // The screens of the other mode are left behind
     private fun openMode(mode: AppMode) {
+        AppShortcuts.update(this, mode)
         startActivity(
             Intent(this, mode.screen())
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),

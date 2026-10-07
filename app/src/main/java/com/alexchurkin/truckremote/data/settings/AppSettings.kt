@@ -93,6 +93,16 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_SHOW_DASHBOARD, true)
         set(value) = prefs.edit { putBoolean(KEY_SHOW_DASHBOARD, value) }
 
+    // The dashboard mode dims the screen for driving at night
+    var dashboardNight: Boolean
+        get() = prefs.getBoolean(KEY_DASHBOARD_NIGHT, false)
+        set(value) = prefs.edit { putBoolean(KEY_DASHBOARD_NIGHT, value) }
+
+    // The speed turns amber, then red above the speed limit
+    var speedingWarning: Boolean
+        get() = prefs.getBoolean(KEY_SPEEDING_WARNING, true)
+        set(value) = prefs.edit { putBoolean(KEY_SPEEDING_WARNING, value) }
+
     /**
      * Steering, the quick actions layout and speed units: common for both games
      * unless [separateGameSettings] is on (American Truck Simulator has its own ones then).
@@ -156,6 +166,16 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getInt(KEY_LAST_RELEASE_NOTES, 0)
         set(value) = prefs.edit { putInt(KEY_LAST_RELEASE_NOTES, value) }
 
+    // Minutes the truck was driven from the app (connected, not paused): the rating is asked after enough of them
+    var drivingMinutes: Int
+        get() = prefs.getInt(KEY_DRIVING_MINUTES, 0)
+        set(value) = prefs.edit { putInt(KEY_DRIVING_MINUTES, value) }
+
+    // Google Play was asked to show its rating dialog (once: it decides itself whether to show it)
+    var reviewRequested: Boolean
+        get() = prefs.getBoolean(KEY_REVIEW_REQUESTED, false)
+        set(value) = prefs.edit { putBoolean(KEY_REVIEW_REQUESTED, value) }
+
     var adsRemoved: Boolean
         get() = prefs.getBoolean(KEY_ADS_REMOVED, false)
         set(value) = prefs.edit { putBoolean(KEY_ADS_REMOVED, value) }
@@ -197,6 +217,8 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_LAST_SERVER_IP = "lastServerIp"
         private const val KEY_PNEUMATIC_HORN = "pneumaticSignal"
         private const val KEY_SHOW_DASHBOARD = "showDashboard"
+        private const val KEY_SPEEDING_WARNING = "speedingWarning"
+        private const val KEY_DASHBOARD_NIGHT = "dashboardNight"
         private const val KEY_SEPARATE_GAME_SETTINGS = "separateGameSettings"
         private const val KEY_LAST_GAME = "lastGame"
         private const val ATS_PREFIX = "ats."
@@ -208,6 +230,8 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_CALIBRATION_OFFSET_DEG = "calibrationOffsetDeg"
         private const val KEY_GUIDE_SHOWN = "guideShowed"
         private const val KEY_LAST_RELEASE_NOTES = "releaseVersionText"
+        private const val KEY_DRIVING_MINUTES = "drivingMinutes"
+        private const val KEY_REVIEW_REQUESTED = "reviewRequested"
         private const val KEY_ADS_REMOVED = "prefadsetting"
 
         // The same file as PreferenceManager.getDefaultSharedPreferences() used before

@@ -12,9 +12,11 @@ import com.alexchurkin.truckremote.data.controller.Feedback
 import com.alexchurkin.truckremote.data.controller.HapticEvent
 import com.alexchurkin.truckremote.data.controller.HornState
 import com.alexchurkin.truckremote.data.controller.LinkQuality
+import com.alexchurkin.truckremote.data.controller.MainControl
 import com.alexchurkin.truckremote.data.controller.RoadFeel
 import com.alexchurkin.truckremote.data.controller.RoadSurface
 import com.alexchurkin.truckremote.data.controller.ServerState
+import com.alexchurkin.truckremote.data.controller.UnboundKeys
 import com.alexchurkin.truckremote.data.device.HapticCapability
 import com.alexchurkin.truckremote.data.device.Haptics
 import com.alexchurkin.truckremote.data.device.WifiStatus
@@ -142,6 +144,29 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `rating is asked once after an hour of driving`() {
+        viewModel.start(releaseNotesVersion = 3)
+        viewModel.setForeground(true)
+        connect()
+        dispatcher.scheduler.advanceTimeBy(30 * MINUTE_MS + 1)
+        // Paused or left: not counted
+        viewModel.togglePause()
+        dispatcher.scheduler.advanceTimeBy(60 * MINUTE_MS)
+        viewModel.togglePause()
+        viewModel.setForeground(false)
+        dispatcher.scheduler.advanceTimeBy(60 * MINUTE_MS)
+        assertEquals(30, settings.drivingMinutes)
+        assertEquals(StartAction.None, createViewModel().start(releaseNotesVersion = 3))
+
+        viewModel.setForeground(true)
+        dispatcher.scheduler.advanceTimeBy(30 * MINUTE_MS + 1)
+        viewModel.setForeground(false)
+        assertEquals(MainViewModel.REVIEW_AFTER_DRIVING_MINUTES, settings.drivingMinutes)
+        assertEquals(StartAction.Review, createViewModel().start(releaseNotesVersion = 3))
+        assertEquals(StartAction.None, createViewModel().start(releaseNotesVersion = 3))
+    }
+
+    @Test
     fun `screen recreated with its view model doesn't connect again, a restored one connects`() {
         viewModel.start(releaseNotesVersion = 3)
         assertNotNull(controller.lastConnect)
@@ -228,6 +253,45 @@ class MainViewModelTest {
         viewModel.onLeftSignal()
         assertTrue(controller.state.leftSignalClick)
         assertTrue(controller.pausedByUserNow)
+    }
+
+    @Test
+    fun `an action without a key in the game isn't sent, the screen tells why`() = runTest {
+        val effects = collectEffects()
+        connect(TRUCK.copy(unbound = UnboundKeys(actions = setOf(ControllerAction.Map, ControllerAction.LookLeft))))
+
+        assertFalse(viewModel.onAction(ControllerAction.Map))
+        assertFalse(viewModel.onActionHold(ControllerAction.LookLeft, true))
+        assertNull(controller.state.actionCounters[ControllerAction.Map])
+        assertEquals(
+            listOf(MainEffect.ActionUnbound(ControllerAction.Map), MainEffect.ActionUnbound(ControllerAction.LookLeft)),
+            effects.filterIsInstance<MainEffect.ActionUnbound>(),
+        )
+        assertTrue(viewModel.onAction(ControllerAction.Engine))
+    }
+
+    @Test
+    fun `a control of the main screen without a key isn't sent, the screen tells why`() = runTest {
+        val effects = collectEffects()
+        val unbound = setOf(MainControl.LeftBlinker, MainControl.HighBeam, MainControl.Horn, MainControl.Cruise)
+        connect(TRUCK.copy(unbound = UnboundKeys(controls = unbound)))
+
+        viewModel.onLeftSignal()
+        // The lights button needs both of its keys
+        viewModel.onLights()
+        assertFalse(viewModel.onHorn(pressed = true))
+        assertFalse(viewModel.onCruiseToggle())
+        assertFalse(controller.state.leftSignalClick)
+        assertFalse(controller.state.lightsClick)
+        assertFalse(controller.state.cruiseClick)
+        assertEquals(
+            unbound.map(MainEffect::ControlUnbound),
+            effects.filterIsInstance<MainEffect.ControlUnbound>(),
+        )
+
+        // The other controls work
+        viewModel.onRightSignal()
+        assertTrue(controller.state.rightSignalClick)
     }
 
     @Test
@@ -680,6 +744,7 @@ class MainViewModelTest {
 
     private companion object {
         const val LOCK_DISTANCE = 100f
+        const val MINUTE_MS = 60_000L
         val DASHBOARD = Dashboard(
             speed = 20f,
             speedLimit = 0f,

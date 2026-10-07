@@ -36,8 +36,8 @@ android {
         applicationId = "com.alexchurkin.truckremote"
         minSdk = 24
         targetSdk = 37
-        versionCode = 36
-        versionName = "1.3"
+        versionCode = 37
+        versionName = "1.4"
 
         vectorDrawables.useSupportLibrary = true
     }
@@ -115,6 +115,7 @@ dependencies {
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.billing)
+    implementation(libs.play.review)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

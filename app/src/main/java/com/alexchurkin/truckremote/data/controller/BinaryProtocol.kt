@@ -29,18 +29,22 @@ import kotlin.math.roundToInt
  * 10 the speed units of the game are known, 11 they are miles per hour (km/h otherwise).
  * Job, sent once a second by revision 3+: type 0x05 | delivery minutes left i32 | cargo length u8 | cargo UTF-8 |
  * destination city length u8 | destination city UTF-8; no cargo - no job.
+ * Unbound actions, sent once a second by revision 8+: type 0x06 | count u8 | code u8 * count: the actions of the panel
+ * and the controls of the main screen ([MainControl], 200+) the player has no key for in the game.
  */
 object BinaryProtocol {
     const val VERSION = 2
 
     // The server revision this app makes use of entirely (an older server is worth updating)
-    const val REVISION = 7
+    const val REVISION = 8
 
     private const val STATE_TYPE: Byte = 0x02
     private const val PAUSED_TYPE: Byte = 0x03
     private const val GOODBYE_TYPE: Byte = 0x04
     private const val JOB_TYPE: Byte = 0x05
     private const val JOB_HEADER_SIZE = 5
+    private const val UNBOUND_ACTIONS_TYPE: Byte = 0x06
+    private const val UNBOUND_ACTIONS_HEADER_SIZE = 2
     private const val FIRST_TEXT_CHAR = 0x20
 
     private const val CONTROLLER_HEADER_SIZE = 16
@@ -205,6 +209,19 @@ object BinaryProtocol {
     }
 
     fun isJob(data: ByteArray, length: Int) = length >= JOB_HEADER_SIZE && data[0] == JOB_TYPE
+
+    fun isUnboundActions(data: ByteArray, length: Int) =
+        length >= UNBOUND_ACTIONS_HEADER_SIZE && data[0] == UNBOUND_ACTIONS_TYPE
+
+    // The codes of the click and of the hold of an action are both its own; unknown codes are skipped
+    fun decodeUnboundActions(data: ByteArray, length: Int): UnboundKeys {
+        val count = minOf(data[1].toInt() and BYTE_MASK, length - UNBOUND_ACTIONS_HEADER_SIZE)
+        val codes = (0 until count).map { data[UNBOUND_ACTIONS_HEADER_SIZE + it].toInt() and BYTE_MASK }.toSet()
+        return UnboundKeys(
+            actions = ControllerAction.entries.filterTo(mutableSetOf()) { it.code in codes || it.holdCode in codes },
+            controls = MainControl.entries.filterTo(mutableSetOf()) { it.code in codes },
+        )
+    }
 
     // null without a job (or if the message is malformed)
     fun decodeJob(data: ByteArray, length: Int): Job? {

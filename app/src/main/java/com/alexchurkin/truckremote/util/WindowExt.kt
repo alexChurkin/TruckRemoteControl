@@ -3,11 +3,9 @@ package com.alexchurkin.truckremote.util
 import android.app.Activity
 import android.app.Dialog
 import android.os.Build
-import android.view.Surface
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -37,9 +35,6 @@ fun Window.layoutInDisplayCutout() {
         }
     }
 }
-
-val Activity.isReverseLandscape: Boolean
-    get() = ContextCompat.getDisplayOrDefault(this).rotation == Surface.ROTATION_270
 
 /**
  * Shows a dialog over a fullscreen activity without showing system bars:

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="version_changes_title">Змены ў версіі</string>
-    <string name="version_changes_text">Спачатку абнавіце Truck Remote Server на камп\'ютары да 1.3: новым магчымасцям ён патрэбны.\n\n• Аналагавыя педалі: вядзіце ўверх, каб націснуць мацней, адпушчаная педаль вяртаецца спружынай. Газ фіксуецца свайпам улева.\n• Круіз-кантроль: падвойны дотык да педалі газу.\n• Хуткія дзеянні: шэсць старонак (рухавік, святло, рэтардэр, камеры, карта, радыё…). Доўгі націск на кнопку дазваляе перацягваць кнопкі і ставіць на іх месцы іншыя дзеянні. Утрымлівайце «Дзеянне», каб заправіцца.\n• Прыборы ўверсе: хуткасць, абароты, абмежаванне, перадача, папярэджанні, груз і адлегласць да мэты. Адзінкі хуткасці бяруцца з гульні.\n• Тэлефон вібруе разам з грузавіком: няроўнасці, сутыкненні, рухавік, паваротнікі.\n• Рэжым прыборнай панэлі для планшэта або другога тэлефона (Налады → Рэжым).\n• Руль наладжваецца ў праграме з перадпраглядам; у ETS2 і ATS могуць быць свае налады.\n• Аўтапаўза, пакуль тэлефон ляжыць на стале.\n• Сервер сам ставіць усё патрэбнае, націскае вашы клавішы з гульні і абнаўляецца.</string>
+    <string name="version_changes_text">Спачатку абнавіце Truck Remote Server на камп’ютары да 1.4: новым магчымасцям ён патрэбны.\n\n• Хуткасць жоўкне, а потым чырванее вышэй за абмежаванне (адключаецца ў наладах).\n• Кнопкі, у дзеянняў якіх у вашым профілі гульні няма клавішы, прыглушаныя і пазначаныя жоўтай кропкай; націск падкажа, што прызначыць у наладах кіравання гульні.\n• Рэжым прыборнай панэлі: начны рэжым зацямняе экран.\n• Доўгі націск на значок праграмы адкрывае налады, прыборную панэль і інструкцыю.\n• Сервер можа запускацца разам з Windows (меню «Налады» сервера).\n• Абноўлены значок.</string>
 
     <string name="searching_on_local">Пошук сервераў у лакальнай сетцы…</string>
     <string name="signal_strength">Сіла сігналу Wi-Fi:</string>
@@ -22,7 +22,6 @@
 
     <string name="connection">Падключэнне</string>
     <string name="server_port_title">Порт сервера</string>
-    <string name="server_port_summary">Порт, які выкарыстоўваецца для ўсіх відаў падключэнняў</string>
     <string name="server_port_dialog_title">Порт сервера</string>
 
 
@@ -72,11 +71,11 @@
     <string name="how_to_use_text_2">Педалі і круіз-кантроль</string>
     <string name="how_to_use_text_3" formatted="false">Дакраніцеся да педалі і вядзіце ўверх, каб націснуць мацней, уніз — каб адпусціць: сіла націску відаць над педалямі (замест гэтага можна выкарыстоўваць клавішы, гл. налады). Утрымліваючы газ ад 5%, правядзіце ўлева, каб зафіксаваць яго; дотык да педалі здымае фіксацыю. Круіз-кантроль уключаецца падвойным дотыкам да педалі газу, выключаецца паўторным падвойным дотыкам або націскам на тормаз.</string>
     <string name="how_to_use_actions">Хуткія дзеянні</string>
-    <string name="how_to_use_actions_text">Кнопка ўнізе па цэнтры адкрывае панэль хуткіх дзеянняў пад спідометрам: рухавік, святло, рэтардэр, камеры, карта і шмат іншага (старонкі гартаюцца свайпам). «Дзеянне» і «Міргнуць фарамі» працуюць, пакуль вы іх трымаеце: утрымлівайце «Дзеянне», каб заправіцца. Доўгі націск на любую іншую кнопку ўключае праўку: кнопкі можна перацягваць, а дотык да месца ставіць туды іншае дзеянне. Кожны націск бачны: кнопка спружыніць, калі ён дайшоў да гульні, і ўздрыгвае, калі не.</string>
+    <string name="how_to_use_actions_text">Кнопка ўнізе па цэнтры адкрывае панэль хуткіх дзеянняў пад спідометрам: рухавік, святло, рэтардэр, камеры, карта і шмат іншага (старонкі гартаюцца свайпам). «Дзеянне», «Міргнуць фарамі», рухавіковы тормаз і погляд убок працуюць, пакуль вы іх трымаеце: утрымлівайце «Дзеянне», каб заправіцца. Доўгі націск на любую іншую кнопку ўключае праўку: кнопкі можна перацягваць, а дотык да месца ставіць туды іншае дзеянне. Кожны націск бачны: кнопка спружыніць, калі ён дайшоў да гульні, і ўздрыгвае, калі не. Прыглушаная кнопка з жоўтай кропкай не мае клавішы ў вашым профілі гульні: прызначце яе ў наладах кіравання гульні.</string>
     <string name="how_to_use_pause">Аўтапаўза</string>
     <string name="how_to_use_pause_text">Кіраванне адпускаецца, пакуль тэлефон ляжыць экранам уніз або ўверх, так што грузавік не паедзе, калі вы пакладзеце тэлефон на стол. Яе можна выключыць у наладах.</string>
     <string name="how_to_use_dashboard">Прыборная панэль</string>
-    <string name="how_to_use_dashboard_text">Планшэт або другі тэлефон можа паказваць прыборы грузавіка побач з тэлефонам, якім вы кіруеце: выберыце на ім «Прыборная панэль», калі праграма пры першым запуску спытае, як будзе выкарыстоўвацца прылада (або пазней у Налады → Рэжым). Яна сама знаходзіць сервер.</string>
+    <string name="how_to_use_dashboard_text">Планшэт або другі тэлефон можа паказваць прыборы грузавіка побач з тэлефонам, якім вы кіруеце: выберыце на ім «Прыборная панэль», калі праграма пры першым запуску спытае, як будзе выкарыстоўвацца прылада (або пазней у Налады → Рэжым). Яна сама знаходзіць сервер, а начны рэжым зацямняе экран.</string>
     <string name="how_to_use_vibration_text">Тэлефон вібруе разам з грузавіком: няроўнасці і шумавыя паласы, сутыкненні, рухавік, паваротнікі, пераключэнне перадач. Сіла і віды вібрацыі выбіраюцца ў наладах.</string>
     <string name="how_to_use_vibration">Вібрацыя</string>
     <string name="how_to_use_text_4">Прыемнага кіравання!</string>
@@ -101,7 +100,7 @@
     <string name="action_camera_chase">Камера ззаду</string>
     <string name="action_camera_cycle">Іншая камера</string>
     <string name="action_map">Карта</string>
-    <string name="action_display">Прыборная панэль</string>
+    <string name="action_display">Экран прыбораў</string>
     <string name="action_hud">Інтэрфейс</string>
     <string name="action_radio_next">Наступная станцыя</string>
     <string name="action_quick_save">Хуткае захаванне</string>
@@ -184,6 +183,8 @@
     <string name="scan_qr_loading">Сэрвісы Google Play загружаюць сканер, паспрабуйце праз хвіліну</string>
     <string name="show_dashboard_title">Прыборы на экране</string>
     <string name="show_dashboard_summary">Хуткасць, круіз-кантроль і абароты паміж педалямі, пакуль працуе гульня</string>
+    <string name="speeding_warning_title">Падсветка перавышэння хуткасці</string>
+    <string name="speeding_warning_summary">Хуткасць плаўна жоўкне, а потым чырванее вышэй за абмежаванне</string>
     <string name="dashboard_kmh">км/г</string>
     <string name="dashboard_mph">міль/г</string>
     <string name="dashboard_cruise">Круіз</string>
@@ -207,6 +208,17 @@
     <string name="actions_edit_done">Гатова</string>
     <string name="actions_empty">Пуста</string>
     <string name="actions_edit_place">Замяніць: %1$s</string>
+    <string name="action_unbound">У дзеяння «%1$s» няма клавішы ў гульні. Прызначце яе ў наладах кіравання гульні</string>
+    <string name="action_unbound_state">Няма клавішы ў гульні</string>
+    <string name="control_left_blinker">Левы паказальнік павароту</string>
+    <string name="control_right_blinker">Правы паказальнік павароту</string>
+    <string name="control_hazard_lights">Аварыйка</string>
+    <string name="control_parking_brake">Стаянкавы тормаз</string>
+    <string name="control_lights">Фары</string>
+    <string name="control_high_beam">Дальняе святло</string>
+    <string name="control_horn">Гудок</string>
+    <string name="control_air_horn">Пнеўмасігнал</string>
+    <string name="control_cruise">Круіз-кантроль</string>
     <string name="auto_pause_face_down">Аўтапаўза: тэлефон ляжыць экранам уніз</string>
     <string name="cruise_not_engaged_slow">Круіз-кантроль не ўключыўся: занадта нізкая хуткасць</string>
     <string name="cruise_not_engaged">Круіз-кантроль не ўключыўся</string>
@@ -228,7 +240,7 @@
     <string name="dashboard_unit_km">км</string>
     <string name="dashboard_unit_mi">мілі</string>
     <string name="server_outdated_title">Абнавіце Truck Remote Server</string>
-    <string name="server_outdated_text">Сервер на ПК старэйшы за праграму: прыборы, папярэджанні і звесткі пра груз могуць не паказвацца. Спампуйце новую версію і замяніце ёю старую.</string>
+    <string name="server_outdated_text">Сервер на ПК старэйшы за праграму: прыборы, папярэджанні, заказ або пазнакі кнопак без клавішы могуць не паказвацца. Спампуйце новую версію і замяніце ёю старую.</string>
     <string name="server_outdated_download">Спампаваць</string>
     <string name="server_outdated_later">Пазней</string>
     <string name="dashboard_job">%1$s → %2$s · %3$s</string>
@@ -236,10 +248,10 @@
     <string name="dashboard_job_late">спазненне %1$s</string>
     <string name="section_game">Гульня</string>
     <string name="separate_game_settings_title">Асобныя налады для кожнай гульні</string>
-    <string name="separate_game_settings_summary">Руль, хуткія кнопкі і адзінкі хуткасці задаюцца асобна для ETS2 і ATS; патрэбныя выбіраюцца самі па запушчанай гульні</string>
+    <string name="separate_game_settings_summary">Руль, хуткія дзеянні і адзінкі хуткасці задаюцца асобна для ETS2 і ATS; патрэбныя выбіраюцца самі па запушчанай гульні</string>
     <string name="edited_game_title">Налады для</string>
     <string name="copy_game_settings_title">Скапіяваць з %1$s</string>
-    <string name="copy_game_settings_summary">Руль, хуткія кнопкі і адзінкі %1$s стануць такімі ж</string>
+    <string name="copy_game_settings_summary">Руль, хуткія дзеянні і адзінкі %1$s стануць такімі ж</string>
     <string name="game_settings_copied">Налады скапіяваныя з %1$s</string>
     <string name="speed_units_title">Адзінкі хуткасці</string>
     <string name="dashboard_low_fuel_range">Паліва %1$d%% · %2$d %3$s</string>
@@ -258,6 +270,8 @@
     <string name="dashboard_mode_job">Заказ</string>
     <string name="dashboard_mode_retarder">Рэтардэр</string>
     <string name="dashboard_mode_warnings">Папярэджанні</string>
+    <string name="dashboard_mode_night">Начны рэжым</string>
+    <string name="dashboard_mode_day">Дзённы рэжым</string>
     <string name="app_mode_title">Рэжым</string>
     <string name="app_mode_choice_title">Гэтая прылада</string>
     <string name="app_mode_choice_summary">Прыборная панэль толькі паказвае прыборы грузавіка: для планшэта або другога тэлефона побач з тым, якім вы кіруеце. Выбраны рэжым адкрываецца адразу.</string>

@@ -45,6 +45,9 @@ class TrackingClient(private val listener: Listener) {
         // The job is sent once a second, null - no job
         fun onJob(job: Job?)
 
+        // What the player has no key for in the game, sent once a second by the server revision 8+
+        fun onUnboundKeys(keys: UnboundKeys)
+
         // About once per second while connected
         fun onLinkQuality(quality: LinkQuality)
     }
@@ -64,17 +67,6 @@ class TrackingClient(private val listener: Listener) {
     @Volatile
     var isPausedByUser = false
         private set
-
-    @Volatile
-    var lastServerState: ServerState? = null
-        private set
-
-    @Volatile
-    var lastLinkQuality: LinkQuality? = null
-        private set
-
-    val isAnalogPedalsAvailable: Boolean
-        get() = lastServerState?.analogPedalsAvailable == true
 
     private val stateLock = Any()
     private var state = ControllerState()
@@ -194,7 +186,6 @@ class TrackingClient(private val listener: Listener) {
                 // Stopped
             }
             socket.close()
-            lastServerState = null
             report(ConnectionState.Disconnected)
         }
 
@@ -395,10 +386,11 @@ class TrackingClient(private val listener: Listener) {
             lastMessageTime = now
             if (BinaryProtocol.isJob(packet.data, packet.length)) {
                 listener.onJob(BinaryProtocol.decodeJob(packet.data, packet.length))
+            } else if (BinaryProtocol.isUnboundActions(packet.data, packet.length)) {
+                listener.onUnboundKeys(BinaryProtocol.decodeUnboundActions(packet.data, packet.length))
             } else {
                 ControllerProtocol.decodeServerMessage(packet.data, packet.length)?.let {
                     meter.onMessage(now, it.sequence)
-                    lastServerState = it
                     listener.onServerState(it)
                 }
             }
@@ -410,7 +402,6 @@ class TrackingClient(private val listener: Listener) {
 
         private fun reportLinkQuality(now: Long) {
             meter.quality(now)?.let {
-                lastLinkQuality = it
                 if (isReportable) listener.onLinkQuality(it)
             }
         }
