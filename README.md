@@ -18,8 +18,8 @@ network. Android 7.0 or newer is needed.
   red (can be turned off in the settings).
 - **Quick actions**: six pages of buttons (engine, lights, retarder, cameras, map, radio and more) that can be
   moved and replaced; "Activate" is held to refuel.
-- **Buttons without a key in the game** are marked: with a server that tells them (protocol revision 8) a button whose
-  action has no key in the player's game profile is dimmed with an amber dot, and its press tells to bind a key in
+- **Buttons without a key in the game** are marked: with Truck Remote Server 1.4+ a button whose action has no key
+  in the player's game profile is dimmed with an amber dot, and its press tells to bind a key in
   the game controls.
 - **Shortcuts** of the launcher icon (a long press): settings, the dashboard mode and the guide.
 - **Vibration** with the truck: bumps, rough roads, collisions, the engine, the blinkers, gear shifts.

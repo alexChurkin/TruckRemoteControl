@@ -1,7 +1,7 @@
 {
   "uniqueId": "com.google:material-design-icons",
   "name": "Material Design Icons",
-  "description": "Icons of the menu, settings and guide (Wi-Fi, calibration, disconnect, guide, settings, arrows, quick actions button).",
+  "description": "Icons of the menu, settings and guide (Wi-Fi, calibration, disconnect, guide, settings, arrows, quick actions button), of the launcher icon shortcuts (settings, speed, help outline) and of the night mode of the dashboard (dark mode).",
   "website": "https://fonts.google.com/icons",
   "developers": [{ "name": "Google", "organisationUrl": "https://google.com" }],
   "scm": { "url": "https://github.com/google/material-design-icons" },

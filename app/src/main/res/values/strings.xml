@@ -26,7 +26,6 @@
 
     <string name="connection">Connection</string>
     <string name="server_port_title">Server port</string>
-    <string name="server_port_summary">Port used for all kinds of connections</string>
     <string name="server_port_dialog_title">Server port</string>
 
 
@@ -77,11 +76,11 @@
     <string name="how_to_use_text_2">Pedals and cruise control</string>
     <string name="how_to_use_text_3" formatted="false">Touch a pedal and drag up to press it harder, down to release it: the press force is shown over the pedals (keys can be used instead, see the settings). While holding the gas from 5%, swipe left to keep its level; touch a pedal to release it. Turn cruise control on by double-tapping the gas pedal, turn it off by another double tap or touching the brake.</string>
     <string name="how_to_use_actions">Quick actions</string>
-    <string name="how_to_use_actions_text">The button at the bottom center opens the quick actions panel under the speedometer: the engine, the lights, the retarder, cameras, the map and much more (swipe for the next pages). \"Activate\" and \"Flash lights\" work while you hold them: hold \"Activate\" to refuel. A long press on any other button starts editing: drag the buttons to move them, tap a place to put another action there. Every press is answered: a button that springs reached the game, a button that shakes didn\'t.</string>
+    <string name="how_to_use_actions_text">The button at the bottom center opens the quick actions panel under the speedometer: the engine, the lights, the retarder, cameras, the map and much more (swipe for the next pages). \"Activate\", \"Flash lights\", the engine brake and looking around work while you hold them: hold \"Activate\" to refuel. A long press on any other button starts editing: drag the buttons to move them, tap a place to put another action there. Every press is answered: a button that springs reached the game, a button that shakes didn\'t. A button dimmed with an amber dot has no key in your game profile: assign one in the game controls settings.</string>
     <string name="how_to_use_pause">Auto pause</string>
     <string name="how_to_use_pause_text">The controls are released while the phone lies screen down or up, so the truck doesn\'t drive off when you put the phone on the table. It can be turned off in the settings.</string>
     <string name="how_to_use_dashboard">Dashboard mode</string>
-    <string name="how_to_use_dashboard_text">A tablet or a second phone can show the instruments of the truck beside the phone that drives: choose Dashboard when the app asks how the device will be used at its first start (or later in Settings → Mode). It finds the server by itself.</string>
+    <string name="how_to_use_dashboard_text">A tablet or a second phone can show the instruments of the truck beside the phone that drives: choose Dashboard when the app asks how the device will be used at its first start (or later in Settings → Mode). It finds the server by itself; its night mode dims the screen.</string>
     <string name="how_to_use_vibration_text">The phone vibrates with the truck: bumps and rumble strips, collisions, the engine, the blinkers, gear shifts. Its strength and kinds are set in the settings.</string>
     <string name="how_to_use_vibration">Vibration</string>
     <string name="how_to_use_text_4">Enjoy your driving!</string>
@@ -106,7 +105,7 @@
     <string name="action_camera_chase">Chase camera</string>
     <string name="action_camera_cycle">Next camera</string>
     <string name="action_map">Map</string>
-    <string name="action_display">Dashboard</string>
+    <string name="action_display">Dash display</string>
     <string name="action_hud">HUD</string>
     <string name="action_radio_next">Next station</string>
     <string name="action_quick_save">Quick save</string>
@@ -248,7 +247,7 @@
     <string name="dashboard_unit_km">km</string>
     <string name="dashboard_unit_mi">mi</string>
     <string name="server_outdated_title">Update Truck Remote Server</string>
-    <string name="server_outdated_text">The server on the PC is older than the app: the dashboard, warnings and the cargo info may not be shown. Download the new version and replace the old one.</string>
+    <string name="server_outdated_text">The server on the PC is older than the app: the instruments, warnings, the job or the marks of buttons without a key may not be shown. Download the new version and replace the old one.</string>
     <string name="server_outdated_download">Download</string>
     <string name="server_outdated_later">Later</string>
     <string name="dashboard_job">%1$s → %2$s · %3$s</string>
