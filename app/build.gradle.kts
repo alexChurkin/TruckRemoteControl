@@ -115,6 +115,7 @@ dependencies {
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.billing)
+    implementation(libs.play.review)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

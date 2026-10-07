@@ -9,6 +9,7 @@ import com.alexchurkin.truckremote.app
 import com.alexchurkin.truckremote.data.settings.AppMode
 import com.alexchurkin.truckremote.ui.dashboard.DashboardActivity
 import com.alexchurkin.truckremote.ui.main.MainActivity
+import com.alexchurkin.truckremote.ui.shortcuts.AppShortcuts
 import com.alexchurkin.truckremote.ui.theme.TruckRemoteTheme
 
 /**
@@ -27,6 +28,7 @@ class ModeActivity : AppCompatActivity() {
 
     private fun choose(mode: AppMode) {
         app.container.settings.appMode = mode
+        AppShortcuts.update(this, mode)
         startActivity(Intent(this, mode.screen()))
         finish()
     }

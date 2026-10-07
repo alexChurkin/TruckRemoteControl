@@ -156,6 +156,16 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getInt(KEY_LAST_RELEASE_NOTES, 0)
         set(value) = prefs.edit { putInt(KEY_LAST_RELEASE_NOTES, value) }
 
+    // Minutes the truck was driven from the app (connected, not paused): the rating is asked after enough of them
+    var drivingMinutes: Int
+        get() = prefs.getInt(KEY_DRIVING_MINUTES, 0)
+        set(value) = prefs.edit { putInt(KEY_DRIVING_MINUTES, value) }
+
+    // Google Play was asked to show its rating dialog (once: it decides itself whether to show it)
+    var reviewRequested: Boolean
+        get() = prefs.getBoolean(KEY_REVIEW_REQUESTED, false)
+        set(value) = prefs.edit { putBoolean(KEY_REVIEW_REQUESTED, value) }
+
     var adsRemoved: Boolean
         get() = prefs.getBoolean(KEY_ADS_REMOVED, false)
         set(value) = prefs.edit { putBoolean(KEY_ADS_REMOVED, value) }
@@ -208,6 +218,8 @@ class AppSettings(private val prefs: SharedPreferences) {
         private const val KEY_CALIBRATION_OFFSET_DEG = "calibrationOffsetDeg"
         private const val KEY_GUIDE_SHOWN = "guideShowed"
         private const val KEY_LAST_RELEASE_NOTES = "releaseVersionText"
+        private const val KEY_DRIVING_MINUTES = "drivingMinutes"
+        private const val KEY_REVIEW_REQUESTED = "reviewRequested"
         private const val KEY_ADS_REMOVED = "prefadsetting"
 
         // The same file as PreferenceManager.getDefaultSharedPreferences() used before

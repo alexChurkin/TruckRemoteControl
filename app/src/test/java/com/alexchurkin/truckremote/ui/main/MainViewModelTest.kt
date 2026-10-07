@@ -142,6 +142,29 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `rating is asked once after an hour of driving`() {
+        viewModel.start(releaseNotesVersion = 3)
+        viewModel.setForeground(true)
+        connect()
+        dispatcher.scheduler.advanceTimeBy(30 * MINUTE_MS + 1)
+        // Paused or left: not counted
+        viewModel.togglePause()
+        dispatcher.scheduler.advanceTimeBy(60 * MINUTE_MS)
+        viewModel.togglePause()
+        viewModel.setForeground(false)
+        dispatcher.scheduler.advanceTimeBy(60 * MINUTE_MS)
+        assertEquals(30, settings.drivingMinutes)
+        assertEquals(StartAction.None, createViewModel().start(releaseNotesVersion = 3))
+
+        viewModel.setForeground(true)
+        dispatcher.scheduler.advanceTimeBy(30 * MINUTE_MS + 1)
+        viewModel.setForeground(false)
+        assertEquals(MainViewModel.REVIEW_AFTER_DRIVING_MINUTES, settings.drivingMinutes)
+        assertEquals(StartAction.Review, createViewModel().start(releaseNotesVersion = 3))
+        assertEquals(StartAction.None, createViewModel().start(releaseNotesVersion = 3))
+    }
+
+    @Test
     fun `screen recreated with its view model doesn't connect again, a restored one connects`() {
         viewModel.start(releaseNotesVersion = 3)
         assertNotNull(controller.lastConnect)
@@ -680,6 +703,7 @@ class MainViewModelTest {
 
     private companion object {
         const val LOCK_DISTANCE = 100f
+        const val MINUTE_MS = 60_000L
         val DASHBOARD = Dashboard(
             speed = 20f,
             speedLimit = 0f,

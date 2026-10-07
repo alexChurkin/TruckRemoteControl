@@ -14,6 +14,7 @@ yandexAds = "8.5.0"
 appMetrica = "8.6.0"
 aboutLibraries = "15.2.0"
 billing = "9.1.0"
+playReview = "2.0.2"
 junit = "4.13.2"
 ktlint = "1.8.0"
 detekt = "1.23.8"
@@ -41,6 +42,7 @@ appmetrica = { module = "io.appmetrica.analytics:analytics", version.ref = "appM
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 billing = { module = "com.android.billingclient:billing", version.ref = "billing" }
+play-review = { module = "com.google.android.play:review", version.ref = "playReview" }
 junit = { module = "junit:junit", version.ref = "junit" }
 ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
 detekt-cli = { module = "io.gitlab.arturbosch.detekt:detekt-cli", version.ref = "detekt" }

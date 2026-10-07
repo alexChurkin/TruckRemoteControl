@@ -42,6 +42,7 @@ import com.alexchurkin.truckremote.ui.widget.showPedalPress
 import com.alexchurkin.truckremote.util.enterFullscreen
 import com.alexchurkin.truckremote.util.showKeepingFullscreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.play.core.review.ReviewManagerFactory
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -110,6 +111,7 @@ class MainActivity :
         when (viewModel.start(releaseNotesVersion())) {
             StartAction.Guide -> startActivity(Intent(this, GuideActivity::class.java))
             StartAction.ReleaseNotes -> showReleaseNotesDialog()
+            StartAction.Review -> requestReview()
             StartAction.None -> Unit
         }
     }
@@ -559,6 +561,14 @@ class MainActivity :
     }
 
     private fun releaseNotesVersion() = resources.getInteger(R.integer.version)
+
+    // Google Play decides itself whether to show its dialog (and how often), the result isn't known to the app
+    private fun requestReview() {
+        val manager = ReviewManagerFactory.create(this)
+        manager.requestReviewFlow().addOnCompleteListener { request ->
+            if (request.isSuccessful && !isFinishing) manager.launchReviewFlow(this, request.result)
+        }
+    }
 
     private fun showReleaseNotesDialog() {
         MaterialAlertDialogBuilder(this)

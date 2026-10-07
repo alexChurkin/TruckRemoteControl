@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -114,6 +115,9 @@ enum class StartAction {
     None,
     Guide,
     ReleaseNotes,
+
+    // The rating dialog of Google Play, after the truck was driven enough
+    Review,
 }
 
 data class SignalInfo(val wifiEnabled: Boolean, val rssi: Int, val linkQuality: LinkQuality?)
@@ -190,6 +194,15 @@ class MainViewModel(
             .onEach { if (it == null) haptics.setRoad(RoadFeel.None, 0f) else haptics.setRoad(it.first, it.second) }
             .launchIn(viewModelScope)
 
+        // Minutes of driving: the screen is shown and the truck is controlled
+        combine(foreground, state.map { it.isConnected && !it.isPaused }.distinctUntilChanged()) { shown, controlled ->
+            shown && controlled
+        }
+            .distinctUntilChanged()
+            .flatMapLatest { driving -> if (driving) minuteTicks() else emptyFlow() }
+            .onEach { settings.drivingMinutes += 1 }
+            .launchIn(viewModelScope)
+
         // The tilt sensor works only while the screen is shown and the server is connected
         combine(foreground, state.map { it.isConnected }.distinctUntilChanged()) { shown, connected ->
             shown && connected
@@ -235,6 +248,11 @@ class MainViewModel(
             }
 
             settings.lastShownReleaseNotes != releaseNotesVersion -> StartAction.ReleaseNotes
+
+            !settings.reviewRequested && settings.drivingMinutes >= REVIEW_AFTER_DRIVING_MINUTES -> {
+                settings.reviewRequested = true
+                StartAction.Review
+            }
 
             else -> StartAction.None
         }
@@ -570,6 +588,13 @@ class MainViewModel(
         }
     }
 
+    private fun minuteTicks(): Flow<Unit> = flow {
+        while (true) {
+            delay(MINUTE_MS)
+            emit(Unit)
+        }
+    }
+
     /* Steering */
 
     // null after the sensor has been silent for SENSOR_TIMEOUT_MS
@@ -696,6 +721,10 @@ class MainViewModel(
         // and when it lies there is no steering angle to read anyway
         private const val FACE_UP_ENTER = 0.97f
         private const val FACE_UP_EXIT = 0.94f
+
+        // A player who has driven an hour knows the app well enough to rate it
+        const val REVIEW_AFTER_DRIVING_MINUTES = 60
+        private const val MINUTE_MS = 60_000L
 
         val Factory = viewModelFactory {
             initializer {

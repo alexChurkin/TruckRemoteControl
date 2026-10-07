@@ -20,6 +20,10 @@
     <color name="white">#ffffff</color>
     <color name="transparent">#00000000</color>
 
+    <!-- Shortcuts of the launcher icon: the blue of the app icon -->
+    <color name="shortcut_background">#D6E3FF</color>
+    <color name="shortcut_glyph">#1257B0</color>
+
     <!-- Material 3 dark scheme from the brand green, the same as ui/theme/Theme.kt -->
     <color name="m3_primary">#51E478</color>
     <color name="m3_onPrimary">#003914</color>

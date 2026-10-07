@@ -12,3 +12,7 @@
   amplitude-only and on an on/off one; the dashboard mode on a tablet beside a driving phone; the server on Windows
   with ETS2 and ATS (the setup wizard on a clean PC, the player's keys, a new profile, the auto-update); the purchase
   restore and the ads.
+- **Baseline Profile.** The Compose screens (settings, guide, dashboard) are compiled on the phone only after they
+  are used: a Baseline Profile (a `:baselineprofile` module with the Macrobenchmark plugin and a generator that opens
+  the screens, `androidx.profileinstaller` in the app) makes the first start and the first frames of a fresh install
+  faster. Needs a device or an emulator to generate it.
