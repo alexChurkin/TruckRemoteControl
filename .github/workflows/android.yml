@@ -40,16 +40,16 @@ jobs:
       - name: Build signed release
         if: github.event_name == 'push' && env.KEYSTORE_BASE64 != ''
         env:
-          TRUCKREMOTE_KEYSTORE_FILE: ${{ runner.temp }}/release.jks
-          TRUCKREMOTE_KEYSTORE_PASSWORD: ${{ secrets.TRUCKREMOTE_KEYSTORE_PASSWORD }}
-          TRUCKREMOTE_KEY_ALIAS: ${{ secrets.TRUCKREMOTE_KEY_ALIAS }}
-          TRUCKREMOTE_KEY_PASSWORD: ${{ secrets.TRUCKREMOTE_KEY_PASSWORD }}
+          KEYSTORE_FILE: ${{ runner.temp }}/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.TRUCKREMOTE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.TRUCKREMOTE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.TRUCKREMOTE_KEY_PASSWORD }}
           TRUCKREMOTE_APPMETRICA_API_KEY: ${{ secrets.TRUCKREMOTE_APPMETRICA_API_KEY }}
           TRUCKREMOTE_INTERSTITIAL_AD_ID: ${{ secrets.TRUCKREMOTE_INTERSTITIAL_AD_ID }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > "$TRUCKREMOTE_KEYSTORE_FILE"
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_FILE"
           ./gradlew assembleRelease bundleRelease
-          rm "$TRUCKREMOTE_KEYSTORE_FILE"
+          rm "$KEYSTORE_FILE"
 
       - name: Upload release
         if: github.event_name == 'push' && env.KEYSTORE_BASE64 != ''

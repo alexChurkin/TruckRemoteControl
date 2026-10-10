@@ -62,11 +62,15 @@ Code checks (all of them run in CI and fail the build):
 - Android Lint — `app/lint.xml`
 - Kotlin compiler warnings are errors
 
-Release build uses these values from `~/.gradle/gradle.properties` or environment variables
-(in GitHub Actions they are repository secrets, the keystore is `TRUCKREMOTE_KEYSTORE_BASE64`):
+Release build is signed with the values of `keystore.properties` in the root of the project (git ignores it, the
+format is in `keystore.properties.example`); without it the release APK is unsigned. CI gets the same values from
+the environment: `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` (in GitHub Actions from the
+repository secrets `TRUCKREMOTE_KEYSTORE_BASE64`, `TRUCKREMOTE_KEYSTORE_PASSWORD`, `TRUCKREMOTE_KEY_ALIAS`,
+`TRUCKREMOTE_KEY_PASSWORD`).
 
-- `TRUCKREMOTE_KEYSTORE_FILE`, `TRUCKREMOTE_KEYSTORE_PASSWORD`, `TRUCKREMOTE_KEY_ALIAS`, `TRUCKREMOTE_KEY_PASSWORD` —
-  signing; without them the release APK is unsigned
+The other values of the release build come from `~/.gradle/gradle.properties` or environment variables
+(in GitHub Actions they are repository secrets):
+
 - `TRUCKREMOTE_INTERSTITIAL_AD_ID` — Yandex Ads interstitial unit, the demo unit is used without it;
   `TRUCKREMOTE_APPMETRICA_API_KEY` — AppMetrica key, analytics is disabled without it.
   They can also be set in `app/ad.properties` (`interstitialAdId`, `appMetricaApiKey`, see `app/ad.properties.example`);

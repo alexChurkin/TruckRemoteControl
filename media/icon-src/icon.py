@@ -1,7 +1,6 @@
 # The steering wheel of the icon: a rim with a slightly flat bottom, a tonal disc inside it, three spokes (the one down
 # is wide) and a pill-shaped hub, turned right. It is made of a few primitives, so the same geometry is written as SVG
 # and as an Android vector. 108x108 is the space of an adaptive icon: its safe zone is the 66-unit circle at the centre.
-# The design: media/icon-concepts (round 11, variant 12).
 import io
 import math
 

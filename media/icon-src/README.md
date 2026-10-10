@@ -2,9 +2,8 @@ Icon and Play Store graphics
 ============================
 The steering wheel of the icon is made of a few primitives (a rim with a slightly flat bottom, a tonal disc, three
 spokes and a pill-shaped hub), so the same geometry is written as SVG and as an Android vector; its geometry and colors
-are in `icon.py`. The design and the concepts it was chosen from are in `media/icon-concepts`; the original icon is
-`media/ic_launcher-web.psd`. Requires Python 3 with Pillow and `cairosvg` (or librsvg with PyGObject), and the Inter
-font (found with fontconfig) for the feature graphic.
+are in `icon.py`; the original icon is `media/ic_launcher-web.psd`. Requires Python 3 with Pillow and `cairosvg`
+(or librsvg with PyGObject), and the Inter font (found with fontconfig) for the feature graphic.
 
 Run from this folder with the paths of the repositories (the site is optional):
 

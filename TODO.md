@@ -4,7 +4,7 @@
   road and of a bump, the damage and the acceleration of a collision) and the patterns of the app (`HapticPatterns`)
   are chosen by reason, not measured: drive with the telemetry logged and adjust them. Android 16 envelope effects
   (`Vibrator.areEnvelopeEffectsSupported`) could make the road vibration smoother on phones that have them.
-- **Release.** The app is `versionName` 1.4 / `versionCode` 37, the server 1.4 (protocol revision 8: the app asks
+- **Release.** The app is `versionName` 1.4.1 / `versionCode` 38, the server 1.4.1 (protocol revision 8: the app asks
   to update an older server once). Publish Truck Remote Server 1.4 as a GitHub release first (tag `1.4` or `v1.4`,
   the Release workflow attaches the exe), then the app: its release notes (`version_changes_text`) ask to update the
   server.

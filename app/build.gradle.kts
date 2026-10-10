@@ -6,8 +6,8 @@ plugins {
     alias(libs.plugins.aboutlibraries)
 }
 
-// Secrets are kept out of the repository. They come from Gradle properties (~/.gradle/gradle.properties)
-// or environment variables (CI)
+// The ad and analytics secrets are kept out of the repository. They come from Gradle properties
+// (~/.gradle/gradle.properties) or environment variables (CI)
 fun secret(name: String): String? =
     providers.gradleProperty(name).orElse(providers.environmentVariable(name)).orNull?.takeIf { it.isNotBlank() }
 
@@ -25,8 +25,16 @@ val appMetricaApiKey = adProperties.getProperty("appMetricaApiKey")
     ?: secret("TRUCKREMOTE_APPMETRICA_API_KEY")
     ?: ""
 
-// Without the keystore the release build is unsigned
-val releaseKeystore = secret("TRUCKREMOTE_KEYSTORE_FILE")
+// Release signing: keystore.properties (git ignores it, see keystore.properties.example) or the same values
+// in the environment (CI). Without the keystore the release build is unsigned
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use(::load)
+}
+fun signingValue(property: String, environment: String): String? =
+    (keystoreProperties.getProperty(property) ?: providers.environmentVariable(environment).orNull)
+        ?.takeIf { it.isNotBlank() }
+val releaseKeystore = signingValue("storeFile", "KEYSTORE_FILE")
 
 android {
     namespace = "com.alexchurkin.truckremote"
@@ -36,8 +44,8 @@ android {
         applicationId = "com.alexchurkin.truckremote"
         minSdk = 24
         targetSdk = 37
-        versionCode = 37
-        versionName = "1.4"
+        versionCode = 38
+        versionName = "1.4.1"
 
         vectorDrawables.useSupportLibrary = true
     }
@@ -51,10 +59,10 @@ android {
     signingConfigs {
         if (releaseKeystore != null) {
             create("release") {
-                storeFile = file(releaseKeystore)
-                storePassword = secret("TRUCKREMOTE_KEYSTORE_PASSWORD")
-                keyAlias = secret("TRUCKREMOTE_KEY_ALIAS")
-                keyPassword = secret("TRUCKREMOTE_KEY_PASSWORD")
+                storeFile = rootProject.file(releaseKeystore)
+                storePassword = signingValue("storePassword", "KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "KEY_PASSWORD")
             }
         }
     }
