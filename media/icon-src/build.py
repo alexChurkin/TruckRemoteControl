@@ -1,21 +1,21 @@
-# Generates the icons of the Android app and of the server, and the Play Store icon, from icon.py.
-# Usage: python3 build.py <TruckRemoteControl> <TruckRemoteServer>
+# Generates the icons of the Android app and of the server, the Play Store icon and the card of the site, from icon.py.
+# Usage: python3 build.py <TruckRemoteControl> <TruckRemoteServer> [<churkinapps.github.io>]
 import io
 import os
 import sys
 
-import cairosvg
 from PIL import Image
 
-from icon import BACKGROUND, HUB, HUB_R, INNER, INNER_R, LEFT, SCALE, SIZE, TURN, WHEEL_PATH, WHITE, svg, wheel_svg
+from icon import BACKGROUND, png_bytes, svg, wheel_svg, wheel_vector
 
 CLIENT, SERVER = sys.argv[1], sys.argv[2]
+SITE = sys.argv[3] if len(sys.argv) > 3 else None
 RES = f"{CLIENT}/app/src/main/res"
 STORE = f"{CLIENT}/media/store"
 
 
 def png(text):
-    return Image.open(io.BytesIO(cairosvg.svg2png(bytestring=text.encode()))).convert("RGBA")
+    return Image.open(io.BytesIO(png_bytes(text))).convert("RGBA")
 
 
 # ---------- Android: the adaptive icon as vectors ----------
@@ -24,27 +24,12 @@ def vector(body):
             '<vector xmlns:android="http://schemas.android.com/apk/res/android"\n'
             '    android:width="108dp"\n    android:height="108dp"\n'
             '    android:viewportWidth="108"\n    android:viewportHeight="108">\n'
-            f'    <group\n        android:pivotX="54"\n        android:pivotY="54"\n        android:rotation="{TURN}">\n'
-            f'{body}    </group>\n</vector>\n')
+            f'{body}</vector>\n')
 
 
-def circle(r, color):
-    return (f'        <path\n            android:fillColor="{color}"\n'
-            f'            android:pathData="M54,{54 - r:.2f}a{r:.2f},{r:.2f} 0 1,1 0,{2 * r:.2f}'
-            f'a{r:.2f},{r:.2f} 0 1,1 0,{-2 * r:.2f}z" />\n')
-
-
-def wheel(color):
-    return (f'        <group\n            android:translateX="{LEFT}"\n            android:translateY="{LEFT + SIZE}"\n'
-            f'            android:scaleX="{SCALE}"\n            android:scaleY="{-SCALE}">\n'
-            f'            <path\n                android:fillColor="{color}"\n'
-            f'                android:pathData="{WHEEL_PATH}" />\n        </group>\n')
-
-
-open(f"{RES}/drawable/ic_launcher_foreground.xml", "w").write(
-    vector(circle(INNER_R, INNER) + wheel(WHITE) + circle(HUB_R, HUB)))
-# A themed icon is one color: the rim and the spokes
-open(f"{RES}/drawable/ic_launcher_monochrome.xml", "w").write(vector(wheel("#FF000000")))
+open(f"{RES}/drawable/ic_launcher_foreground.xml", "w").write(vector(wheel_vector()))
+# A themed icon is one color: the rim, the spokes and the hub
+open(f"{RES}/drawable/ic_launcher_monochrome.xml", "w").write(vector(wheel_vector(mono="#FF000000")))
 open(f"{RES}/values/ic_launcher_background.xml", "w").write(
     '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n'
     f'    <color name="ic_launcher_background">{BACKGROUND}</color>\n</resources>\n')
@@ -79,10 +64,18 @@ open(f"{STORE}/icon.svg", "w").write(store)
 png(store).convert("RGB").save(f"{STORE}/icon_512.png", optimize=True)
 
 # ---------- Windows: the same rounded square, 16-256 px ----------
-tile = (f'<rect x="20" y="20" width="68" height="68" rx="13" fill="{BACKGROUND}"/>'
-        f'<g transform="translate(54 54) scale(1.08) translate(-54 -54)">{wheel_svg()}</g>')
+tile = f'<rect x="20" y="20" width="68" height="68" rx="13" fill="{BACKGROUND}"/>{wheel_svg()}'
 open(f"{SERVER}/icon.svg", "w").write(svg(tile, 256, view="18 18 72 72"))
 sizes = [16, 20, 24, 32, 40, 48, 64, 128, 256]
 images = [png(svg(tile, s, view="18 18 72 72")) for s in sizes]
 images[-1].save(f"{SERVER}/src/TruckRemoteServer/app_icon.ico", format="ICO",
                 sizes=[(s, s) for s in sizes], append_images=images[:-1])
+
+# ---------- The site: the card of the app, 540x405, the icon on white as the cards of the other apps ----------
+if SITE:
+    card = ('<rect width="540" height="405" fill="#FFFFFF"/>'
+            f'<g transform="translate(111 44) scale({318 / 72}) translate(-18 -18)">'
+            '<clipPath id="c"><rect x="18" y="18" width="72" height="72" rx="11"/></clipPath><g clip-path="url(#c)">'
+            f'<rect width="108" height="108" fill="{BACKGROUND}"/>{wheel_svg()}</g></g>')
+    png(svg(card, 540, view="0 0 540 405", height=405)).convert("RGB").save(
+        f"{SITE}/img/TruckRemote_card.jpg", quality=92, progressive=True, optimize=True)

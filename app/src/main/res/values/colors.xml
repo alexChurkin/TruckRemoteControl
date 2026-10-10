@@ -19,9 +19,9 @@
     <color name="white">#ffffff</color>
     <color name="transparent">#00000000</color>
 
-    <!-- Shortcuts of the launcher icon: the blue of the app icon -->
-    <color name="shortcut_background">#D3ECFF</color>
-    <color name="shortcut_glyph">#185EA2</color>
+    <!-- Shortcuts of the launcher icon: the colors of the app icon (media/icon-src/icon.py) -->
+    <color name="shortcut_background">#101010</color>
+    <color name="shortcut_glyph">#A6C8FF</color>
 
     <!-- Material 3 dark scheme from the brand green, the same as ui/theme/Theme.kt -->
     <color name="m3_primary">#51E478</color>
