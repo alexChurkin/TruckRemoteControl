@@ -7,7 +7,7 @@
     <group
         android:pivotX="54"
         android:pivotY="54"
-        android:rotation="14"
+        android:rotation="25"
         android:scaleX="1.08"
         android:scaleY="1.08">
         <path
@@ -35,6 +35,6 @@
             android:strokeLineJoin="round" />
         <path
             android:fillColor="#7EDB8A"
-            android:pathData="M51.75,48.00h4.50a6.0,6.0 0 0,1 0,12h-4.50a6.0,6.0 0 0,1 0,-12z" />
+            android:pathData="M51.75,48.60h4.50a6.0,6.0 0 0,1 0,12h-4.50a6.0,6.0 0 0,1 0,-12z" />
     </group>
 </vector>

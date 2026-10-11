@@ -10,12 +10,13 @@ WHEEL = "#A6C8FF"       # the light blue (tone 80 of the brand blue #185EA2)
 HUB = "#7EDB8A"         # the green of the app
 
 C = 54
-TURN = 14           # degrees clockwise: the wheel turns right
+TURN = 25           # degrees clockwise: the wheel turns right
 SCALE = 1.08        # the whole wheel
 R, W = 22.5, 7      # the centre line of the rim and its weight
 FLAT = 0.84         # the flat bottom: the chord at FLAT * R below the centre
 SPOKES = ((168, 6), (12, 6), (90, 9.5))  # (degrees, width): two slightly down, a wide one down
 PILL_W, PILL_H = 16.5, 12
+PILL_DOWN = 0.6     # the hub is a little below the centre of the rim, towards the wide spoke
 
 
 def _pt(r, deg):
@@ -43,7 +44,7 @@ def _spoke_end(deg, width):
 
 SPOKE_PATHS = [(f"M{C},{C}L{_pt(_spoke_end(d, w), d)[0]:.2f},{_pt(_spoke_end(d, w), d)[1]:.2f}", w)
                for d, w in SPOKES]
-PILL_PATH = (f"M{C - PILL_W / 2 + PILL_H / 2:.2f},{C - PILL_H / 2:.2f}h{PILL_W - PILL_H:.2f}"
+PILL_PATH = (f"M{C - PILL_W / 2 + PILL_H / 2:.2f},{C + PILL_DOWN - PILL_H / 2:.2f}h{PILL_W - PILL_H:.2f}"
              f"a{PILL_H / 2},{PILL_H / 2} 0 0,1 0,{PILL_H}h{PILL_H - PILL_W:.2f}"
              f"a{PILL_H / 2},{PILL_H / 2} 0 0,1 0,{-PILL_H}z")
 TRANSFORM = f"translate({C} {C}) scale({SCALE}) rotate({TURN}) translate({-C} {-C})"
